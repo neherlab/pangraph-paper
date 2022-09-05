@@ -85,10 +85,11 @@ These steps of pairwise graph alignment and merging of homologous intervals are 
 
 \paragraph{Pairwise alignment.}
 Full genome alignment between two closely related isolates is a well-studied problem with many high-quality tools available \cite{li2018minimap2,marccais2018mummer4}.
-We chose to use \emph{minimap2} as the core pairwise genome aligner for its proven speed, sensitivity, and easy-to-use, exposed library API \cite{li2018minimap2}.
-However, we note that \emph{PanGraph} is written to be modular; in the future, additional alignment kernels can be added with ease.
-The \emph{minimap2} alignment kernel is included within a custom Julia wrapper, available at \url{github.com/nnoll/minimap2_jll.jl}.
-The kernel interface expects two lists of \emph{pancontigs} to align as input and will output a list of putative overlapping alignments between both input lists.
+We chose to use \emph{minimap2} as the core pairwise genome aligner for its proven speed, sensitivity, and easy-to-use exposed library API \cite{li2018minimap2}.
+This alignment kernel is included within a custom Julia wrapper, available at \url{github.com/nnoll/minimap2_jll.jl}.
+However, we note that \emph{PanGraph} is written to be modular, and additional alignment kernels can be added with ease.
+In particular we decided to include the option to use \emph{mmseqs2} \cite{steinegger2017mmseqs2} as an alternative alignment kernel, because of its sensitivity on highly diverged sequences at the cost of higher computational time.
+In general, the kernel interface expects two lists of \emph{pancontigs} to align as input and will output a list of putative overlapping alignments between both input lists.
 
 \paragraph{Merging of homologous sequence.}
 \emph{Pancontigs} encapsulate linear multiple-sequence alignments which are modelled internally by a star phylogeny, i.e. are assumed to be well-described by a reference sequence augmented by independent SNPs and indels for each contained isolate.
@@ -139,27 +140,31 @@ Additionally, pre-built binaries are available as GitHub releases.
 All data and scripts used to validate PanGraph are available within the same repository.
 
 \section{Validation and performance}
+
+\subsection{Validation on synthetic data}
+
 In order to assess the accuracy of the pangenome graph inferred by PanGraph, and to quantify its performance characteristics as a function of input size, we generated synthetic data.
 Specifically, we simulated populations of size $N=100$ and sequence length $L=50000$ utilizing a Wright-Fisher model \cite{hudson2002generating} evolved for $T=50$ generations.
-In addition to nucleotide mutations that occur at rate $\mu$ per generation, we modelled inversions, deletions (each with independent rates set to $1e-2$ per generation), and horizontal sequence transfer that occurs with tunable rate $r$ per generation per genome.
+In addition to nucleotide mutations that occur at rate $\mu$ per generation, we modelled inversions, deletions (each with independent rates set to $10^{-2}$ per generation), and horizontal sequence transfer that occurs with tunable rate $r$ per generation per genome.
 The ancestral state for each sequence is tracked through each evolutionary event so that the true mosaic relatedness structure can easily be converted to a graph.
 The simulation framework is distributed within the PanGraph command line toolsuite for external use.
 
+
 \begin{figure}[htb]
-    \includegraphics[width=.5\textwidth]{paper-accuracy-20.png}
-    \caption{{\bf Accuracy against synthetic data}. Cumulative density functions for breakpoint accuracy comparing simulated and reconstructed pangenome graphs for various SNP rates, $\mu$.}
+    \includegraphics[width=.4\textwidth]{figs/median_misplacement_vs_divergence.pdf}
+    \caption{{\bf Accuracy against synthetic data}}
     \label{fig:toy-accuracy}
 \end{figure}
 
 We quantified the accuracy of PanGraph algorithm by computing the distance, $\delta$, of the inferred breakpoints relative to their known locus stored from the evolutionary simulation.
 Critically, we found that the accuracy was \emph{independent} of the rate of horizontal gene transfer $r$ and thus underlying graph complexity.
-The predominant determinant of accuracy was the sample diversity, shown in Fig. \ref{fig:toy-performance} which displays the distributions of $\delta$ for $100$ independent simulations ran for each mutation rate $\mu$.
+The predominant determinant of accuracy was the sample diversity, shown in Fig. \ref{fig:toy-accuracy} which displays the distributions of $\delta$ for $100$ independent simulations ran for each mutation rate $\mu$.
 For approximately clonal populations, $\sim 80\%$ of breakpoints were estimated to be within $10$bp away from the ``true" location.
 Conversely, for samples with average pairwise diversity above $2\%$, $\sim 80\%$ of breakpoints are estimated only within $100$ bp.
 This limitation is primarily driven by lack of sensitivity in the pairwise alignment phase performed using \emph{minimap2} \cite{li2018minimap2}.
 
 \begin{figure}[htb]
-    \includegraphics[width=.5\textwidth]{benchmark.png}
+    \includegraphics[width=.4\textwidth]{benchmark.pdf}
     \caption{{\bf Algorithm performance}.
         PanGraph scales linearly with the number of input genomes.
         This is a direct result of the guide tree simplification.
@@ -169,10 +174,13 @@ This limitation is primarily driven by lack of sensitivity in the pairwise align
     \label{fig:toy-performance}
 \end{figure}
 
+
 The algorithmic complexity was measured empirically by simulating populations of increasing size and average sequence length.
-The mean and standard deviation of results obtained from 25 iterations are shown in Fig. \ref{fig:toy-performance}.
+The mean and standard deviation of results obtained from 50 iterations are shown in Fig. \ref{fig:toy-performance}.
 Importantly, PanGraph's computational complexity grows \emph{linearly} with the number of input genomes.
 We note that the PanGraph scales approximately log-linear with average sequence length, as expected from the underlying algorithmic complexity of Minimap2 \cite{li2018minimap2}.
+
+\subsection{Validation on real data}
 
 We additionally validated PanGraph on natural populations sampled from RefSeq \cite{o2016reference}.
 Obviously the ``true" breakpoints are not known \emph{a priori} and thus the direct analog of Fig. \ref{fig:toy-accuracy} is not possible.
@@ -181,15 +189,18 @@ We compared the empirical distribution of distances to gene boundaries to a null
 For all tested cases, we find our boundaries cluster closer to genes than would be expected by chance.
 The median distance from a Pangraph boundary to annotated gene ranges between 50-100 bp, depending on the species, while the random breakpoint is, on average, 600 bp off.
 
-\begin{figure}[htb]
-    \includegraphics[width=.5\textwidth]{panx-compare.png}
-    \caption{{\bf Pancontigs cluster towards gene boundaries}.
-    The distribution of the nearest gene boundary for each pancontig breakpoint, shown for five species, with samples obtained from RefSeq \cite{o2016reference}.
-    (Left) Empirical distribution obtained over all genomes.
-    (Right) Null distribution constructed by randomly sampling positions on each genome, constrained to conserve the number of breakpoints.
-    }
-    \label{fig:panx-accuracy}
-\end{figure}
+
+\begin{figure*}[htb]
+    \includegraphics[width=.8\textwidth]{figs/incr_size.pdf}
+    \caption{{\bf Pangenome graph properties vs. dataset size}}
+    \label{fig:panx-size}
+\end{figure*}
+
+\begin{figure*}[htb]
+    \includegraphics[width=.7\textwidth]{figs/panx_benchmark.pdf}
+    \caption{{\bf Benchmark on real data}.}
+    \label{fig:panx-benchmark}
+\end{figure*}
 
 The computational time and maximum memory required to build each alignment is summarized in Table \ref{table:panx-performance}.
 
@@ -211,6 +222,12 @@ The computational time and maximum memory required to build each alignment is su
     \end{tabular}
     \label{table:panx-performance}
 \end{table}
+
+\begin{figure*}[htb]
+    \includegraphics[width=.8\textwidth]{figs/proj_single_escherichia_coli.pdf}
+    \caption{{\bf Test of graph marginalization}.}
+    \label{fig:marginalization}
+\end{figure*}
 
 \section{Discussion}
 While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analysis miss the great majority of genetic diversity. 
