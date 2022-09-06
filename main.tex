@@ -95,7 +95,7 @@ In general, the kernel interface expects two lists of \emph{pancontigs} to align
 \emph{Pancontigs} encapsulate linear multiple-sequence alignments which are modelled internally by a star phylogeny, i.e. are assumed to be well-described by a reference sequence augmented by independent SNPs and indels for each contained isolate.
 Importantly, during the all-to-all alignment phase, \emph{pancontigs} are aligned based \emph{solely} upon their consensus sequence.
 All putative homologous alignments found by \emph{pancontig} alignment are ranked according to the pseudo-energy
-\begin{equation}
+\begin{equation}\label{eq:pseudo-energy}
     E = -\ell + \alpha N_c + \beta N_m
 \end{equation}
 where $\ell$, $N_c$, and $N_m$ denote the alignment length, number of \emph{pancontigs} created by the merger, and number of polymorphisms per genome in the newly created {pancontig} respectively.
