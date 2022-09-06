@@ -21,12 +21,12 @@
 \affiliation{Biozentrum, University of Basel, Basel, Switzerland \looseness=-5}
 
 \begin{abstract}
-The genomic diversity of microbes is commonly parameterized as population genetic polymorphisms relative to a reference genome of a well-characterized, but arbitrary, isolate. 
-Reference genomes contain a fraction of the microbial \emph{pangenome}, the set of genes observed within \emph{all} isolates of a given species, and are thus blind to both the dynamics of the accessory genome, as well as variation within gene order and copy number.
-With the wide-spread usage of long-read sequencing, the number of high-quality, complete genome assemblies has increased dramatically.
-Traditional computational approaches towards whole-genome analysis either scale poorly, or treat genomes as dissociated bags of genes, and thus are not suited for this new era.
-Here, we present \emph{PanGraph}, a Julia based library and command line interface for aligning whole genomes into a graph, wherein each genome is represented as an undirected path along vertices, which in turn, encapsulate homologous multiple sequence alignments.
-The resultant data structure succinctly summarizes population-level nucleotide and structural polymorphisms and can be exported into a several common formats for either downstream analysis or immediate visualization.
+    The genomic diversity of microbes is commonly parameterized as population genetic polymorphisms relative to a reference genome of a well-characterized, but arbitrary, isolate.
+    Reference genomes contain a fraction of the microbial \emph{pangenome}, the set of genes observed within \emph{all} isolates of a given species, and are thus blind to both the dynamics of the accessory genome, as well as variation within gene order and copy number.
+    With the wide-spread usage of long-read sequencing, the number of high-quality, complete genome assemblies has increased dramatically.
+    Traditional computational approaches towards whole-genome analysis either scale poorly, or treat genomes as dissociated bags of genes, and thus are not suited for this new era.
+    Here, we present \emph{PanGraph}, a Julia based library and command line interface for aligning whole genomes into a graph, wherein each genome is represented as an undirected path along vertices, which in turn, encapsulate homologous multiple sequence alignments.
+    The resultant data structure succinctly summarizes population-level nucleotide and structural polymorphisms and can be exported into a several common formats for either downstream analysis or immediate visualization.
 \end{abstract}
 
 \maketitle
@@ -80,8 +80,8 @@ See Fig \ref{fig:visualization}A for a graphical depiction of the guide tree.
 The iterative pangraph construction is illustrated in Fig.~\ref{fig:visualization}.
 The pangraph is initialized as one subgraph per input genome, each representing its respective genome as a single \emph{pancontig}.
 Pairs of subgraphs are aligned in a postorder traversal of the constructed guide tree.
-The identified homologous intervals of the pancontig are then merged, thereby creating shorter contigs that represent homologous sections of multiple input genomes, see Fig. \ref{fig:visualization}B for a graphical deption. 
-These steps of pairwise graph alignment and merging of homologous intervals are repeated until the root of the guide tree is reached. 
+The identified homologous intervals of the pancontig are then merged, thereby creating shorter contigs that represent homologous sections of multiple input genomes, see Fig. \ref{fig:visualization}B for a graphical deption.
+These steps of pairwise graph alignment and merging of homologous intervals are repeated until the root of the guide tree is reached.
 
 \paragraph{Pairwise alignment.}
 Full genome alignment between two closely related isolates is a well-studied problem with many high-quality tools available \cite{li2018minimap2,marccais2018mummer4}.
@@ -104,12 +104,12 @@ Additionally, $\alpha$ and $\beta$ are hyperparameters of the algorithm, respect
 Only alignments with negative pseudo-energy are performed.
 
 \begin{figure}[htb]
-    \includegraphics[width=.5\textwidth]{algorithm.png}
+    \includegraphics[width=.5\textwidth]{figs/algorithm.png}
     \caption{{\bf Overview of PanGraph algorithm}.
-    (A) The alignment graph is constructed progressively by aligning graphs pairwise up a guide tree constructed from neighbor-joining the minimizer overlap between strains. 
-    (B) During pairwise alignment, \emph{pancontigs} (blue and green)
-    are merged by identifying homologous intervals (shown in yellow).
-    If the underlying alignments are viewed compatible, i.e. the energy is less than 0, the pancontigs are merged.
+        (A) The alignment graph is constructed progressively by aligning graphs pairwise up a guide tree constructed from neighbor-joining the minimizer overlap between strains.
+        (B) During pairwise alignment, \emph{pancontigs} (blue and green)
+        are merged by identifying homologous intervals (shown in yellow).
+        If the underlying alignments are viewed compatible, i.e. the energy is less than 0, the pancontigs are merged.
     }
     \label{fig:visualization}
 \end{figure}
@@ -164,7 +164,7 @@ Conversely, for samples with average pairwise diversity above $2\%$, $\sim 80\%$
 This limitation is primarily driven by lack of sensitivity in the pairwise alignment phase performed using \emph{minimap2} \cite{li2018minimap2}.
 
 \begin{figure}[htb]
-    \includegraphics[width=.4\textwidth]{benchmark.pdf}
+    \includegraphics[width=.4\textwidth]{figs/benchmark.pdf}
     \caption{{\bf Algorithm performance}.
         PanGraph scales linearly with the number of input genomes.
         This is a direct result of the guide tree simplification.
@@ -206,19 +206,19 @@ The computational time and maximum memory required to build each alignment is su
 
 \begin{table}[hb]
     \caption{{\bf Real-world Performance}.
-    Elapsed time and maximum RAM usage needed to compute the pangraph for the following collections of RefSeq genomes.
-    All runs were performed on an AMD Ryzen 7 2700X utilizing 8 cores.
+        Elapsed time and maximum RAM usage needed to compute the pangraph for the following collections of RefSeq genomes.
+        All runs were performed on an AMD Ryzen 7 2700X utilizing 8 cores.
     }
     \begin{tabular}{l r r r }
-    \hline\hline
-    Species & Sample size & Wall time (min) & Max memory (GB) \\
-    \hline
-    E.~coli         & 307 & 426 & 11.7 \\
-    H.~pylori       & 85 & 102 & 1.2 \\
-    K.~pneumoniae   & 109 & 132 & 2.1 \\
-    M.~tuberculosis & 51 & 91 & 0.4 \\
-    P.~marinus      & 10 & 12 & 0.1 \\
-    \hline
+        \hline\hline
+        Species         & Sample size & Wall time (min) & Max memory (GB) \\
+        \hline
+        E.~coli         & 307         & 426             & 11.7            \\
+        H.~pylori       & 85          & 102             & 1.2             \\
+        K.~pneumoniae   & 109         & 132             & 2.1             \\
+        M.~tuberculosis & 51          & 91              & 0.4             \\
+        P.~marinus      & 10          & 12              & 0.1             \\
+        \hline
     \end{tabular}
     \label{table:panx-performance}
 \end{table}
@@ -230,14 +230,14 @@ The computational time and maximum memory required to build each alignment is su
 \end{figure*}
 
 \section{Discussion}
-While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analysis miss the great majority of genetic diversity. 
+While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analysis miss the great majority of genetic diversity.
 The ability to rapidly align large sets of closely related, fully assembled genomes is a critical tool for the investigation of the processes governing microbial evolution.
-We hope PanGraph will spur novel insight microbial diversity and the processes by which bacteria adapt and change. 
+We hope PanGraph will spur novel insight microbial diversity and the processes by which bacteria adapt and change.
 
-Currently, PanGraph is limited to collections of genomes that are closely related with typical sequence divergence smaller that than 3\%. 
+Currently, PanGraph is limited to collections of genomes that are closely related with typical sequence divergence smaller that than 3\%.
 This limitation originates from the core tool used for pairwise alignment, \texttt{minimap2}, that was determined to lose sensitivity if sequences are sufficiently diverged under the chosen parameters.
 Homologous sequence that is more diverged than this cut-off will not be reliably merged by pangraph.
-This effectively limits the TMRCA of sequences within a block. 
+This effectively limits the TMRCA of sequences within a block.
 More diverged sequence, for example originating from a cross-species transfer event, will thus be represented as alternative path.
 In addition to the intrinsic limit of \texttt{minimap2}, this cut-off can be tuned with the parameter $\alpha$ and can for example be used to restrict merging to very similar sequences and thus capture all recent horizontal events as divergent paths in the graph.
 
