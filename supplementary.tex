@@ -147,11 +147,16 @@ From the results described in the previous section we expect \textit{mmseqs2} to
 
 \subsection{Benchmark results}
 
-In Fig.~\ref{fig:panx-benchmark-suppl} we display the results of the benchmakr. On every panel we display on the x-axis results for different species, and indicate with different colors the five possible choices for the alignment kernel.
+In Fig.~\ref{fig:panx-benchmark-suppl} we report the results of the benchmark. Results are divided on every panel by species, with different colors indicating the five possible choices for the alignment kernel.\\
+Execution times (cf. panel B) vary from few minutes for PM to several hours for EC. This is consistent with dataset sizes. Aligning sequences with \textit{mmseqs2} consistently requires more time than \textit{minimap2}. The time required to build a pangraph for the 307 chromosomes of EC is only 5-6 h for \textit{minimap2}, and around 24h for \textit{mmseqs2}. The latter also has a higher minimum memory requirement (panel C, around 8 Gb when running on 8 cores) but this is not particularly restrictive when aligning several tens of isolates.\\
+% TODO: describe the properties of the graph (panel D-E-F)
+The total pangenome length (panel G) depends both on the number of isolates and the ability of the alignment kernel to merge homologous sequences. When setting the energy parameters to zero more diverged sequences are merged into the same pancontigs and the total pangenome graph size is consistently smaller. The total size of the pangenome graph is in general much smaller than the cumulative size of the genomes it contains (panel I), with compression of 1-2\% for graphs with a high number of isolates (EC) or with small accessory genome (MT). The fraction of core pancontigs (panel H) is consistent with the species expectation, with MT having the highest core fraction. For HP the highest core fraction is reached when using null energy parameters combined with \textit{mmseqs2} as alignment kernel, as this allows the merging of more diverged homologous sequences. For the PM dataset, which contains highly diverged isolates, only the latter alignment kernel manages to merge an appreciable fraction of core sequence.
+
+
 
 \begin{figure}[htb]
     \includegraphics[width=\textwidth]{figs_suppl/panx_benchmark_suppl.pdf}
-    \caption{{\bf Benchmark on real data}. We run \textit{PanGraph} on datasets consisting of 5 different bacterial species, and using 5 different options for the alignment kernel as described in the text.
+    \caption{{\bf Benchmark on real data}. We run \textit{PanGraph} on datasets consisting of 5 different bacterial species, and using 5 different options for the alignment kernel as described in the text. Runs were performed using 8 cores.
         \textbf{A}: number of isolates for each species.
         \textbf{B}: algoritm wall-time.
         \textbf{C}: maximum memory usage.
