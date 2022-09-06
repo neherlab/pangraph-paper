@@ -34,18 +34,18 @@ Standard values of the simulation parameters are reported in Table~\ref{table:si
 
 \begin{table}[hb]
     \begin{tabular}{c l l}
-    \hline\hline
-    Parameter & Description & Standard Value \\
-    \hline
-    $N$ & population size & 100 \\
-    $T$ & n. of simulated generations & 50 \\
-    $L$ & average genome size & $5 \cdot 10^5$ [bp] \\
-    $\sigma$ & s.t.d. of genome size & $L/10$ [bp]  \\
-    $\mu$ & mutation rate & 0.005 [1/bp $\cdot$ generation] \\
-    $d$ & deletion rate & 0.05 [1/generation] \\
-    $i$ & inversion rate & 0.01 [1/generation] \\
-    $h$ & HGT rate & 0.1 [1/generation] \\
-    \hline
+        \hline\hline
+        Parameter & Description                 & Standard Value                  \\
+        \hline
+        $N$       & population size             & 100                             \\
+        $T$       & n. of simulated generations & 50                              \\
+        $L$       & average genome size         & $5 \cdot 10^5$ [bp]             \\
+        $\sigma$  & s.t.d. of genome size       & $L/10$ [bp]                     \\
+        $\mu$     & mutation rate               & 0.005 [1/bp $\cdot$ generation] \\
+        $d$       & deletion rate               & 0.05 [1/generation]             \\
+        $i$       & inversion rate              & 0.01 [1/generation]             \\
+        $h$       & HGT rate                    & 0.1 [1/generation]              \\
+        \hline
     \end{tabular}
     \caption{{\bf Simulation parameters}. Description of all simulation parameters used for the generation of synthetic data. Unless otherwise specified, the standard value is used.}
     \label{table:sim-params}
@@ -53,7 +53,7 @@ Standard values of the simulation parameters are reported in Table~\ref{table:si
 
 At the end of the simulation the resulting mosaic genomes are collected, along with the real underlying pangenome graph that can be used as the ground truth against which to check the performances of \textit{PanGraph}. The code to perform these simulations is shipped with \textit{PanGraph} in the \verb|generate| command.
 
-\section{Benchmark of \textit{PanGraph} on synthetic data}
+\section{Benchmark of PanGraph on synthetic data}
 
 We test the performance of \textit{PanGraph} on synthetic data generated with the simulation described above. We focus on two aspects: the computational performances of the algorithm (time and memory requirements) as a function of the dataset size, and the accuracy of the algorithm in reconstructing the real pangenome graph of the population as a function of sequence divergence.
 
@@ -62,7 +62,7 @@ We test the performance of \textit{PanGraph} on synthetic data generated with th
 To test the computational performances of \textit{PanGraph} we generated data using the model described in the previous section, with standard value of the parameters but varying the average genome length $L=[1,5,10,50,100,500]$ kbp and the population size $N=[10,20,50,100,200,500,100]$. For each pair of $N,L$ values we generated 50 different datasets. On each dataset we ran the \textit{PanGraph} \verb|build| command, using \textit{minimap2} as alignment kernel with \textit{asm20} option. We used standard value for the energy parameters $\alpha=100$, $\beta=10$. Runs were performed using 8 cores. For each run we measured the wall-time of the command, the maximum memory requirements (maximum resident size) and the average cpu percent. Results are displayed in Fig.~\ref{fig:benchmark-perf-suppl}.
 Thanks to the guide tree architecture of \textit{PanGraph} the run time scales almost linearly with the number of isolates.
 
-\begin{figure}[h]
+\begin{figure}[htb]
     \includegraphics[width=.9\textwidth]{figs_suppl/benchmark_suppl.pdf}
     \caption{{\bf Computational performance of PanGraph algorightm on synthetic data, as a function of dataset size}. We run PanGraph on artificially generated datasets consisting of a variable number of isolates with genomes of variable length (colorscale). For each condition we display the average and standard deviation over 50 different runs of: (A) algorithm wall-time, (B) maximum memory requirement and (C) average percentage of cpu used on a total of 8 cores.}
     \label{fig:benchmark-perf-suppl}
@@ -83,7 +83,7 @@ To link the mutation rate parameter $\mu$ with the average pairwise SNPs distanc
 While the rate of HGT does not influence the average pairwise divergence of pancontigs, the choice of alignment kernel controls their maximum divergence. \textit{Minimap2} is able to correctly merge pangenome graphs with up to $\avg{d} \sim 7\%$ with the \textit{asm20} option, while \textit{mmseqs2} reaches $\avg{d} \sim 10\%$ at the expense of higher time requirements.\\
 By performing a linear fit on the datapoints with $h \leq 0.002$ we are able to recover the conversion factor between the HGT rate and average pairwise divergence of pancontigs in our simulations: $\avg{d} \sim 20.8 \, h$.
 
-\begin{figure}[h]
+\begin{figure}[htb]
     \includegraphics[width=0.5\textwidth]{figs_suppl/snps_rate_vs_divergence.pdf}
     \caption{{\bf mutation rate vs divergence on synthetic data}. We compare the mutation rate $\mu$ of our simulations with the average pairwise divergence of sequences in pancontigs of the resulting pangenome graphs. This is done for different values of the rate of HGT $h$ and for three different alignment kernels. As expected, the divergence is only marginally influenced by the HGT rate, but the saturating value of the divergence depends strongly on the choice of alignment kernel, with \textit{mmseqs2} being able to merge sequences with average divergence higher than 10\%. To find the relationship between the mutation rate $\mu$ and the average pairwise divergence of the sequences we peform a linear fit on data points for $\mu \leq 0.002$. This provides the conversion factor $\avg{d} \sim 20.8 \, \mu$.}
     \label{fig:snps-suppl}
@@ -93,15 +93,55 @@ Once this link has been established we group simulations by the value of $h$ and
 To evaluate this displacement it is first necessary to link breakpoints on the real and reconstructed pangenome graph. We formulate this problem as an assignment problem, and solve it numerically using the Hungarian method \cite{kuhn1955hungarian}. For each isolate we call $b_i$ for $i=1,\ldots,I$ the panconting breakpoints on the real pangenome graph, and $b_j$ for $j=1,\ldots,J$ the ones on the reconstructed pangenome graph.\footnote{To avoid artifacts generated by the default threshold distance $d=100$ bp of pangraph, if on any of the two pangenome graphs a pair of breakpoints sits at a distance smaller than this threshold, we remove one of them from the set of breakpoints.} We define a cost matrix $D_{ij} = d(b_i,b_j)$ whose elements are distances on the genome of the isolate of pairs of breakpoints on the two graphs. We then numerically solve the assignment problem on this matrix, and obtain a set of $K = \min\{ I,J \}$ pairings between breakpoints such that the distance between the pairs is minimal and all the breakpoints of the graph with minimum number of breakpoints have been paired. The average distance between breakpoints in these pairs is the average breakpoint distance of the graph.\\
 For each simulation we obtain a number of average breakpoint distances equal to the number of isolates in the simulation. In Fig.~\ref{fig:benchmark-accuracy-suppl} we plot the cumulative distribution of these distances, considering only distances smaller than 1 kbp, stratifying simulations according to the average pairwise divergence of pancontigs inferred from the value of $\mu$. Each panel correspond to a different alignment kernel. As the sequence diversity increases we observe a clear transition. For low diversity most of the breakpoints are inferred to be only a few bp away from their real position, while for highly diverged sequences the position of breakpoints is not precisely inferred and can be hundreds of bp away from their real position. For different alignment kernels this transition occurs at different values of the divergence, with \textit{mmseqs2} being accurate at higher divergence values, as can be visualize from Fig.~XX in the main text.
 
-\begin{figure}[h]
+\begin{figure}[htb]
     \includegraphics[width=\textwidth]{figs_suppl/accuracy_comparison.pdf}
-    \caption{{\bf Accuracy of PanGraph algorithm on synthetic data}.}
+    \caption{{\bf Accuracy of PanGraph algorithm on synthetic data}. For each of our generated datasets we evaluate the average displacement of inferred pancontig breakpoints. The figure represents the cumulative distribution of average misplacements, stratified by the average pairwise divergence of sequences in pancontigs (see colorbar on the right). Each column corresponds to a different alignment kernel used to infer the pangenome graph. As divergence increases we observe a transition in the precision of breakpoint position estimation. At low divergence the position of most breakpoints is correctly estimated withing a few bps, while at high divergence most breakpoints can be misplaced of multiple hundreds of bps. The transition value for the divergence depends on the alignemnt kernel used, with \textit{mmseqs2} having the highest accuracy at the expense of higher computational time.}
     \label{fig:benchmark-accuracy-suppl}
 \end{figure}
 
-\section{Benchmark of \textit{PanGraph} on real data}
+\section{Benchmark of PanGraph on real data}
 
-\begin{figure}[h]
+We benchmarked \textit{PanGraph} on real data, focusing on the computational performances and the properties of the resulting pangenome graphs.
+
+\subsection{Dataset selection}
+
+We downloaded from RefSeq \cite{o2016reference} complete chromosomes from 5 different bacterial species, listed in Table~\ref{table:panx-dataset}.\footnote{A complete list of accession numbers can be found in...}. These genomes had previously been analyzed with PanX \cite{ding2018panx}. For each species we also report the average genome lenght and average pairwise divergence on core genome.
+
+% TODO: also report average core genome size?
+% TODO: avoid talking about PanX?
+% TODO: add link with accesion numbers and download?
+
+\begin{table}[hb]
+    \begin{tabular}{l l l l}
+        \hline\hline
+        Species         & N. isolates & Avg. chromosome length [Mbp] & Avg. pairwise divergence (core genes) \\
+        \hline
+        E.~Coli         & 307         & 4.98                         &                                       \\
+        K.~Pneumoniae   & 109         & 5.35                         &                                       \\
+        H.~Pylori       & 85          & 1.62                         &                                       \\
+        M.~Tuberculosis & 51          & 4.40                         &                                       \\
+        P.~Marinus      & 10          & 1.80                         &                                       \\
+        \hline
+    \end{tabular}
+    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length and average pairwise divergence on core genes.}
+    \label{table:panx-dataset}
+\end{table}
+
+\subsection{Pangenome graph construction}
+
+We built pangenome graphs using five different options for the alignment kernel:
+\begin{itemize}
+    \item kernel \textit{minimap2} with option \textit{asm10} and default values for the energy parameters $\alpha=100$, $\beta=10$.
+    \item kernel \textit{minimap2} with option \textit{asm20} and default values for the energy parameters $\alpha=100$, $\beta=10$.
+    \item kernel \textit{mmseqs2} and default values for the energy parameters $\alpha=100$, $\beta=10$.
+    \item kernel \textit{minimap2} with option \textit{asm10} and null energy parameters $\alpha=0$, $\beta=0$.
+    \item kernel \textit{mmseqs2} and null energy parameters $\alpha=0$, $\beta=0$.
+\end{itemize}
+% TODO: describe expectations and reasons for the choice
+
+\subsection{Benchmark results}
+
+\begin{figure}[htb]
     \includegraphics[width=\textwidth]{figs_suppl/panx_benchmark_suppl.pdf}
     \caption{{\bf Benchmark on real data}.}
     \label{fig:panx-benchmark-suppl}
@@ -110,11 +150,11 @@ For each simulation we obtain a number of average breakpoint distances equal to 
 
 \section{Graph marginalization}
 
-Given a graph composed of many different genomes, PanGraph is capable of marginalizing this graph on a subset of strains with the \verb|marginalize| command. To test this feature we built pangenome graphs on genomes from 5 different species: \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC), extracted from RefSeq.\footnote{The list of accession numbers for each species and pairs is available on the repository: \url{https://github.com/neherlab/pangraph/blob/feat/finalize-paper/script/config/projection_strains.json}} For each strain we took 50 different strains (10 for PM) and built an unique pangenome graph using the \verb|build| command with standard values of the parameters. For each species we then randomly picked 50 different pairs of strains (45 for PM) and extracted the corresponding sub-graphs using the \verb|marginalize| command. We compared each of these graphs to their counterpart generated simply by using the \verb|build| command on the corresponding pair of strains.\\
+Given a graph composed of many different genomes, PanGraph is capable of marginalizing this graph on a subset of strains with the \verb|marginalize| command. To test this feature we built pangenome graphs on genomes from 5 different species: \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC), extracted from RefSeq.\footnote{The list of selected accession numbers for each species and pair is available on the repository: \url{https://github.com/neherlab/pangraph/blob/feat/finalize-paper/script/config/projection_strains.json}} For each strain we took 50 different strains (10 for PM) and built an unique pangenome graph using the \verb|build| command with standard values of the parameters. For each species we then randomly picked 50 different pairs of strains (45 for PM) and extracted the corresponding sub-graphs using the \verb|marginalize| command. We compared each of these graphs to their counterpart generated simply by using the \verb|build| command on the corresponding pair of strains.\\
 The comparison between the marginalized (MG) and pairwise (PW) graph consists in splitting each genome using the overlap of the breakpoints given by the two different graphs. Then for each resulting segment we check whether it is shared with the other strain of the pair on either of the graphs. This gives raise to four different possibilities, corresponding to the segment being shared (1) or not (0) on either of the two graphs (MG/PW). We consider four different classes of segments: \textit{agree on sharing} (1-1 or 0-0), \textit{shared on both} (1-1), \textit{private on both} (0-0) and \textit{disagree on sharing} (1-0 or 0-1). For each class we measure the total and average length of the segments belonging to that class, and display the results in Fig.~\ref{fig:marginalize-suppl}.\\
 For all species except for PM we find that MG graphs are compatible with their PW counterpart: segments on which the graphs \textit{disagree on sharing} represent only a minor fraction of the genome (much smaller than the fraction of shared or private segments) and their size is compatible with the default block length threshold of PanGraph (100 bp). PM represents and exception, with the great majority of segments being private on each graph and having large size. This expected since for PM the strains considered are highly diverged, above the sensitivity of minimap2 ($\sim 27\%$ core divergence). This causes the majority of blocks not to be merged, and generates a strong order dependence. The size of segments with \textit{disagreement on sharing} is also the largest, some segments having size of 10s of kbp.
 
-\begin{figure}[h]
+\begin{figure}[htb]
     \includegraphics[width=.8\textwidth]{figs_suppl/proj_fig.pdf}
     \caption{{\bf Marginalized graphs are compatible with pairwise graphs}. Comparison of marginalized (MG) and pairwise (PW) built graphs for 5 different species. For each pair of strains we measure the length of segments in which MG and PW graphs agree on whether the segments are shared on both strains (\textit{agree on sharing}). These can either be both shared (\textit{shared on both}) or both private (\textit{private on both}). We also measure the length of segments on which the MG and PW graphs disagree (\textit{disagree on sharing}). For each of these for cases we report the total length as fraction of the average genome (left column) and the average size of each segment (right column). For each category we display the distribution of average results for 50 different pairs (45 for PM).
     }
