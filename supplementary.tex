@@ -110,24 +110,24 @@ We benchmarked \textit{PanGraph} on real data, focusing on the computational per
 
 We downloaded from RefSeq \cite{o2016reference} complete chromosomes from 5 different bacterial species:\footnote{A complete list of accession numbers can be found in...} \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC). The number of isolates selected per species, average chromosome length and average pairwise divergence on core genes are reported in Table~\ref{table:panx-dataset}. These genomes had previously been analyzed with PanX \cite{ding2018panx}.
 
-% TODO: also report average core genome size?
-% TODO: evaluate core genome divergence? Or average mash triangle distance?
-% TODO: avoid talking about PanX?
+% TODO: describe incuded quantitites better, and the dataset characteristics.
+% TODO: decide what to include.
 % TODO: add link with accesion numbers and download?
+% TODO: double-check numbers
 
 \begin{table}[hb]
-    \begin{tabular}{l l l l}
+    \begin{tabular}{l l l l l l}
         \hline\hline
-        Species         & N. isolates & Avg. chromosome length [Mbp] & Avg. pairwise divergence (core genes) \\
+        Species         & N. isolates & $\avg{l}$ [Mbp] & $\avg{d}$ & $f_p$  & $f_g$  \\
         \hline
-        E.~Coli         & 307         & 5.0                          &                                       \\
-        K.~Pneumoniae   & 109         & 5.3                          &                                       \\
-        H.~Pylori       & 85          & 1.6                          &                                       \\
-        M.~Tuberculosis & 51          & 4.4                          &                                       \\
-        P.~Marinus      & 10          & 1.8                          &                                       \\
+        E.~Coli         & 307         & 5.0             & 1.6\%     & 3.7\%  & 15.4\% \\
+        K.~Pneumoniae   & 109         & 5.3             & 0.8\%     & 17.4\% & 46.5\% \\
+        H.~Pylori       & 85          & 1.6             & 4.2\%     & 30.2\% & 42.2\% \\
+        M.~Tuberculosis & 51          & 4.4             & 0.03\%    & 57.9\% & 61.7\% \\
+        P.~Marinus      & 10          & 1.8             & 24.3\%    & 21.0\% & 45.6\% \\
         \hline
     \end{tabular}
-    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length and average pairwise divergence on core genes.}
+    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, average pairwise divergence on core genes $\avg{d}$, fraction of core pangenome $f_p$ and fraction of core genome $f_g$. $f_p$ is the fraction of core gene cluster over the total (weighted by length), while $f_g$ is the average fraction of core genes in a genome (weighted by length).}
     \label{table:panx-dataset}
 \end{table}
 
