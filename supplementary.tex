@@ -108,26 +108,24 @@ We benchmarked \textit{PanGraph} on real data, focusing on the computational per
 
 \subsection{Dataset selection}
 
-We downloaded from RefSeq \cite{o2016reference} complete chromosomes from 5 different bacterial species:\footnote{A complete list of accession numbers can be found in...} \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC). The number of isolates selected per species, average chromosome length and average pairwise divergence on core genes are reported in Table~\ref{table:panx-dataset}. These genomes had previously been analyzed with PanX \cite{ding2018panx}.
-
-% TODO: describe incuded quantitites better, and the dataset characteristics.
-% TODO: decide what to include.
-% TODO: add link with accesion numbers and download?
-% TODO: double-check numbers
+We downloaded sets of annotated and complete chromosomes from RefSeq \cite{o2016reference} for 5 different bacterial species:\footnote{A complete list of accession numbers can be found in...} \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC). In Table~\ref{table:panx-dataset} we report some summary statistics for these datasets. The number of isolates per species ranges from several hundred isolates for EC to 10 for PM.
+These data were previously analyzed using PanX \cite{ding2018panx}, a computational pipeline to cluster homologous genes together. This allowed us to identify core genes, and evaluate their average pairwise sequence divergence $\avg{d}$. Moreover we evaluate the fraction $f_p$ of core genes in the pangenome (weighted by gene length) and the average fraction $f_g$ of core gene sequence in a single genome.\\
+EC is the dataset with the highest number of isolates (307) and is also the one with the biggest accessory genome ($f_p \sim 4\%$). MT is the species with the smallest sequence divergence ($\avg{d} \sim 0.03\%$) and the biggest core genome ($f_p \sim 58\%$). The two datasets with highest sequence divergence are HP ($\avg{d} \sim 4\%$) and PM ($\avg{d} \sim 24\%$). For HP the average sequence divergence sits on the limit of what \textit{PanGraph} is able to accurately merge when using the \textit{minimap2} kernel (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}), but is merged correctly by the \textit{mmseqs2} kernel. The sequence divergence of PM is instead too high and cannot be handled correctly by any of the kernels. 
 
 \begin{table}[hb]
-    \begin{tabular}{l l l l l l}
+    \setlength{\tabcolsep}{9pt}
+    \begin{tabular}{l l c c c c}
         \hline\hline
         Species         & N. isolates & $\avg{l}$ [Mbp] & $\avg{d}$ & $f_p$  & $f_g$  \\
         \hline
         E.~Coli         & 307         & 5.0             & 1.6\%     & 3.7\%  & 15.4\% \\
         K.~Pneumoniae   & 109         & 5.3             & 0.8\%     & 17.4\% & 46.5\% \\
-        H.~Pylori       & 85          & 1.6             & 4.2\%     & 30.2\% & 42.2\% \\
+        H.~Pylori       & 85          & 1.6             & 4.2\%     & 30.2\% & 42.3\% \\
         M.~Tuberculosis & 51          & 4.4             & 0.03\%    & 57.9\% & 61.7\% \\
         P.~Marinus      & 10          & 1.8             & 24.3\%    & 21.0\% & 45.6\% \\
         \hline
     \end{tabular}
-    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, average pairwise divergence on core genes $\avg{d}$, fraction of core pangenome $f_p$ and fraction of core genome $f_g$. $f_p$ is the fraction of core gene cluster over the total (weighted by length), while $f_g$ is the average fraction of core genes in a genome (weighted by length).}
+    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, average pairwise divergence on core genes $\avg{d}$, fraction of core gene sequence in the pangenome $f_p$ and fraction of core gene sequence in a single genome $f_g$.}
     \label{table:panx-dataset}
 \end{table}
 
@@ -149,8 +147,8 @@ From the results described in the previous section we expect \textit{mmseqs2} to
 
 In Fig.~\ref{fig:panx-benchmark-suppl} we report the results of the benchmark. Results are divided on every panel by species, with different colors indicating the five possible choices for the alignment kernel.\\
 Execution times (cf. panel B) vary from few minutes for PM to several hours for EC. This is consistent with dataset sizes. Aligning sequences with \textit{mmseqs2} consistently requires more time than \textit{minimap2}. The time required to build a pangraph for the 307 chromosomes of EC is only 5-6 h for \textit{minimap2}, and around 24h for \textit{mmseqs2}. The latter also has a higher minimum memory requirement (panel C, around 8 Gb when running on 8 cores) but this is not particularly restrictive when aligning several tens of isolates.\\
-% TODO: describe the properties of the graph (panel D-E-F)
-The total pangenome length (panel G) depends both on the number of isolates and the ability of the alignment kernel to merge homologous sequences. When setting the energy parameters to zero more diverged sequences are merged into the same pancontigs and the total pangenome graph size is consistently smaller. The total size of the pangenome graph is in general much smaller than the cumulative size of the genomes it contains (panel I), with compression of 1-2\% for graphs with a high number of isolates (EC) or with small accessory genome (MT). The fraction of core pancontigs (panel H) is consistent with the species expectation, with MT having the highest core fraction. For HP the highest core fraction is reached when using null energy parameters combined with \textit{mmseqs2} as alignment kernel, as this allows the merging of more diverged homologous sequences. For the PM dataset, which contains highly diverged isolates, only the latter alignment kernel manages to merge an appreciable fraction of core sequence.
+We quantify the properties of pancontings by looking at their total number (panel D) the minimum number of pancontigs that include at least 50\% of all the pangenome graph sequence (L50 statistics, panel E) and the minimum length of pancontigs in this minimal set (N50 statistics, panel F). As expected, the use of null energy parameter results in general in a more fragmented graph, with a higher number of pancontigs that on average have a shorter length. HP is an exception, since it includes some highly-diverged sequences and the use of null energy parameters increases the default threshold divergence $d \sim 10\%$. This allows merging of sequences with higher divergence by \textit{mmseqs2} kernel, but not by the default \textit{minimap2} kernel, whose threshold average divergence is itself around 10\% (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}). A second exception is PM. The average divergence of this dataset is far above the capabilities of the alignment kernels, and only the use of \textit{mmseqs2} with null energy parameters allows for a partial merging of some homologous sequences. The resulting graph is composed of few very long pancontigs, mostly containing sequence from a single isolate. If we exclude this exception, in general the pangenome graphs of our datasets have around $10^3$ / $10^4$ pancontigs, with 50\% of the sequence being contained in around 10\% of them, having minimum length of 1-10 kbp.\\
+The total pangenome length (panel G) depends both on the number of isolates and the ability of the alignment kernel to merge homologous sequences. When setting the energy parameters to zero more diverged sequences are merged into the same pancontigs and the total pangenome graph size is consistently smaller. The total size of the pangenome graph is in general much smaller than the cumulative size of the genomes it contains (panel I), with compression of 1-2\% for graphs with a high number of isolates (EC) or with small accessory genome (MT). The fraction of core pancontigs (panel H) is consistent with the species expectation, with MT having the highest core fraction. For HP the highest core fraction is reached when using null energy parameters combined with \textit{mmseqs2} as alignment kernel, as this allows the merging of more diverged homologous sequences. For the PM dataset, which contains highly diverged isolates, only the latter alignment kernel manages to merge an appreciable fraction of core sequence, but is still unable to merge highly diverged sequences.
 
 
 
@@ -170,12 +168,10 @@ The total pangenome length (panel G) depends both on the number of isolates and 
     \label{fig:panx-benchmark-suppl}
 \end{figure}
 
-% TODO: explain the sense of L50 and N50
+% TODO: explain the meaning of L50 and N50
 
 
 \section{Graph marginalization}
-
-% TODO: simplify dataset descritpion (is already described above)
 
 Given a graph composed of many different genomes, PanGraph is capable of marginalizing this graph on a subset of strains with the \verb|marginalize| command. To test this feature we built pangenome graphs on a subset of genomes from the 5 different species we previously analyzed. For each species we took 50 different strains (10 for PM)\footnote{The list of selected accession numbers for each species and pair is available on the repository: \url{https://github.com/neherlab/pangraph/blob/feat/finalize-paper/script/config/projection_strains.json}} and built an unique pangenome graph using the \verb|build| command with standard values of the parameters. For each species we then randomly picked 50 different pairs of strains (45 for PM) and extracted the corresponding sub-graphs using the \verb|marginalize| command. We compared each of these graphs to their counterpart generated simply by using the \verb|build| command on the corresponding pair of strains.\\
 The comparison between the marginalized (MG) and pairwise (PW) graph consists in splitting each genome using the overlap of the breakpoints given by the two different graphs. Then for each resulting segment we check whether it is shared with the other strain of the pair on either of the graphs. This gives raise to four different possibilities, corresponding to the segment being shared (1) or not (0) on either of the two graphs (MG/PW). We consider four different classes of segments: \textit{agree on sharing} (1-1 or 0-0), \textit{shared on both} (1-1), \textit{private on both} (0-0) and \textit{disagree on sharing} (1-0 or 0-1). For each class we measure the total and average length of the segments belonging to that class, and display the results in Fig.~\ref{fig:marginalize-suppl}.\\
@@ -188,6 +184,6 @@ For all species except for PM we find that MG graphs are compatible with their P
     \label{fig:marginalize-suppl}
 \end{figure}
 
-\bibliography{cite}{}
+\bibliography{cite}
 
 \end{document}
