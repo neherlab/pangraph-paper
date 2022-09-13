@@ -151,8 +151,11 @@ The simulation framework is distributed within the PanGraph command line toolsui
 
 
 \begin{figure}[htb]
-    \includegraphics[width=.4\textwidth]{figs/median_misplacement_vs_divergence.pdf}
-    \caption{{\bf Accuracy against synthetic data}}
+    \includegraphics[width=.4\textwidth]{figs/misplaced_fraction_vs_divergence.pdf}
+    \caption{{\bf Accuracy against synthetic data}.
+        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels :\textit{minimap2} with \textit{asm10} and \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of 100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions.
+        Graph reconstruction with \textit{minimap2} and \textit{asm20} is accurate up to around 5\% average sequence divergence, while for \textit{mmseqs2} accuracy is maintained until $\sim$12\% divergence.
+    }
     \label{fig:toy-accuracy}
 \end{figure}
 
@@ -192,7 +195,9 @@ The median distance from a Pangraph boundary to annotated gene ranges between 50
 
 \begin{figure*}[htb]
     \includegraphics[width=.9\textwidth]{figs/incr_size.pdf}
-    \caption{{\bf Pangenome graph properties vs. dataset size}. We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the pangenome graph. To quantify variability, we repeat the pangraph construction 10 times for each size (except the complete graph containing all 307 isolates), with different random sets of isolates. Lines and shaded areas represent means and standard deviations over these 10 measurements.
+    \caption{{\bf Pangenome graph properties vs. dataset size}.
+        We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the graphs. Lines and shaded areas represent mean and standard deviation over 10 different repetitions on random subsets of isolates, except for the final point indicating the full graph (307 isolates).
+        The number and size of pancontigs scales sub-linearly with the number of isolates, with most of the pangenome being included in ~10\% of the pancontigs, and core pancontigs having higher-than-average size. \textit{PanGraph} is able to compress hundreds of genomes in a pangenome graph having only a fraction of the size.
         \textbf{A}: n. of pancontigs in the graph. We count the total number of pacontigs (blue), the number of core pancontigs (orange) and the minimum number of pancontigs that contain more than 50\% of the pangenome (L50, black).
         \textbf{B}: average size of pancontigs (blue), of only core pancontings (orange), and size of the smallest panconting in the minimal set that spans 50\% of the pangenome (N50, black).
         \textbf{C}: cumulative size of all genomes in the pangenome graph (gray), total pangenome size (blue) and size of core pangenome (orange).
