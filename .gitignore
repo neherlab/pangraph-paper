@@ -7,5 +7,6 @@
 *.out
 *.synctex.gz
 *Notes.bib
+schemes
 main.pdf
 supplementary.pdf

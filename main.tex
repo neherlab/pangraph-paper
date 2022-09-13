@@ -104,7 +104,7 @@ Additionally, $\alpha$ and $\beta$ are hyperparameters of the algorithm, respect
 Only alignments with negative pseudo-energy are performed.
 
 \begin{figure}[htb]
-    \includegraphics[width=.5\textwidth]{figs/algorithm.png}
+    \includegraphics[width=.45\textwidth]{figs/algorithm.png}
     \caption{{\bf Overview of PanGraph algorithm}.
         (A) The alignment graph is constructed progressively by aligning graphs pairwise up a guide tree constructed from neighbor-joining the minimizer overlap between strains.
         (B) During pairwise alignment, \emph{pancontigs} (blue and green)
@@ -191,8 +191,12 @@ The median distance from a Pangraph boundary to annotated gene ranges between 50
 
 
 \begin{figure*}[htb]
-    \includegraphics[width=.8\textwidth]{figs/incr_size.pdf}
-    \caption{{\bf Pangenome graph properties vs. dataset size}}
+    \includegraphics[width=.9\textwidth]{figs/incr_size.pdf}
+    \caption{{\bf Pangenome graph properties vs. dataset size}. We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the pangenome graph. To quantify variability, we repeat the pangraph construction 10 times for each size (except the complete graph containing all 307 isolates), with different random sets of isolates. Lines and shaded areas represent means and standard deviations over these 10 measurements.
+        \textbf{A}: n. of pancontigs in the graph. We count the total number of pacontigs (blue), the number of core pancontigs (orange) and the minimum number of pancontigs that contain more than 50\% of the pangenome (L50, black).
+        \textbf{B}: average size of pancontigs (blue), of only core pancontings (orange), and size of the smallest panconting in the minimal set that spans 50\% of the pangenome (N50, black).
+        \textbf{C}: cumulative size of all genomes in the pangenome graph (gray), total pangenome size (blue) and size of core pangenome (orange).
+    }
     \label{fig:panx-size}
 \end{figure*}
 
