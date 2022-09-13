@@ -205,9 +205,15 @@ The median distance from a Pangraph boundary to annotated gene ranges between 50
     \label{fig:panx-size}
 \end{figure*}
 
+% TODO: talk more extensively about the meaning of the results?
 \begin{figure*}[htb]
     \includegraphics[width=\textwidth]{figs/panx_benchmark.pdf}
-    \caption{{\bf Benchmark on real data}.}
+    \caption{{\bf Benchmark on real data}.
+        We build pangenome graphs from fully-assembled chromosomes from 5 different bacterial species. For each species we build graphs with three different alignment kernel options (\textit{minimap2} with \textit{asm10} or \textit{asm20} option and \textit{mmseqs2}) and two different settings for the pseudo-energy parameters (standard or null values).
+        \textbf{A}: \textit{PanGraph} wall-time when run in parallel on 8 cores.
+        \textbf{B}: fraction of core pangenome in the pangenome graph.
+        \textbf{C}: sequence compression, measured as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph.
+    }
     \label{fig:panx-benchmark}
 \end{figure*}
 
