@@ -110,7 +110,7 @@ We benchmarked \textit{PanGraph} on real data, focusing on the computational per
 
 We downloaded sets of annotated and complete chromosomes from RefSeq \cite{o2016reference} for 5 different bacterial species:\footnote{A complete list of accession numbers can be found in...} \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC). In Table~\ref{table:panx-dataset} we report some summary statistics for these datasets. The number of isolates per species ranges from several hundred isolates for EC to 10 for PM.
 These data were previously analyzed using PanX \cite{ding2018panx}, a computational pipeline to cluster homologous genes together. This allowed us to identify core genes, and evaluate their average pairwise sequence divergence $\avg{d}$. Moreover we evaluate the fraction $f_p$ of core genes in the pangenome (weighted by gene length) and the average fraction $f_g$ of core gene sequence in a single genome.\\
-EC is the dataset with the highest number of isolates (307) and is also the one with the biggest accessory genome ($f_p \sim 4\%$). MT is the species with the smallest sequence divergence ($\avg{d} \sim 0.03\%$) and the biggest core genome ($f_p \sim 58\%$). The two datasets with highest sequence divergence are HP ($\avg{d} \sim 4\%$) and PM ($\avg{d} \sim 24\%$). For HP the average sequence divergence sits on the limit of what \textit{PanGraph} is able to accurately merge when using the \textit{minimap2} kernel (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}), but is merged correctly by the \textit{mmseqs2} kernel. The sequence divergence of PM is instead too high and cannot be handled correctly by any of the kernels. 
+EC is the dataset with the highest number of isolates (307) and is also the one with the biggest accessory genome ($f_p \sim 4\%$). MT is the species with the smallest sequence divergence ($\avg{d} \sim 0.03\%$) and the biggest core genome ($f_p \sim 58\%$). The two datasets with highest sequence divergence are HP ($\avg{d} \sim 4\%$) and PM ($\avg{d} \sim 24\%$). For HP the average sequence divergence sits on the limit of what \textit{PanGraph} is able to accurately merge when using the \textit{minimap2} kernel (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}), but is merged correctly by the \textit{mmseqs2} kernel. The sequence divergence of PM is instead too high and cannot be handled correctly by any of the kernels.
 
 \begin{table}[hb]
     \setlength{\tabcolsep}{9pt}
@@ -128,6 +128,24 @@ EC is the dataset with the highest number of isolates (307) and is also the one 
     \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, average pairwise divergence on core genes $\avg{d}$, fraction of core gene sequence in the pangenome $f_p$ and fraction of core gene sequence in a single genome $f_g$.}
     \label{table:panx-dataset}
 \end{table}
+
+\begin{table}[hb]
+    \setlength{\tabcolsep}{9pt}
+    \begin{tabular}{lccccc}
+        \hline\hline
+        Species         & N. isolates & $\avg{l}$ [Mbp] & $L_\text{tot}$ [Mbp] & $L_\text{core}$ [Mbp] & $\avg{d}$ \\
+        \hline
+        E.~Coli         & 307         & 5.0             & 17.7                 & 6.6                   & 1.6\%     \\
+        K.~Pneumoniae   & 109         & 5.3             & 13.0                 & 2.3                   & 0.8\%     \\
+        H.~Pylori       & 85          & 1.6             & 1.9                  & 0.6                   & 4.2\%     \\
+        M.~Tuberculosis & 51          & 4.4             & 4.1                  & 2.4                   & 0.03\%    \\
+        P.~Marinus      & 10          & 1.8             & 3.3                  & 0.7                   & 24.3\%    \\
+        \hline
+    \end{tabular}
+    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, total size of pangenome  $L_\text{tot}$ and core genome $L_\text{core}$, and average pairwise divergence on core genes $\avg{d}$.}
+    \label{table:panx-dataset-updated}
+\end{table}
+
 
 
 \subsection{Pangenome graph construction}
