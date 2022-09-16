@@ -133,19 +133,18 @@ EC is the dataset with the highest number of isolates (307) and is also the one 
     \setlength{\tabcolsep}{9pt}
     \begin{tabular}{lccccc}
         \hline\hline
-        Species         & N. isolates & $\avg{l}$ [Mbp] & $L_\text{tot}$ [Mbp] & $L_\text{core}$ [Mbp] & $\avg{d}$ \\
+        Species         & N. isolates & $\avg{L_\text{gen}}$ [Mbp] & $L_\text{pang}$ [Mbp] & $L_\text{core}$ [Mbp] & $\avg{d_\text{core}}$ \\
         \hline
-        E.~Coli         & 307         & 5.0             & 17.7                 & 6.6                   & 1.6\%     \\
-        K.~Pneumoniae   & 109         & 5.3             & 13.0                 & 2.3                   & 0.8\%     \\
-        H.~Pylori       & 85          & 1.6             & 1.9                  & 0.6                   & 4.2\%     \\
-        M.~Tuberculosis & 51          & 4.4             & 4.1                  & 2.4                   & 0.03\%    \\
-        P.~Marinus      & 10          & 1.8             & 3.3                  & 0.7                   & 24.3\%    \\
+        E.~Coli         & 307         & 5.0                        & 17.7                  & 0.7                   & 1.6\%                 \\
+        K.~Pneumoniae   & 109         & 5.3                        & 13.0                  & 2.3                   & 0.8\%                 \\
+        H.~Pylori       & 85          & 1.6                        & 1.9                   & 0.6                   & 4.2\%                 \\
+        M.~Tuberculosis & 51          & 4.4                        & 4.1                   & 2.4                   & 0.03\%                \\
+        P.~Marinus      & 10          & 1.8                        & 3.3                   & 0.7                   & 26.9\%                \\
         \hline
     \end{tabular}
     \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, total size of pangenome  $L_\text{tot}$ and core genome $L_\text{core}$, and average pairwise divergence on core genes $\avg{d}$.}
     \label{table:panx-dataset-updated}
 \end{table}
-
 
 
 \subsection{Pangenome graph construction}
