@@ -7,9 +7,11 @@
 \usepackage{xr} % reference to other external latex documents
 \usepackage[final]{hyperref}
 
-\externaldocument{main}
-
 \newcommand{\avg}[1]{\langle #1 \rangle}
+\newcommand{\Lcore}{L_\text{core}}
+\newcommand{\Lpang}{L_\text{pang}}
+\newcommand{\Lgen}{L_\text{gen}}
+\newcommand{\dcore}{\langle d_\text{core} \rangle}
 
 \graphicspath{{../figs_suppl/}{./figs_suppl}}
 
@@ -27,9 +29,10 @@
 \maketitle
 
 \section{Generation of synthetic data}
+\label{supp:data_generation}
 
-As a first test we benchmark the performances and accuracy of \textit{PanGraph} on synthetic data, obtained by simulating the evolution of a population in which individuals can loose part of the sequence from deletions, or gain new genetic material via Horizontal Gene Transfer (HGT) from other members of the population.\\
-In the simulation a population of size $N$ is evolved for $T$ generations using a Wright-Fisher model \cite{hudson2002generating}. Each individual in the population has a circular genome of initial size $L$. At each generation mutations occur at a rate $\mu$ per position per generation.\\
+As a first test we benchmark the performances and accuracy of \textit{PanGraph} on synthetic data, obtained by simulating the evolution of a population in which individuals accumulate mutations, can loose part of the sequence from deletions, or gain new genetic material via Horizontal Gene Transfer (HGT) from other members of the population.\\
+In the simulation a population of size $N$ is evolved for $T$ generations using a Wright-Fisher model \cite{hudson2002generating}. Each individual in the population has a circular genome of initial size $L$. At each generation single-nucleotide mutations occur at a rate $\mu$ per position per generation.\\
 Deletions can occur at a rate $d$ per genome per generation. When a deletion is suggested on isolate $n$, having a genome length $L_n$, a new desired length $L'_n$ is extracted from a Gaussian distribution with mean $L$ and variance $\sigma^2$. If $\Delta = L'_n - L_n < 0$ then a random chunk of length $|\Delta|$ is removed from the genome, reducing it to size $L'_n$. If $\Delta > 0$ no deletion is performed. This ensures that the length distribution of genomes in the population remains close to the desired length $L$, with $\sigma^2$ being a proxy for the variance.
 HGT occurs at a rate $h$ per genome per generation. Similarly to deletions, when a HGT event is suggested a new desired length $L'_n$ is extracted from the same Gaussian distribution, and this time the event is performed only if $\Delta = L'_n - L_n > 0$. In this case a random chunk of sequence of length $\Delta$ is extracted from a random individual in the parent population (possibly the parent of isolate $n$ itself) and inserted in a random position of the genome of isolate $n$.
 Finally, inversions occur at a rate $i$ per genome per generation. When an inversion is proposed a random length $\Delta$ is chosen in the same way, and a random chunk of length $|\Delta|$ is inverted.
@@ -58,11 +61,11 @@ At the end of the simulation the resulting mosaic genomes are collected, along w
 
 \section{Benchmark of PanGraph on synthetic data}
 
-We test the performance of \textit{PanGraph} on synthetic data generated with the simulation described above. We focus on two aspects: the computational performances of the algorithm (time and memory requirements) as a function of the dataset size, and the accuracy of the algorithm in reconstructing the real pangenome graph of the population as a function of sequence divergence.
+We test the performance of \textit{PanGraph} on synthetic data, focusing on two aspects: the computational performances of the algorithm (time and memory requirements) as a function of the dataset size, and the accuracy of the algorithm in reconstructing the real pangenome graph of the population as a function of sequence divergence.
 
 \subsection{Computational performance}
 
-To test the computational performances of \textit{PanGraph} we generated data using the model described in the previous section, with standard value of the parameters but varying the average genome length $L=[1,5,10,50,100,500]$ kbp and the population size $N=[10,20,50,100,200,500,100]$. For each pair of $N,L$ values we generated 50 different datasets. On each dataset we ran the \textit{PanGraph} \verb|build| command, using \textit{minimap2} as alignment kernel with \textit{asm20} option. We used standard value for the energy parameters $\alpha=100$, $\beta=10$. Runs were performed using 8 cores. For each run we measured the wall-time of the command, the maximum memory requirements (maximum resident size) and the average cpu percent. Results are displayed in Fig.~\ref{fig:benchmark-perf-suppl}.
+To test the computational performances of \textit{PanGraph} we generated data using the model described in the previous section, with standard value of the parameters but varying the average genome length $L=[1,5,10,50,100,500]$ kbp and the population size $N=[10,20,50,100,200,500,1000]$. For each pair of $N,L$ values we generated 50 different datasets. On each dataset we ran the \textit{PanGraph} \verb|build| command, using \textit{minimap2} as alignment kernel with \textit{asm20} option. We used standard value for the energy parameters $\alpha=100$, $\beta=10$. Runs were performed using 8 cores. For each run we measured the wall-time of the command, the maximum memory requirements (maximum resident size) and the average cpu percent. Results are displayed in Fig.~\ref{fig:benchmark-perf-suppl}.
 Thanks to the guide tree architecture of \textit{PanGraph} the run time scales almost linearly with the number of isolates.
 
 \begin{figure}[htb]
@@ -74,66 +77,54 @@ Thanks to the guide tree architecture of \textit{PanGraph} the run time scales a
 
 \subsection{Accuracy in reconstructing the pangenome graph}
 
-To test the accuracy of \textit{PanGraph} in reconstructing the pangenome graph of a set of isolates we generated artificial data using the procedure described above, obtaining both a set of genome sequences and the underlying real pangenome graph. This was done using standard value of the parameters, but varying the rate of HGT in the interval $h=[0.01,1]$ and the mutation rate $\mu=[0,0.01]$. For each $(h,\mu)$ pair 25 different sets of data were generated.\\
+To test the accuracy of \textit{PanGraph} in reconstructing the pangenome graph of a set of isolates we generated artificial data using the procedure described in Section~\ref{supp:data_generation}. For each simulation we obtain both a set of genome sequences and the underlying real pangenome graph. This was done using standard value of the parameters, but varying the rate of HGT in the interval $h=[0.01,1]$ and the mutation rate $\mu=[0,0.01]$. For each $(h,\mu)$ pair 25 different sets of data were generated.\\
 On each set of data we executed \textit{PanGraph} with values for the energy parameters $\alpha=0$ and $\beta=0$, and with three different alignment kernels:
 \begin{itemize}
-    \item \textit{minimap2} with option \textit{asm10}
-    \item \textit{minimap2} with option \textit{asm20}
-    \item \textit{mmseqs2}
+    \itemsep1pt
+    \item \textit{minimap2} with option \textit{asm10},
+    \item \textit{minimap2} with option \textit{asm20},
+    \item \textit{mmseqs2},
 \end{itemize}
-Thus obtaining three different pangenome graphs per dataset.\\
-To link the mutation rate parameter $\mu$ with the average pairwise SNPs distance $\avg{d}$ between homologous segments in the population we evaluated the average pairwise distance for every pancontig in the pangenome graph comprising more than a single path. For each graph we then perform the weighted average of the divergences, using as weight the length of the panconting. Finally, for every pair of parameters $(\mu,h)$ we average these numbers over the 25 different simulations. Results are displayed in Fig.~\ref{fig:snps-suppl}.\\
-While the rate of HGT does not influence the average pairwise divergence of pancontigs, the choice of alignment kernel controls their maximum divergence. \textit{Minimap2} is able to correctly merge pangenome graphs with up to $\avg{d} \sim 7\%$ with the \textit{asm20} option, while \textit{mmseqs2} reaches $\avg{d} \sim 10\%$ at the expense of higher time requirements.\\
-By performing a linear fit on the datapoints with $h \leq 0.002$ we are able to recover the conversion factor between the HGT rate and average pairwise divergence of pancontigs in our simulations: $\avg{d} \sim 20.8 \, h$.
+thus obtaining three different pangenome graphs per dataset.\\
+To link the mutation rate parameter $\mu$ with the average pairwise SNPs distance $\avg{d}$ between homologous segments in the population we evaluated the average pairwise distance for every pancontig in the pangenome graph with depth greater than one. For each graph we then perform the weighted average of these divergences, using as weight the length of the panconting. Finally, for every pair of parameters $(\mu,h)$ we average these numbers over the 25 different simulations. Results are displayed in Fig.~\ref{fig:snps-suppl}.\\
+While the rate of HGT does not influence the average pairwise divergence of pancontigs, the choice of alignment kernel controls their average divergence. With the \textit{asm20} option, \textit{Minimap2} is able to correctly merge pangenome graphs with up to populations with $\avg{d} \sim 7\%$ in our simulations, while \textit{mmseqs2} reaches $\avg{d} \sim 10\%$ at the expense of higher processing time.\\
+By performing a linear fit on the datapoints with $\mu \leq 0.002$ we are able to recover the conversion factor between the mutation rate and average pairwise divergence of pancontigs in our simulations: $\avg{d} \sim 20.8 \, \mu$.
 
 \begin{figure}[htb]
     \includegraphics[width=0.5\textwidth]{figs_suppl/snps_rate_vs_divergence.pdf}
-    \caption{{\bf mutation rate vs divergence on synthetic data}. We compare the mutation rate $\mu$ of our simulations with the average pairwise divergence of sequences in pancontigs of the resulting pangenome graphs. This is done for different values of the rate of HGT $h$ and for three different alignment kernels. As expected, the divergence is only marginally influenced by the HGT rate, but the saturating value of the divergence depends strongly on the choice of alignment kernel, with \textit{mmseqs2} being able to merge sequences with average divergence higher than 10\%. To find the relationship between the mutation rate $\mu$ and the average pairwise divergence of the sequences we peform a linear fit on data points for $\mu \leq 0.002$. This provides the conversion factor $\avg{d} \sim 20.8 \, \mu$.}
+    \caption{{\bf mutation rate vs divergence on synthetic data}. We compare the mutation rate $\mu$ of our simulations with the average pairwise divergence $\avg{d}$ of sequences in pancontigs of the resulting pangenome graphs. This is done for different values of the rate of HGT $h$ and for three different alignment kernels. As expected, the divergence is only marginally influenced by the HGT rate, but the saturating value of the divergence depends strongly on the choice of alignment kernel, with \textit{mmseqs2} being able to merge sequences with average divergence higher than 10\%. To find the relationship between the mutation rate $\mu$ and the average pairwise divergence of the sequences we peform a linear fit on data points for $\mu \leq 0.002$. This provides the conversion factor $\avg{d} \sim 20.8 \, \mu$.}
     \label{fig:snps-suppl}
 \end{figure}
 
-Once this link has been established we group simulations by the value of $h$ and check for accuracy comparing the reconstructed pangenome graphs with the ground truth provided by our simulation. In particular for each isolate we consider the breakpoints between different pancontigs that tile the genome, and measure the displacement between the real position of these breakpoints and the position reconstructed by pangraph.\\
-To evaluate this displacement it is first necessary to link breakpoints on the real and reconstructed pangenome graph. We formulate this problem as an assignment problem, and solve it numerically using the Hungarian method \cite{kuhn1955hungarian}. For each isolate we call $b_i$ for $i=1,\ldots,I$ the panconting breakpoints on the real pangenome graph, and $b_j$ for $j=1,\ldots,J$ the ones on the reconstructed pangenome graph.\footnote{To avoid artifacts generated by the default threshold distance $d=100$ bp of pangraph, if on any of the two pangenome graphs a pair of breakpoints sits at a distance smaller than this threshold, we remove one of them from the set of breakpoints.} We define a cost matrix $D_{ij} = d(b_i,b_j)$ whose elements are distances on the genome of pairs of breakpoints from the two graphs. We then numerically solve the assignment problem on this matrix, and obtain a set of $K = \min\{ I,J \}$ pairings between breakpoints such that the distance between the pairs is minimal and all the breakpoints of the graph with minimum number of breakpoints have been paired. The average distance between breakpoints in these pairs is the average breakpoint distance of the graph.\\
-For each simulation we obtain a number of average breakpoint distances equal to the number of isolates in the simulation. In Fig.~\ref{fig:benchmark-accuracy-suppl} we plot the cumulative distribution of these distances, considering only distances smaller than 1 kbp, stratifying simulations according to the average pairwise divergence of pancontigs inferred from the value of $\mu$. Each panel correspond to a different alignment kernel. As the sequence diversity increases we observe a clear transition. For low diversity most of the breakpoints are inferred to be only a few bp away from their real position, while for highly diverged sequences the position of breakpoints is not precisely inferred and can be hundreds of bp away from their real position. For different alignment kernels this transition occurs at different values of the divergence, with \textit{mmseqs2} being accurate at higher divergence values, as can be visualize from Fig.~\ref{fig:toy-accuracy} in the main text.
+Once this link has been established we group simulations by the value of $h$ and measure accuracy by comparing the reconstructed pangenome graphs with the ground truth provided by our simulations. In particular, for each isolate we consider the breakpoints between different pancontigs that tile the genome, and measure the displacement between the real position of these breakpoints and the position reconstructed by pangraph.\\
+To evaluate this displacement it is first necessary to link breakpoints on the real and reconstructed pangenome graph. We formulate this problem as an assignment problem, and solve it numerically using the Hungarian method \cite{kuhn1955hungarian}. For each isolate we call $b_i$ for $i=1,\ldots,I$ the panconting breakpoints on the real pangenome graph, and $b_j$ for $j=1,\ldots,J$ the ones on the reconstructed pangenome graph.\footnote{To avoid artifacts generated by the default threshold distance $d=100$ bp of 
+\textit{PanGraph}, if any pair of breakpoints on the same graph sits at a distance smaller than this threshold, we remove one of them.} We define a cost matrix $D_{ij} = d(b_i,b_j)$ whose elements are distances on the genome of pairs of breakpoints from the two graphs. We then numerically solve the assignment problem on this matrix, and obtain a set of $K = \min\{ I,J \}$ pairings between breakpoints such that the distance between the pairs is minimal and all the breakpoints of the graph with minimum number of breakpoints have been paired. The average distance between breakpoints in these pairs is the average breakpoint distance of the graph.\\
+For each simulation we obtain a number of average breakpoint distances equal to the number of isolates in the simulation. In Fig.~\ref{fig:benchmark-accuracy-suppl} we plot the cumulative distribution of these distances, with a cutoff at 1kbp. We stratify simulations according to the average pairwise divergence of pancontigs inferred from the value of $\mu$. Each panel corresponds to a different alignment kernel. As the sequence diversity increases we observe a clear transition. For low diversity most of the breakpoints are inferred to be only a few bp away from their real position, while for highly diverged sequences the position of breakpoints is not precisely inferred and can be hundreds of bp away from their real position. For different alignment kernels this transition occurs at different values of the divergence, with \textit{mmseqs2} being the most accurate, as can be visualize from Fig.~3 in the main text.
 
 \begin{figure}[htb]
     \includegraphics[width=\textwidth]{figs_suppl/accuracy_comparison.pdf}
-    \caption{{\bf Accuracy of PanGraph algorithm on synthetic data}. For each of our generated datasets we evaluate the average displacement of inferred pancontig breakpoints. The figure represents the cumulative distribution of average misplacements, stratified by the average pairwise divergence of sequences in pancontigs (see colorbar on the right). Each column corresponds to a different alignment kernel used to infer the pangenome graph. As divergence increases we observe a transition in the precision of breakpoint position estimation. At low divergence the position of most breakpoints is correctly estimated withing a few bps, while at high divergence most breakpoints can be misplaced of multiple hundreds of bps. The transition value for the divergence depends on the alignemnt kernel used, with \textit{mmseqs2} having the highest accuracy at the expense of higher computational time.}
+    \caption{{\bf Accuracy of PanGraph algorithm on synthetic data}. For each of our generated datasets we evaluate the average displacement of inferred pancontig breakpoints. The figure represents the cumulative distribution of average misplacements, stratified by the average pairwise divergence of sequences in pancontigs (see colorbar on the right). Each panel corresponds to a different alignment kernel used to infer the pangenome graph (see panel title). As divergence increases we observe a transition in the precision of breakpoint position estimation. At low divergence the position of most breakpoints is correctly estimated withing a few bps, while at high divergence most breakpoints can be misplaced by multiple hundreds of bps. The transition value for the divergence depends on the alignemnt kernel used, with \textit{mmseqs2} having the highest accuracy at the cost of higher computational time.}
     \label{fig:benchmark-accuracy-suppl}
 \end{figure}
 
 \section{Benchmark of PanGraph on real data}
 
-We benchmarked \textit{PanGraph} on real data, focusing on the computational performances and the properties of the resulting pangenome graphs.
+We benchmark \textit{PanGraph} on real data, focusing on the computational performances and the properties of the resulting pangenome graphs.
 
 \subsection{Dataset selection}
 
-We downloaded sets of annotated and complete chromosomes from RefSeq \cite{o2016reference} for 5 different bacterial species:\footnote{A complete list of accession numbers can be found in...} \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC). In Table~\ref{table:panx-dataset} we report some summary statistics for these datasets. The number of isolates per species ranges from several hundred isolates for EC to 10 for PM.
-These data were previously analyzed using PanX \cite{ding2018panx}, a computational pipeline to cluster homologous genes together. This allowed us to identify core genes, and evaluate their average pairwise sequence divergence $\avg{d}$. Moreover we evaluate the fraction $f_p$ of core genes in the pangenome (weighted by gene length) and the average fraction $f_g$ of core gene sequence in a single genome.\\
-EC is the dataset with the highest number of isolates (307) and is also the one with the biggest accessory genome ($f_p \sim 4\%$). MT is the species with the smallest sequence divergence ($\avg{d} \sim 0.03\%$) and the biggest core genome ($f_p \sim 58\%$). The two datasets with highest sequence divergence are HP ($\avg{d} \sim 4\%$) and PM ($\avg{d} \sim 24\%$). For HP the average sequence divergence sits on the limit of what \textit{PanGraph} is able to accurately merge when using the \textit{minimap2} kernel (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}), but is merged correctly by the \textit{mmseqs2} kernel. The sequence divergence of PM is instead too high and cannot be handled correctly by any of the kernels.
+We downloaded sets of annotated and complete chromosomes from RefSeq \cite{o2016reference} for 5 different bacterial species: \textit{Klebsiella Pneumoniae} (KP), \textit{Helicobacter Pylori} (HP), \textit{Prochlorococcus Marinus} (PM), \textit{Mycobacterium Tuberculosis} (MT) and \textit{Escherichia Coli} (EC). In Table~\ref{table:panx-dataset} we report some summary statistics for these datasets. The number of isolates per species ranges from several hundreds for EC to 10 for PM.
+These data were previously analyzed using PanX \cite{ding2018panx}, a pipeline for the analysis of bacterial pangenome. The pipeline takes as input a set of annotated genomes, and it clusters and aligns homologous genes. This allowed us to identify core genes, and evaluate their average pairwise sequence divergence $\avg{d_\text{core}}$. We also evaluated the average genome length $
+\avg{\Lgen}$, the total pangenome length $\Lpang$ and core genome length $\Lcore$. These quantities are reported in Table~\ref{table:panx-dataset}.\\
+EC is the dataset with the highest number of isolates (307) and is also the one with the biggest pangenome genome. MT is the species with the smallest sequence divergence ($\dcore \sim 0.03\%$) and the biggest core genome. The two datasets with highest sequence divergence are HP ($\dcore \sim 4\%$) and PM ($\dcore \sim 24\%$). For HP the average sequence divergence sits on the limit of what \textit{PanGraph} is able to accurately merge when using the \textit{minimap2} kernel (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}), but is merged correctly by the \textit{mmseqs2} kernel. The sequence divergence of PM is instead too high and cannot be handled correctly by any of the kernels.
 
-\begin{table}[hb]
-    \setlength{\tabcolsep}{9pt}
-    \begin{tabular}{l l c c c c}
-        \hline\hline
-        Species         & N. isolates & $\avg{l}$ [Mbp] & $\avg{d}$ & $f_p$  & $f_g$  \\
-        \hline
-        E.~Coli         & 307         & 5.0             & 1.6\%     & 3.7\%  & 15.4\% \\
-        K.~Pneumoniae   & 109         & 5.3             & 0.8\%     & 17.4\% & 46.5\% \\
-        H.~Pylori       & 85          & 1.6             & 4.2\%     & 30.2\% & 42.3\% \\
-        M.~Tuberculosis & 51          & 4.4             & 0.03\%    & 57.9\% & 61.7\% \\
-        P.~Marinus      & 10          & 1.8             & 24.3\%    & 21.0\% & 45.6\% \\
-        \hline
-    \end{tabular}
-    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, average pairwise divergence on core genes $\avg{d}$, fraction of core gene sequence in the pangenome $f_p$ and fraction of core gene sequence in a single genome $f_g$.}
-    \label{table:panx-dataset}
-\end{table}
+
 
 \begin{table}[hb]
     \setlength{\tabcolsep}{9pt}
     \begin{tabular}{lccccc}
         \hline\hline
-        Species         & N. isolates & $\avg{L_\text{gen}}$ [Mbp] & $L_\text{pang}$ [Mbp] & $L_\text{core}$ [Mbp] & $\avg{d_\text{core}}$ \\
+        Species         & N. isolates & $\avg{\Lgen}$ [Mbp] & $\Lpang$ [Mbp] & $\Lcore$ [Mbp] & $\dcore$ \\
         \hline
         E.~Coli         & 307         & 5.0                        & 17.7                  & 0.7                   & 1.6\%                 \\
         K.~Pneumoniae   & 109         & 5.3                        & 13.0                  & 2.3                   & 0.8\%                 \\
@@ -142,8 +133,8 @@ EC is the dataset with the highest number of isolates (307) and is also the one 
         P.~Marinus      & 10          & 1.8                        & 3.3                   & 0.7                   & 26.9\%                \\
         \hline
     \end{tabular}
-    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{l}$, total size of pangenome  $L_\text{tot}$ and core genome $L_\text{core}$, and average pairwise divergence on core genes $\avg{d}$.}
-    \label{table:panx-dataset-updated}
+    \caption{{\bf Dataset overview}. We downloaded complete chromosome sequences from RefSeq for 5 different bacterial species. For each species we report the number of isolates downloaded, along with the average chromosome length $\avg{\Lgen}$, total size of pangenome  $\Lpang$ and core genome $\Lcore$, and average pairwise divergence on core genes $\dcore$.}
+    \label{table:panx-dataset}
 \end{table}
 
 
@@ -151,22 +142,26 @@ EC is the dataset with the highest number of isolates (307) and is also the one 
 
 We built pangenome graphs using five different options for the alignment kernel:
 \begin{itemize}
+    \itemsep1pt
     \item kernel \textit{minimap2} with option \textit{asm10} and default values for the energy parameters $\alpha=100$, $\beta=10$.
     \item kernel \textit{minimap2} with option \textit{asm20} and default values for the energy parameters $\alpha=100$, $\beta=10$.
     \item kernel \textit{mmseqs2} and default values for the energy parameters $\alpha=100$, $\beta=10$.
     \item kernel \textit{minimap2} with option \textit{asm10} and null energy parameters $\alpha=0$, $\beta=0$.
     \item kernel \textit{mmseqs2} and null energy parameters $\alpha=0$, $\beta=0$.
 \end{itemize}
-From the results described in the previous section we expect \textit{mmseqs2} to be able to merge sequences with higher divergence than \textit{minimap2}. Moreover from the definition of the pseudo-energy eq.~\ref{eq:pseudo-energy} in the main text, the value of the energy parameters $\beta$ defines an upper threshold for sequence divergence $d \sim 1/\beta$. Homologous sequences with divergence higher than this value will result in positive pseudo-energy and will not be merged in a single pancontig. For $\beta=10$ the critical divergence threshold is $d \sim 10\%$. Executing pangraph with the option $\alpha=0$, $\beta=0$ will result in the merging of more diverged sequences, at the cost of a more fragmented pangenome graph (more but shorter pancontigs).
+From the results described in the previous section (see Fig.~\ref{fig:benchmark-accuracy-suppl}) we expect \textit{mmseqs2} to be able to merge sequences with higher divergence than \textit{minimap2}. Moreover from the definition of the pseudo-energy eq.~(1) in the main text, the value of the energy parameters $\beta$ defines an upper threshold for sequence divergence $d \sim 1/\beta$. Homologous sequences with divergence higher than this value will result in positive pseudo-energy and will not be merged in a single pancontig. For $\beta=10$ the critical divergence threshold is $d \sim 10\%$. Executing pangraph with the option $\alpha=0$, $\beta=0$ will result in the merging of more diverged sequences, at the cost of a more fragmented pangenome graph containing a higher number of shorter pancontigs.
 
 
 \subsection{Benchmark results}
 
-In Fig.~\ref{fig:panx-benchmark-suppl} we report the results of the benchmark. Results are divided on every panel by species, with different colors indicating the five possible choices for the alignment kernel.\\
-Execution times (cf. panel B) vary from few minutes for PM to several hours for EC. This is consistent with dataset sizes. Aligning sequences with \textit{mmseqs2} consistently requires more time than \textit{minimap2}. The time required to build a pangraph for the 307 chromosomes of EC is only 5-6 h for \textit{minimap2}, and around 24h for \textit{mmseqs2}. The latter also has a higher minimum memory requirement (panel C, around 8 Gb when running on 8 cores) but this is not particularly restrictive when aligning several tens of isolates.\\
-We quantify the properties of pancontings by looking at their total number (panel D) the minimum number of pancontigs that include at least 50\% of all the pangenome graph sequence (L50 statistics, panel E) and the minimum length of pancontigs in this minimal set (N50 statistics, panel F). As expected, the use of null energy parameter results in general in a more fragmented graph, with a higher number of pancontigs that on average have a shorter length. HP is an exception, since it includes some highly-diverged sequences and the use of null energy parameters increases the default threshold divergence $d \sim 10\%$. This allows merging of sequences with higher divergence by \textit{mmseqs2} kernel, but not by the default \textit{minimap2} kernel, whose threshold average divergence is itself around 10\% (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}). A second exception is PM. The average divergence of this dataset is far above the capabilities of the alignment kernels, and only the use of \textit{mmseqs2} with null energy parameters allows for a partial merging of some homologous sequences. The resulting graph is composed of few very long pancontigs, mostly containing sequence from a single isolate. If we exclude this exception, in general the pangenome graphs of our datasets have around $10^3$ / $10^4$ pancontigs, with 50\% of the sequence being contained in around 10\% of them, having minimum length of 1-10 kbp.\\
-The total pangenome length (panel G) depends both on the number of isolates and the ability of the alignment kernel to merge homologous sequences. When setting the energy parameters to zero more diverged sequences are merged into the same pancontigs and the total pangenome graph size is consistently smaller. The total size of the pangenome graph is in general much smaller than the cumulative size of the genomes it contains (panel I), with compression of 1-2\% for graphs with a high number of isolates (EC) or with small accessory genome (MT). The fraction of core pancontigs (panel H) is consistent with the species expectation, with MT having the highest core fraction. For HP the highest core fraction is reached when using null energy parameters combined with \textit{mmseqs2} as alignment kernel, as this allows the merging of more diverged homologous sequences. For the PM dataset, which contains highly diverged isolates, only the latter alignment kernel manages to merge an appreciable fraction of core sequence, but is still unable to merge highly diverged sequences.
+The results of the benchmark are displayed in Fig.~\ref{fig:panx-benchmark-suppl}. In each panel data are divided by species, with colors and texture identifying the five possible choices for the alignment kernel.\\
+Execution time (cf. panel B) depends on the dataset size and ranges from few minutes for PM to several hours for EC. Aligning sequences with \textit{mmseqs2} consistently requires more time than \textit{minimap2}. The time required to build a pangenome graph for the 307 chromosomes of EC is only 5-6 h for \textit{minimap2}, and around 24h for \textit{mmseqs2}. The latter also has a higher minimum memory requirement (panel C, around 8 Gb when running on 8 cores) but this is comparable to \textit{minimap2} when aligning several tens of isolates.\\
+We quantify the properties of pancontings by looking at three main statistics: their total number (panel D) the size of the minimal set of pancontigs that includes at least 50\% of all the graph sequence (L50 statistics, panel E) and the minimum length of pancontigs in this minimal set (N50 statistics, panel F). As expected, the use of null energy parameters results on average in a more fragmented graph, having more and shorter pancontigs. In general the pangenome graphs of our datasets have around $10^3$ / $10^4$ pancontigs, with 50\% of the sequence being contained in around 10\% of them, having N50 length of around 1-10 kbp.\\
+The total pangenome length (panel G) depends both on the number of isolates and the ability of the alignment kernel to merge homologous sequences. When setting the energy parameters to zero more diverged sequences are merged into the same pancontigs and the total pangenome graph size is consistently smaller. The total size of the pangenome graph is in general much smaller than the cumulative size of the genomes it contains (panel I), with compression up to 1-2\% of the total size for graphs with a high number of isolates (EC) or with small accessory genome (MT). The fraction of core pancontigs (panel H) is consistent with the species expectation, with MT having the highest core fraction.\\
 
+Two species in our datasets hit the limits of the capabilities of \textit{PanGraph}: HP and PM.\\
+HP contains some homologous sequences with divergence higher than the default threshold $d = 1/\beta \sim 10\%$. Removing this threshold by using null energy parameters results in a graph with fewer pancontigs, smaller L50, greater fraction of core pangenome and higher level of sequence compression. These are all indications of more complete merging of homologous sequences. This effect is more marked for \textit{mmseqs2} than for \textit{minimap2}, in agreement with their different divergence limit (cf. Fig.~\ref{fig:benchmark-accuracy-suppl}). The HP datasets represents an example in which relaxing the default divergence threshold of pangraph and using a more accurate alignment kernel results in a more complete merging of homologous sequence.\\
+Conversely, the PM dataset contains highly diverged isolates, whose divergence go beyond the capabilities of both alignment kernels ($\dcore \sim 27 \%$, cf. Table~\ref{table:panx-dataset}). Only \textit{mmseqs2} manages to partially merge some of the least diverged core sequences, but is still unable to merge the majority of the core genes. This results in a small core genome fraction and poor sequence compression. In its current state \textit{PanGraph} cannot meaningfully merge genome with such high divergence into a pangenome graph.
 
 
 \begin{figure}[htb]
@@ -175,8 +170,8 @@ The total pangenome length (panel G) depends both on the number of isolates and 
         \textbf{A}: number of isolates for each species.
         \textbf{B}: algoritm wall-time.
         \textbf{C}: maximum memory usage.
-        \textbf{D}: n. pancontigs in the resulting pangenome graph.
-        \textbf{E}: minimum n. of pancontigs that can add up to 50\% of the total pagenome graph length.
+        \textbf{D}: total number of pancontigs in the pangenome graph.
+        \textbf{E}: minimum number of pancontigs that can add up to 50\% of the total pagenome graph length.
         \textbf{F}: threshold length such that if all pancontigs longer than this threshold are added they cover more than 50\% of the full pangenome graph.
         \textbf{G}: total length of the pangenome graph (sum of all pancontig lengths).
         \textbf{H}: fraction of the pangenome graph that is composed of core pancontigs, i.e. pancontigs that occur exactly once per isolate.
