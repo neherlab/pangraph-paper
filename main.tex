@@ -240,15 +240,14 @@ We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes
     \label{table:panx-dataset}
 \end{table}
 
-\paragraph*{Benchmark}
+\paragraph*{Benchmark on real data}
 
-Using \textit{PanGraph}, we build multiple pangenome graphs for each species in the dataset. We test all the different alignment kernels (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, or \textit{mmseqs2}). Moreover we also vary the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}), using either the standard values ($\alpha=100$, $\beta=10$) or null values ($\alpha = \beta = 0$).\\
-\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5-6h for 307 EC isolates with \textit{minimap2} kernel, cf. Fig~\ref{fig:panx-benchmark}A). Use of \textit{mmseqs2} consistently requires longer time, but provides higher accuracy when merging highly diverged sequences. This is the case for the HP dataset, whose core genome divergence sits at the limit of what the \textit{minimap2} kernel can accurately align. In this case the use of \textit{mmseqs2} improves both sequence compression and core pangenome fraction (cf. Fig~\ref{fig:panx-benchmark}B-C).\\
-% beta poses a limit to the divergence. Removing it..
-% but increases fragmentation (cite supplementary)
-% talk about PM
-% average compression
-% core genome fraction compatible?
+Using \textit{PanGraph}, we build multiple pangenome graphs for each species in the dataset (cf. SI Section~IIIB and IIIC). These differ by the alignment kernel used (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}) or by the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}). Different alignment kernels are expected to reach different accuracy on datasets with different diversities (cf. Fig.~\ref{fig:toy-accuracy}). Moreover the use of null energy parameters ($\alpha = \beta = 0$) is expected to remove the threshold divergence of 10\% associated with the standard values of parameters ($\alpha=100$, $\beta=10$) at the cost of more fragmented pangenome graphs.\\
+\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5-6h for 307 EC isolates with \textit{minimap2} kernel, cf. Fig~\ref{fig:panx-benchmark}A). Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher accuracy when merging highly diverged sequences. This is the case for the HP dataset, whose core genome divergence sits at the limit of what can be accurately merged with the \textit{minimap2} kernel. In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig~\ref{fig:panx-benchmark}B-C and SI Fig.~4). The divergence of the PM datasets sits instead beyond the capabilities of \textit{Pangraph}. In this case none of the alignment kernel reaches satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve few core pancontigs.\\
+For the other species, ... 
+% TODO: finish
+For these species the use of null energy parameters slightly increases merging and sequence compression, at the cost of slightly more fragmented graphs (cf. SI Section IIIC and SI Fig.~4). 
+Overall this benchmark showcases the capabilities and limits of \textit{PanGraph}, and demonstrates the value of adapting the pseudo-energy parameter and choice of alignment kernel to the expected diversity of the dataset considered.
 
 
 % TODO: talk more extensively about the meaning of the results?
