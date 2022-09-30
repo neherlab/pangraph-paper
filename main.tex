@@ -244,9 +244,8 @@ We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes
 
 Using \textit{PanGraph}, we build multiple pangenome graphs for each species in the dataset (cf. SI Section~IIIB and IIIC). These differ by the alignment kernel used (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}) or by the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}). Different alignment kernels are expected to reach different accuracy on datasets with different diversities (cf. Fig.~\ref{fig:toy-accuracy}). Moreover the use of null energy parameters ($\alpha = \beta = 0$) is expected to remove the threshold divergence of 10\% associated with the standard values of parameters ($\alpha=100$, $\beta=10$) at the cost of more fragmented pangenome graphs.\\
 \textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5-6h for 307 EC isolates with \textit{minimap2} kernel, cf. Fig~\ref{fig:panx-benchmark}A). Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher accuracy when merging highly diverged sequences. This is the case for the HP dataset, whose core genome divergence sits at the limit of what can be accurately merged with the \textit{minimap2} kernel. In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig~\ref{fig:panx-benchmark}B-C and SI Fig.~4). The divergence of the PM datasets sits instead beyond the capabilities of \textit{Pangraph}. In this case none of the alignment kernel reaches satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve few core pancontigs.\\
-For the other species, ... 
-% TODO: finish
-For these species the use of null energy parameters slightly increases merging and sequence compression, at the cost of slightly more fragmented graphs (cf. SI Section IIIC and SI Fig.~4). 
+For the other species sequence compression is of the order of few percents, graphs contain thousands to tens of thousands of pancontigs, and 50\% of the pangenome sequence is contained in blocks spanning several kbps.
+For these species the use of null energy parameters slightly increases merging and sequence compression, at the cost of slightly more fragmented graphs (cf. SI Section IIIC and SI Fig.~4).
 Overall this benchmark showcases the capabilities and limits of \textit{PanGraph}, and demonstrates the value of adapting the pseudo-energy parameter and choice of alignment kernel to the expected diversity of the dataset considered.
 
 
@@ -254,22 +253,24 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
 \begin{figure*}[htb]
     \includegraphics[width=\textwidth]{figs/panx_benchmark.pdf}
     \caption{{\bf Benchmark on real data}.
-        We build pangenome graphs from fully-assembled chromosomes from 5 different bacterial species. For each species we build graphs with three different alignment kernel options (\textit{minimap2} with \textit{asm10} or \textit{asm20} option and \textit{mmseqs2}) and two different settings for the pseudo-energy parameters (standard or null values).
+        We build pangenome graphs from fully-assembled chromosomes from 5 different bacterial species. For each species we build graphs with three different alignment kernel options (\textit{minimap2} with \textit{asm10} or \textit{asm20} option and \textit{mmseqs2}) and two different settings for the pseudo-energy parameters $\alpha, \beta$ (standard or null values).
         \textbf{A}: \textit{PanGraph} wall-time when run in parallel on 8 cores.
         \textbf{B}: fraction of core pangenome in the pangenome graph.
-        \textbf{C}: sequence compression, measured as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph.
+        \textbf{C}: sequence compression, defined as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph.
     }
     \label{fig:panx-benchmark}
 \end{figure*}
 
 \paragraph*{Scaling with dataset size}
 
+We then explore how the properties of the pangenome graph scale with the dataset size. To do so we build pangenome graphs from random sets of isolates of increasing size from the EC dataset. Graphs are built with standard values of the parameter and using the \textit{minimap2} kernel with \textit{asm20} option. For each size 10 different random graphs are constructed. Results are reported in Fig.~\ref{fig:panx-size}.\\
+The number and size of pancontigs scales sub-linearly with the number of isolates, with most of the pangenome being included in ~10\% of the pancontigs, and core pancontigs having higher-than-average size. Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added. The size of the core genome does not decrease significantly with the addition of new strains, while the total pangenome size remains orders of magnitude smaller than the total size of all genomes included in the graph.
+
 
 \begin{figure*}[htb]
     \includegraphics[width=.9\textwidth]{figs/incr_size.pdf}
     \caption{{\bf Pangenome graph properties vs. dataset size}.
         We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the graphs. Lines and shaded areas represent mean and standard deviation over 10 different repetitions on random subsets of isolates, except for the final point indicating the full graph (307 isolates).
-        The number and size of pancontigs scales sub-linearly with the number of isolates, with most of the pangenome being included in ~10\% of the pancontigs, and core pancontigs having higher-than-average size. \textit{PanGraph} is able to compress hundreds of genomes in a pangenome graph having only a fraction of the size.
         \textbf{A}: n. of pancontigs in the graph. We count the total number of pacontigs (blue), the number of core pancontigs (orange) and the minimum number of pancontigs that contain more than 50\% of the pangenome (L50, black).
         \textbf{B}: average size of pancontigs (blue), of only core pancontings (orange), and size of the smallest panconting in the minimal set that spans 50\% of the pangenome (N50, black).
         \textbf{C}: cumulative size of all genomes in the pangenome graph (gray), total pangenome size (blue) and size of core pangenome (orange).
@@ -286,30 +287,6 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
 \end{figure*}
 
 
-
-
-
-% % TODO: talk more extensively about the meaning of the results?
-% \begin{figure*}[htb]
-%     \includegraphics[width=\textwidth]{figs/panx_benchmark.pdf}
-%     \caption{{\bf Benchmark on real data}.
-%         We build pangenome graphs from fully-assembled chromosomes from 5 different bacterial species. For each species we build graphs with three different alignment kernel options (\textit{minimap2} with \textit{asm10} or \textit{asm20} option and \textit{mmseqs2}) and two different settings for the pseudo-energy parameters (standard or null values).
-%         \textbf{A}: \textit{PanGraph} wall-time when run in parallel on 8 cores.
-%         \textbf{B}: fraction of core pangenome in the pangenome graph.
-%         \textbf{C}: sequence compression, measured as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph.
-%     }
-%     \label{fig:panx-benchmark}
-% \end{figure*}
-
-% The computational time and maximum memory required to build each alignment is summarized in Table \ref{table:panx-performance}.
-
-
-
-% \begin{figure*}[htb]
-%     \includegraphics[width=\textwidth]{figs/marginalize_test.pdf}
-%     \caption{{\bf Test of graph marginalization}.}
-%     \label{fig:marginalization}
-% \end{figure*}
 
 \section{Discussion}
 While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analysis miss the great majority of genetic diversity.
