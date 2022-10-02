@@ -280,6 +280,14 @@ The number and size of pancontigs scales sub-linearly with the number of isolate
 
 \section{Graph marginalization}
 
+Interpretation of a pangenome graph containing hundreds of strains can be challenging. To this end it is often informative to inspect simpler sub-graphs containing only a small subset of isolates. However building multiple such sub-graphs can be computationally intensive. To facilitate this task \textit{PanGraph} provides the \verb|marginalize| command, that can be used to marginalize a large pangenome graph on a small subset of strains, removing all the other paths and merging transitive pancontigs. This operation is computationally much cheaper than building a new graph for the subset of strains considered.\\
+To verify that marginalized graphs are compatible with newly-built graphs, we built a pangenome graph for 50 randomly selected strains from the \textit{Klebsiella Pneumoniae} dataset. We then picked 50 random pairs of strains from the same set and built two graphs for each pair: the graph obtained by marginalizing the complete graph on the pair, and the graph built directly from the pair (cf. Fig.~\ref{fig:marginalization}A, top).
+We then compared these two graphs by considering the partition they generate on the genome of the isolates they include. Each genome is partitioned in pancontigs that are either shared on the pair, or private to one isolate
+(cf. Fig.~\ref{fig:marginalization}A, bottom). We can classify the segments in the intersection of the two partitions in two categories: either the two partitions agree or they do not on the segment kind. And agreement can be further divided in agreement on the segments being shared or agreement on them being private.
+% TODO: Compatibility between the two graphs would required segments on which the two graphs disagree to be short and few.\\
+
+% TODO: cite supplementary
+
 \begin{figure*}[htb]
     \includegraphics[width=\textwidth]{figs/marginalize_test.pdf}
     \caption{{\bf Test of graph marginalization}.}
