@@ -300,19 +300,15 @@ We performed the same test on species from the other datasets, obtaining similar
 
 
 \section{Discussion}
-While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analysis miss the great majority of genetic diversity.
-The ability to rapidly align large sets of closely related, fully assembled genomes is a critical tool for the investigation of the processes governing microbial evolution.
-We hope PanGraph will spur novel insight microbial diversity and the processes by which bacteria adapt and change.
 
-Currently, PanGraph is limited to collections of genomes that are closely related with typical sequence divergence smaller that than 3\%.
-This limitation originates from the core tool used for pairwise alignment, \texttt{minimap2}, that was determined to lose sensitivity if sequences are sufficiently diverged under the chosen parameters.
-Homologous sequence that is more diverged than this cut-off will not be reliably merged by pangraph.
-This effectively limits the TMRCA of sequences within a block.
-More diverged sequence, for example originating from a cross-species transfer event, will thus be represented as alternative path.
-In addition to the intrinsic limit of \texttt{minimap2}, this cut-off can be tuned with the parameter $\alpha$ and can for example be used to restrict merging to very similar sequences and thus capture all recent horizontal events as divergent paths in the graph.
+While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of closely related, fully assembled genomes is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can extract information on homology, diversity and syntheny, both on core and accessory genome, in a scalable way.
 
-We emphasize that PanGraph was designed as a modular tool.
-In the future, we anticipate utilizing other pairwise ``alignment" kernels in addition to minimap2 that will allow the user to trade-off speed for sensitivity.
+In our analysis we demonstrated the capabilities and limits of this tool, both on synthetic and real sequences. The efficient implementation of \textit{PanGraph} allows it to create pangenome graphs containing hundreds of isolates in a few hours on a 8-cores machine. The size of pancontigs and the fraction of core sequece have good scaling properties with the number of isolates in the graph, indicating that \textit{PanGraph} is able to successfully capture pangenome properties.\\
+One of the main limitations is the diversity of the input sequences. The default \textit{minimap2} kernel is able to correctly merge sequences up to around 5\% divergence. Sequences with higher divergence (up to 10-15\%) can be merged using the \textit{mmseqs2} alignment kernel, and tuning the $\alpha, \beta$ energy parameters (cf. eq.~(\ref{eq:pseudo-energy})), trading off speed for sensitivity.\\
+We also provide the ability to quickly marginalize big graps on a subset of strains, obtaining simpler graphs that can more easily be explored. Graphs can also be exported in different formats for further analysis and visualization.
+
+We hope that these characteristics will make \textit{PanGraph} a valuable tool, with the potential to spur novel insight on microbial diversity and the processes by which bacteria adapt and change.
+
 
 \section*{Acknowledgement}
 We are grateful to Boris Shraiman for stimulating discussions.
