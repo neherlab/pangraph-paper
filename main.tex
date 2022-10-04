@@ -35,17 +35,6 @@
 
 \maketitle
 
-% TODO: check consistency of numberings of figures and sections between SI and main text
-% TODO: real data
-% TODO: - dataset
-% TODO:     - table
-% TODO: - size
-% TODO:     - figure
-% TODO: - benchmark
-% TODO:     - figure
-% TODO: - marginalization
-% TODO: 
-% TODO: Table: leave all the columns? Improve description? Depending on what is useful afterwards
 % TODO: SI Section IIA: superfluous?
 % TODO: minimap2 asm10 superfluous?
 
@@ -107,7 +96,7 @@ We chose to use \emph{minimap2} as the core pairwise genome aligner for its prov
 This alignment kernel is included within a custom Julia wrapper, available at \url{github.com/nnoll/minimap2_jll.jl}.
 However, we note that \emph{PanGraph} is written to be modular, and additional alignment kernels can be added with ease.
 In particular we decided to include the option to use \emph{mmseqs2} \cite{steinegger2017mmseqs2} as an alternative alignment kernel, because of its sensitivity on highly diverged sequences at the cost of higher computational time.
-In general, the kernel interface expects two lists of \emph{pancontigs} to align as input and will output a list of putative overlapping alignments between both input lists.
+% In general, the kernel interface expects two lists of \emph{pancontigs} to align as input and will output a list of putative overlapping alignments between both input lists.
 
 \paragraph{Merging of homologous sequence.}
 \emph{Pancontigs} encapsulate linear multiple-sequence alignments which are modelled internally by a star phylogeny, i.e. are assumed to be well-described by a reference sequence augmented by independent SNPs and indels for each contained isolate.
@@ -119,7 +108,7 @@ All putative homologous alignments found by \emph{pancontig} alignment are ranke
 where $\ell$, $N_c$, and $N_m$ denote the alignment length, number of \emph{pancontigs} created by the merger, and number of polymorphisms per genome in the newly created {pancontig} respectively.
 See Fig \ref{fig:visualization}B for a graphical definition for each term.
 Additionally, $\alpha$ and $\beta$ are hyperparameters of the algorithm, respectively controlling the tradeoff between fragmentation of the graph and the maximum diversity within each block.
-Only alignments with negative pseudo-energy are performed.
+Only mergers whose alignment has negative pseudo-energy are performed.
 
 \begin{figure}[htb]
     \includegraphics[width=.45\textwidth]{figs/algorithm.png}
@@ -157,7 +146,6 @@ Lastly, we provide functionality to export as a conventional pangenome, however 
 PanGraph is published under an MIT license with source code, extensive documentation, examples, and instructions for installation available at \url{github.com/neherlab/pangraph}.
 Additionally, pre-built binaries are available as GitHub releases.
 All data and scripts used to validate PanGraph are available within the same repository.
-% TODO: add data?
 
 \section{Validation and performance}
 
@@ -178,7 +166,7 @@ The algorithmic complexity was measured empirically by simulating populations of
 The mean and standard deviation of results obtained from 50 iterations are shown in Fig. \ref{fig:toy-performance}.
 Importantly, PanGraph's computational complexity grows \emph{linearly} with the number of input genomes.
 We note that the PanGraph scales approximately log-linear with average sequence length, as expected from the underlying algorithmic complexity of \textit{minimap2} \cite{li2018minimap2}.
-Benchamrks of CPU and memory usage are reported in SI Section IIA.
+Benchmarks of CPU and memory usage are reported in SI Section IIA.
 
 \begin{figure}[htb]
     \includegraphics[width=.4\textwidth]{figs/benchmark.pdf}
@@ -186,21 +174,21 @@ Benchamrks of CPU and memory usage are reported in SI Section IIA.
         PanGraph scales linearly with the number of input genomes.
         This is a direct result of the guide tree simplification.
         The solid line and ribbons display the mean and standard deviation over 50 runs.
-        All runs were performed utilizing 8 cores.
+        All runs were performed utilizing 8 cores, and with the default \textit{minimap2} alignment kernel and \textit{asm20} option.
     }
     \label{fig:toy-performance}
 \end{figure}
 
 \paragraph*{Accuracy as a function of sequence divergence}
 
-We quantified the accuracy of PanGraph algorithm by computing the displacement of the inferred breakpoints relative to their known locus stored from the evolutionary simulation (cf. SI Section IIB for details). We evaluate this displacement by generating datasets with different rates of mutation $\mu$ and HGT $h$. For each $(h,\mu)$ pair we perform 25 different simulations, and build pangenome graphs using three different options for the alignment kernel, namely \textit{minimap2} \cite{li2018minimap2} with \textit{asm10} and \textit{asm20} option and \textit{mmseqs2} \cite{steinegger2017mmseqs2}.
-Critically, we found that the accuracy was \emph{independent} of the rate of horizontal gene transfer $h$ and thus underlying graph complexity. The predominant determinant of accuracy was the sample diversity, controlled by the mutation rate $\mu$ in our simulations (cf. SI Fig.~2). For low-diversity samples breakpoints are inferred with accuracy of few basepairs, while for highly diverged isolates most breakpoints are displaced by several hundreds of basepairs (cf. SI Fig.~3). The choice of alignment kernel influences the threshold diversity at which accuracy is lost.\\
-For each alignment kernel and value of average sequence divergence in the population we evaluated the fraction of breakpoints that have displacement greater than the default precision threshold for Pangraph of 100 bp, displayed in Fig.~\ref{fig:toy-accuracy}. On the sequences generated by our simulations, \textit{minimap2} with option \textit{asm20} show a loss of accuracy at a threshold pairwise divergence of around 5\%, while \textit{mmseqs2} is accurate up to average sequence divergence of around 12\%, at the cost of higher computational time.
+We quantified the accuracy of PanGraph algorithm by computing the displacement of the inferred breakpoints relative to their known locus stored from the evolutionary simulation (cf. SI Section IIB for details). We evaluate this displacement by generating datasets with different rates of mutation $\mu$ and horizontal sequence transfer $h$. For each $(h,\mu)$ pair we perform 25 different simulations, and build pangenome graphs using three different options for the alignment kernel, namely \textit{minimap2} \cite{li2018minimap2} with \textit{asm10} and \textit{asm20} option and \textit{mmseqs2} \cite{steinegger2017mmseqs2}.
+Critically, we found that the accuracy was \emph{independent} of the rate of horizontal transfer $h$ and thus underlying graph complexity. The predominant determinant of accuracy was the sample diversity, controlled by the mutation rate $\mu$ in our simulations (cf. SI Fig.~2). For low-diversity samples breakpoints are inferred with accuracy of few basepairs, while for highly diverged isolates most breakpoints are displaced by several hundreds of basepairs (cf. SI Fig.~3). The choice of alignment kernel influences the threshold diversity at which accuracy is lost.\\
+For each alignment kernel and value of average sequence divergence in the population we evaluated the fraction of breakpoints that have displacement greater than the default precision threshold for Pangraph of 100 bp (cf. Fig.~\ref{fig:toy-accuracy}). On the sequences generated by our simulations, \textit{minimap2} with option \textit{asm20} show a loss of accuracy at a threshold pairwise divergence of around 5\%, while \textit{mmseqs2} is accurate up to average sequence divergence of around 12\%, at the cost of higher computational time.
 
 \begin{figure}[htb]
     \includegraphics[width=.4\textwidth]{figs/misplaced_fraction_vs_divergence.pdf}
     \caption{{\bf Accuracy against synthetic data}.
-        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels :\textit{minimap2} with \textit{asm10} and \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of 100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions. \textit{mmseqs2} maintains accuracy at higher divergence, at the cost of more computational time.
+        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels :\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of 100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions. \textit{mmseqs2} maintains accuracy at higher divergence, at the cost of higher computational time.
     }
     \label{fig:toy-accuracy}
 \end{figure}
@@ -208,7 +196,7 @@ For each alignment kernel and value of average sequence divergence in the popula
 
 \subsection{Validation on real data}
 
-We additionally validated PanGraph on natural populations sampled from RefSeq \cite{o2016reference}, focusing on the properties of the resulting pangenome graphs for datasets of different size and diversity.
+We additionally validated PanGraph on natural populations sampled from RefSeq \cite{o2016reference}, focusing on the properties of the resulting pangenome graphs as a function of dataset size and diversity.
 
 \paragraph*{Dataset characterization}
 
@@ -231,11 +219,11 @@ We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes
         \hline
     \end{tabular}
     \caption{{\bf Dataset properties}. Columns represent:
-        (1) number of isolates,
-        (2) average chromosome lenght in Mbps,
-        (3) total pangenome legnth in Mbp,
-        (4) total core genome length in Mbp,
-        (5) average pairwise divergence of core genes.
+        number of isolates (N.),
+        average chromosome length in Mbps ($\avg{\Lgen}$),
+        total pangenome length in Mbps ($\Lpang$),
+        total core genome length in Mbps ($\Lcore$),
+        average pairwise divergence of core genes ($\dcore$).
     }
     \label{table:panx-dataset}
 \end{table}
@@ -243,13 +231,12 @@ We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes
 \paragraph*{Benchmark on real data}
 
 Using \textit{PanGraph}, we build multiple pangenome graphs for each species in the dataset (cf. SI Section~IIIB and IIIC). These differ by the alignment kernel used (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}) or by the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}). Different alignment kernels are expected to reach different accuracy on datasets with different diversities (cf. Fig.~\ref{fig:toy-accuracy}). Moreover the use of null energy parameters ($\alpha = \beta = 0$) is expected to remove the threshold divergence of 10\% associated with the standard values of parameters ($\alpha=100$, $\beta=10$) at the cost of more fragmented pangenome graphs.\\
-\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5-6h for 307 EC isolates with \textit{minimap2} kernel, cf. Fig~\ref{fig:panx-benchmark}A). Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher accuracy when merging highly diverged sequences. This is the case for the HP dataset, whose core genome divergence sits at the limit of what can be accurately merged with the \textit{minimap2} kernel. In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig~\ref{fig:panx-benchmark}B-C and SI Fig.~4). The divergence of the PM datasets sits instead beyond the capabilities of \textit{Pangraph}. In this case none of the alignment kernel reaches satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve few core pancontigs.\\
+\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5h for 307 EC isolates with \textit{minimap2} kernel, cf. Fig~\ref{fig:panx-benchmark}A). Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher accuracy when merging highly diverged sequences. This is the case for the HP dataset, whose core genome divergence sits at the limit of what can be accurately merged with the \textit{minimap2} kernel. In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig~\ref{fig:panx-benchmark}B-C and SI Fig.~4). The divergence of the PM datasets sits instead beyond the capabilities of \textit{Pangraph}. In this case no alignment kernel can reach satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve few core pancontigs.\\
 For the other species sequence compression is of the order of few percents, graphs contain thousands to tens of thousands of pancontigs, and 50\% of the pangenome sequence is contained in blocks spanning several kbps.
 For these species the use of null energy parameters slightly increases merging and sequence compression, at the cost of slightly more fragmented graphs (cf. SI Section IIIC and SI Fig.~4).
 Overall this benchmark showcases the capabilities and limits of \textit{PanGraph}, and demonstrates the value of adapting the pseudo-energy parameter and choice of alignment kernel to the expected diversity of the dataset considered.
 
 
-% TODO: talk more extensively about the meaning of the results?
 \begin{figure*}[htb]
     \includegraphics[width=\textwidth]{figs/panx_benchmark.pdf}
     \caption{{\bf Benchmark on real data}.
@@ -263,14 +250,14 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
 
 \paragraph*{Scaling with dataset size}
 
-We then explore how the properties of the pangenome graph scale with the dataset size. To do so we build pangenome graphs from random sets of isolates of increasing size from the EC dataset. Graphs are built with standard values of the parameter and using the \textit{minimap2} kernel with \textit{asm20} option. For each size 10 different random graphs are constructed. Results are reported in Fig.~\ref{fig:panx-size}.\\
-The number and size of pancontigs scales sub-linearly with the number of isolates, with most of the pangenome being included in ~10\% of the pancontigs, and core pancontigs having higher-than-average size. Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added. The size of the core genome does not decrease significantly with the addition of new strains, while the total pangenome size remains orders of magnitude smaller than the total size of all genomes included in the graph.
+We then explore how the properties of the pangenome graph scale with the dataset size. To do so we build pangenome graphs from random sets of isolates of increasing size from the EC dataset. Results are reported in Fig.~\ref{fig:panx-size}.\\
+The number and size of pancontigs scale sub-linearly with the number of isolates, with more than 50\% of the pangenome being included in the 10\% longest pancontigs, and core pancontigs having higher-than-average size. Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added. The size of the core genome does not decrease significantly with the addition of new strains, while the total pangenome size remains orders of magnitude smaller than the total size of all genomes included in the graph.
 
 
 \begin{figure*}[htb]
     \includegraphics[width=.9\textwidth]{figs/incr_size.pdf}
     \caption{{\bf Pangenome graph properties vs. dataset size}.
-        We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the graphs. Lines and shaded areas represent mean and standard deviation over 10 different repetitions on random subsets of isolates, except for the final point indicating the full graph (307 isolates).
+        We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the graphs. Graphs were built using \textit{minimap2} alignment kernel with \textit{asm20} option. Lines and shaded areas represent mean and standard deviation over 10 different repetitions on random subsets of isolates, except for the final point indicating the full graph (307 isolates).
         \textbf{A}: n. of pancontigs in the graph. We count the total number of pacontigs (blue), the number of core pancontigs (orange) and the minimum number of pancontigs that contain more than 50\% of the pangenome (L50, black).
         \textbf{B}: average size of pancontigs (blue), of only core pancontings (orange), and size of the smallest panconting in the minimal set that spans 50\% of the pangenome (N50, black).
         \textbf{C}: cumulative size of all genomes in the pangenome graph (gray), total pangenome size (blue) and size of core pangenome (orange).
@@ -281,9 +268,9 @@ The number and size of pancontigs scales sub-linearly with the number of isolate
 \section{Graph marginalization}
 
 The interpretation of a pangenome graph containing hundreds of strains can be challenging. To this end it is often informative to inspect simpler sub-graphs comprising only a small subset of isolates. However building multiple such sub-graphs is computationally intensive. To facilitate this task \textit{PanGraph} provides the \verb|marginalize| command, that can be used to marginalize a large pangenome graph on a small subset of strains, removing all the other paths and merging transitive pancontigs. This operation is computationally much cheaper than building a new graph for the subset of strains considered.\\
-To verify that marginalized graphs are compatible with newly-built graphs, we built a pangenome graph for 50 randomly selected strains from the \textit{Klebsiella Pneumoniae} dataset. We then picked 50 random pairs of strains from the same set and built two graphs for each pair: the graph obtained by marginalizing the complete graph on the pair, and the graph built directly from the pair (cf. Fig.~\ref{fig:marginalization}A, top).
-We compare these two graphs by considering the partition they generate on the genome of the isolates they include. Each genome is partitioned in pancontigs that are either shared on the pair, or private to one isolate (cf. Fig.~\ref{fig:marginalization}A, bottom). We can classify the segments in the intersection of the two partitions in different categories, depending on whether the two partitions agree on whether the segment is shared or private. Moreover segments on which the two partitions agree are further sub-divided depending on whether they are private or shared on both partitions.\\
-Compatibility between the two graphs requires segments on which the two partitions disagree to be few and short. Indeed, we verified that over the pairs we picked these segments cover a very small fraction of the genome ($<1\%$), and have average size compatible with the default 100 bp precision threshold of \textit{PanGraph} (cf. Fig.~\ref{fig:marginalization}B-C). This is contrary to agreement segments, that have average size of several kbps. The prevalence of agreement segment cannot be explained only by the fact that most of the genome is shared, since segments that are shared on both graphs cover on average only 85\% of the sequence. We confirmed this results using the fraction of shared k-mers, using an approach inspired by PopPUNK \cite{lees2019fast}. Namely, we approximate the fraction of homologous sequence between any two pairs using the fraction of shared k-mers (in our case we take $k=21$). This fraction is however an underestimate of the fraction of homologous sequence because of mutations. We therefore correct it with the factor $(1-d)^{-k}$, where $d$ is the average pairwise divergence on core genes for the pair considered. The resulting distribution of shared sequence is indeed in very good agreement with the fraction of segments that are shared on both graphs (cf. Fig.~\ref{fig:marginalization}B), suggesting that homologous sequences are correctly merged on the complete, marginalized and pairwise graphs.\\
+To verify that marginalized graphs are compatible with newly-built graphs, we built a pangenome graph for 50 randomly selected strains from the \textit{Klebsiella Pneumoniae} dataset. We then picked 50 random pairs of strains from the same set and built two graphs for each pair: the graph obtained by marginalizing the complete graph on the pair (i.e. pairwise graph), and the graph built directly from the pair (i.e. marginalized graph, cf. Fig.~\ref{fig:marginalization}A top).
+We compare these two graphs by considering the partition they generate on the genome of the isolates they include. Each genome is partitioned in pancontigs that are either shared on the pair, or private to one isolate (cf. Fig.~\ref{fig:marginalization}A bottom). We can classify the segments in the intersection of the two partitions in different categories, depending on whether the two partitions agree on whether the segment is shared or private. Moreover segments on which the two partitions agree are further sub-divided depending on whether they are private or shared on both partitions.\\
+Compatibility between the two graphs requires segments on which the two partitions disagree to be few and short. Indeed, we verified that over the pairs we picked these segments cover a very small fraction of the genome ($<1\%$), and have average size compatible with the default 100 bp precision threshold of \textit{PanGraph} (cf. Fig.~\ref{fig:marginalization}B-C). Conversely, agreement segments have average size of several kbps. The prevalence of agreement segment cannot be explained only by the fact that most of the genome is shared, since segments that are shared on both graphs cover on average only 85\% of the sequence. We confirmed this results using the fraction of shared k-mers, using an approach inspired by PopPUNK \cite{lees2019fast}. Namely, we approximate the fraction of homologous sequence between any two pairs using the fraction of shared k-mers ($k=21$) divided by $(1-d)^{k}$, where $d$ is the average pairwise divergence on core genes for the pair considered. This divisor corrects for k-mers on homologous sequence that are not shared due to mutations. The resulting distribution of shared sequence is indeed in very good agreement with the fraction of segments that are shared on both graphs (cf. Fig.~\ref{fig:marginalization}B), suggesting that homologous sequences are correctly merged on the complete, marginalized and pairwise graphs.\\
 We performed the same test on species from the other datasets, obtaining similar results on all species whose divergence is compatible with \textit{PanGraph} capabilities (cf. SI Section IV and SI Fig.~5).
 
 
@@ -301,7 +288,7 @@ We performed the same test on species from the other datasets, obtaining similar
 
 \section{Discussion}
 
-While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of closely related, fully assembled genomes is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can extract information on homology, diversity and syntheny, both on core and accessory genome, in a scalable way.
+While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of closely related, fully assembled genomes is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can adress this need, by being able to capture the structural and nucleotide diversity in both the core and accessory genome in a scalable way.
 
 In our analysis we demonstrated the capabilities and limits of this tool, both on synthetic and real sequences. The efficient implementation of \textit{PanGraph} allows it to create pangenome graphs containing hundreds of isolates in a few hours on a 8-cores machine. The size of pancontigs and the fraction of core sequece have good scaling properties with the number of isolates in the graph, indicating that \textit{PanGraph} is able to successfully capture pangenome properties.\\
 One of the main limitations is the diversity of the input sequences. The default \textit{minimap2} kernel is able to correctly merge sequences up to around 5\% divergence. Sequences with higher divergence (up to 10-15\%) can be merged using the \textit{mmseqs2} alignment kernel, and tuning the $\alpha, \beta$ energy parameters (cf. eq.~(\ref{eq:pseudo-energy})), trading off speed for sensitivity.\\
