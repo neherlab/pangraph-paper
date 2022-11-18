@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{enumerate}
+\usepackage{color}
 \usepackage[final]{hyperref}
 
 \newcommand{\avg}[1]{\langle #1 \rangle}
@@ -11,6 +12,7 @@
 \newcommand{\Lpang}{L_\text{pang}}
 \newcommand{\Lgen}{L_\text{gen}}
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
+\newcommand{\Richard}[1]{{\color{red}Richard: #1}}
 
 \begin{document}
 %\title{PanGraph: scalable multiple genome alignment for pan-genome analysis}
@@ -22,18 +24,18 @@
 \thanks{These two authors contributed equally}
 \affiliation{Swiss Institute of Bioinformatics, Basel, Switzerland \looseness=-5}
 \affiliation{Biozentrum, University of Basel, Basel, Switzerland \looseness=-5}
-\author{Liam Shaw}
+\author{Liam P. Shaw}
 \affiliation{Department of Biology, University of Oxford, Oxford, UK\looseness=-5}
 \author{Richard A.~Neher}
 \affiliation{Swiss Institute of Bioinformatics, Basel, Switzerland \looseness=-5}
 \affiliation{Biozentrum, University of Basel, Basel, Switzerland \looseness=-5}
 
 \begin{abstract}
-    The genomic diversity of microbes is commonly parameterized as population genetic polymorphisms relative to a reference genome of a well-characterized, but arbitrary, isolate.
+    The genomic diversity of microbes is commonly parameterized as single nucleotide polymorphisms relative to a reference genome of a well-characterized, but arbitrary, isolate.
     However, any reference genome contains only a fraction of the microbial \emph{pangenome}, the \textit{total} set of genes observed in a given species.
     Reference-based approaches are thus blind to the dynamics of the accessory genome, as well as variation within gene order and copy number.
     With the wide-spread usage of long-read sequencing, the number of high-quality, complete genome assemblies has increased dramatically.
-    Traditional computational approaches towards whole-genome analysis either scale poorly, or treat genomes as dissociated bags of genes, and thus are not suited for this new era.
+    Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.
     Here, we present \emph{PanGraph}, a Julia-based library and command line interface for aligning whole genomes into a graph. 
     Each genome is represented as an undirected path along vertices, which in turn, encapsulate homologous multiple sequence alignments.
     The resultant data structure succinctly summarizes population-level nucleotide and structural polymorphisms and can be exported into a several common formats for either downstream analysis or immediate visualization.
@@ -46,21 +48,25 @@
 
 %\section{Introduction}
 During evolution, microbial genomes change by both local mutations and large-scale alterations \cite{arnold2021horizontal}.
-Local mutations conserve sequence architecture and only change a few nucleotides by substitution, insertion or deletion.
-Conversely, large-scale alterations reorganize the sequence, and involve either the homologous recombination of large segments or wholesale gene loss or gain.
-The accumulation of such changes over time complicates comparative genomic analyses of present day isolates; microbial genomes are mosaics of homologous sequence, locally related by an asexual phylogenetic tree \cite{sakoparnig2021whole}.
+Local mutations only change a few nucleotides by substitution, insertion or deletion.
+Conversely, large-scale alterations reorganize the sequence, and involve either the homologous recombination of large segments, gene loss or gain, inversions, or mobilisation of genetic elements. 
+The accumulation of such changes over time complicates comparative genomic analyses of present day isolates. 
+Homologous recombination is rapid enough that most genes in many bacterial core genomes have distinct phylogenies \cite{sakoparnig2021whole} and even closely related genomes differ dramatically in gene content. 
 % comment: rewritten to use consistent terminology (I think 'mutation' and 'polymorphism' for most people make them think of local changes only)
 %Scalable inference techniques of this complicated relatedness structure would, in part, spur the advance of critical epidemiological surveillance tools, analogous to NextStrain, for bacterial pathogens.
 
 Recent advances in long-read sequencing have enabled the low-cost assembly of complete genomes at the quality of reference databases \cite{whibley2021changing}.
 The accumulation of so many complete genomes promises to rapidly improve our ability to quantify the evolutionary dynamics that drive microbial diversity in natural populations.
-Unfortunately, comparative genomic analyses have not kept pace with these technological advances.
 Since reference-based approaches only partially capture microbial diversity \cite{tettelin2008comparative}, the concept of the \emph{pangenome} has motivated the development of methods that account for substantial variation in gene content. 
-However, though such approaches can accurately capture nucleotide polymorphisms within genes, they approximate structural polymorphisms as gene presence-absence relationships \cite{page2015roary,ding2018panx}.
+However, though such approaches can accurately capture nucleotide polymorphisms within genes, they approximate structural polymorphisms as gene presence-absence relationships \cite{page2015roary,ding2018panx} irrespective of gene order or orientation.
 This new era of pangenomics demands novel data structures to encapsulate the \emph{complete} diversity of a given genomic sample set.
 
 In recent years, efforts have focused on generalizing the \emph{pangenome} framework of microbial diversity to graphical models \cite{eizenga2020pangenome}.
-At a high level, pangenome graphs generalize the reference sequence coordinate system conventionally used; microbial diversity is, instead, encapsulated by a graph-based data structure, with vertices or edges labelled by homologous DNA sequences, in which a walk recapitulates a subset of mosaic genomes.
+At a high level, pangenome graphs generalize the reference sequence coordinate system conventionally used and encode genomes as directed paths through the graph consisting of node that represent sequence.
+In multicellular eukaryotes, pangenome graphs usually have an overall linear structure in which structural diversity can be encoded as short range  excursions. 
+In microbial genomics, in contrast, large scale rearrangements and inversions give rise to complex graph topologies. 
+Here, we focus on pangenome graphs of closely related bacterial genomes.
+\Richard{I feel the following is more confusing than helping.}
 As such, pangenome graphs can be thought of as an analogous construct to the well-known assembly graph, in which whole genomes are individual ``reads" of the underlying microbial structure \cite{myers2005fragment}.
 
 While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging.
@@ -78,46 +84,56 @@ The underlying graph data structure can be exported into numerous formats for do
 \emph{PanGraph} transforms an arbitrary set of genomes into a \emph{graph} that simultaneously compresses the collection of sequences and exhaustively summarizes both the structural and nucleotide-level polymorphisms.
 The graph is composed of \emph{pancontigs}, which represent linear multiple-sequence alignments of homologous sequence found within one or more input genomes.
 \emph{Pancontigs} are connected by an edge if they are syntenic on at least one input sequence; individual sequences are then recapitulated by contiguous \emph{paths} through the graph.
+Pancontigs are directed, meaning their orientation in a path can be either 5' to 3' or vice versa.
 
-\emph{PanGraph's} overarching strategy is to approximate multiple-genome alignment by iterative pairwise alignment, in the spirit of progressive alignment tools \cite{darling2010progressivemauve,armstrong2020progressive}.
-A guide tree is utilized to linearize the problem's complexity by approximating multiple-sequence alignment as a quenched order of successive pairwise alignments \cite{feng1987progressive}.
-Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} between both graphs.
+To construct a pangraph, the algorithm needs to find homologous sequence within and among all input genomes. 
+\emph{PanGraph's} overarching strategy is to approximate multiple-genome alignment by iterative pairwise alignment of graphs of subsets of sequences, in the spirit of progressive alignment tools \cite{feng1987progressive,darling2010progressivemauve,armstrong2020progressive}.
+Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} between both graphs and the order of pairwise alignments is determined by a guide tree.
 
 \subsection{Guide tree construction}
-The alignment guide tree is constructed subject to three design constraints: (i) sequences are aligned sequentially based upon similarity, (ii) the similarity computation scales sub-quadratically with the number of input sequences, and (iii) the resultant tree is balanced.
+The alignment guide tree is constructed subject to three design constraints: (i) similar sequences are aligned first, (ii) the similarity computation scales sub-quadratically with the number of input sequences, and (iii) the resultant tree is balanced to maximize parallelism.
 To this end, we formulate the algorithm as a two step process.
 The initial guide tree is constructed by neighbor-joining \cite{saitou1987neighbor}; the pairwise distance between sequences is approximated by the Jaccard distance between sequence minimizers \cite{roberts2004reducing}.
 Computationally, each sequence can be sketched into its set of minimizers in linear time while the cardinality of all pairwise intersections can be computed by sorting the list of all minimizers to efficiently count overlaps.
-Hence, the pairwise distance matrix is estimated in log-linear time.
+Hence, the pairwise distance matrix is estimated in a time that increases log-linearly in the total length of sequence that is analyzed. 
 The final guide tree is constructed as the balanced binary tree constrained to reproduce the topological ordering of leaves found initially.
+This balancing maximizes the number of independent pairwise alignments and thereby allows efficient parallelism. 
 See Fig. \ref{fig:visualization}A for a graphical depiction of the guide tree.
 
 \subsection{Iterative graph alignment}
-The iterative pangraph construction is illustrated in Fig.~\ref{fig:visualization}.
-The pangraph is initialized as one subgraph per input genome, each representing its respective genome as a single \emph{pancontig}.
-Pairs of subgraphs are aligned in a postorder traversal of the constructed guide tree.
+The full pangraph representing all genomes is constructed by aligning/merging graphs that represent subsets of the genomes in an iterative manner illustrated in Fig.~\ref{fig:visualization}.
+The iteration starts with one subgraph per input genome, each representing its respective genome as a single \emph{pancontig}.
+Pairs of subgraphs are aligned in a postorder traversal of the guide tree.
 The identified homologous intervals of the pancontig are then merged, thereby creating shorter contigs that represent homologous sections of multiple input genomes, see Fig. \ref{fig:visualization}B for a graphical depiction.
 These steps of pairwise graph alignment and merging of homologous intervals are repeated until the root of the guide tree is reached.
+\emph{Pancontigs} encapsulate linear multiple-sequence alignments which are modelled internally by a star phylogeny, i.e. are assumed to be well-described by a reference sequence augmented by independent SNPs and indels for each contained isolate.
 
-\paragraph{Pairwise alignment.}
-Full genome alignment between two closely related isolates is a well-studied problem with many high-quality tools available \cite{li2018minimap2,marccais2018mummer4}.
+\paragraph*{Pairwise alignment.}
+To align two graphs, the consensus sequences of all pancontigs in both graphs are searched for homologies and aligned. 
+Full genome alignment between two closely related isolates is a well-studied problem with many sensitive and efficient tools available \cite{li2018minimap2,marccais2018mummer4}.
 We chose to use \emph{minimap2} as the core pairwise genome aligner for its proven speed, sensitivity, and easy-to-use exposed library API \cite{li2018minimap2}.
 This alignment kernel is included within a custom Julia wrapper, available at \url{github.com/nnoll/minimap2_jll.jl}.
 However, we note that \emph{PanGraph} is written to be modular, and additional alignment kernels can be added with ease.
 In particular we decided to include the option to use \emph{mmseqs2} \cite{steinegger2017mmseqs2} as an alternative alignment kernel, because of its sensitivity on highly diverged sequences at the cost of higher computational time.
 % In general, the kernel interface expects two lists of \emph{pancontigs} to align as input and will output a list of putative overlapping alignments between both input lists.
 
-\paragraph{Merging of homologous sequence.}
-\emph{Pancontigs} encapsulate linear multiple-sequence alignments which are modelled internally by a star phylogeny, i.e. are assumed to be well-described by a reference sequence augmented by independent SNPs and indels for each contained isolate.
-Importantly, during the all-to-all alignment phase, \emph{pancontigs} are aligned based \emph{solely} upon their consensus sequence.
-All putative homologous alignments found by \emph{pancontig} alignment are ranked according to the pseudo-energy
+\paragraph*{Merging of homologous sequence.}
+If the above alignment step detected homologous stretches between two pancontigs, these pancontigs, or parts of them, can be merged. 
+It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order. 
+We rank each alignment between two pancontigs according to the pseudo-energy
 \begin{equation}\label{eq:pseudo-energy}
     E = -\ell + \alpha N_c + \beta N_m
 \end{equation}
 where $\ell$, $N_c$, and $N_m$ denote the alignment length, number of \emph{pancontigs} created by the merger, and number of polymorphisms per genome in the newly created {pancontig} respectively.
 See Fig \ref{fig:visualization}B for a graphical definition for each term.
-Additionally, $\alpha$ and $\beta$ are hyperparameters of the algorithm, respectively controlling the tradeoff between fragmentation of the graph and the maximum diversity within each block.
+Additionally, $\alpha$ and $\beta$ are hyperparameters of the algorithm. 
 Only mergers whose alignment has negative pseudo-energy are performed.
+The parameter $\beta$ controls the maximal sequence divergence between the two merger-candidates and no mergers will be performed if the Hamming distance exceeds $1/\beta$. 
+Importantly, this divergence threshold is applied to the comparison of the consensus sequences of the merger candidates.
+The parameter $\alpha$ controls the fragmentation of the graph and imposes a minimal length on the resulting pan-contigs resulting from the merger.
+The merger is always performed if the merger doesn't increase the number of contigs, but mergers that introduce 1, 2, 3 or 4 cuts are only performed for sufficiently long homologous stretches as parameterized by $\alpha$.
+In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.
+
 
 \begin{figure}[htb]
     \includegraphics[width=.45\textwidth]{figs/algorithm.png}
@@ -133,13 +149,13 @@ Only mergers whose alignment has negative pseudo-energy are performed.
 At the graph level, the merger of two \emph{pancontigs} defines a new \emph{pancontig}, connected on both sides by edges to the neighboring \emph{pancontigs} of both inputs, and thus locally collapses the two graphs under consideration.
 At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the reference of one onto the other; the merger of two \emph{pancontigs} requires the application of the map onto the underlying multiple-sequence alignment.
 Once both sets of sequences are placed onto a common coordinate system, the resultant consensus sequence, and thus polymorphisms, are recomputed.
-This procedure can be viewed as an online multiple sequence alignment algorithm.
+This procedure can be viewed as an approximate multiple sequence alignment algorithm that aligns homologous parts without further investigating insertions in the two sub-alignments.
 
 The above procedure is repeated until no alignments with negative energy remain.
-Upon completion, transitive edges within the graph are removed by merging adjacent \emph{pancontigs}.
+Upon completion, transitive edges within the graph, i.e., edges along which all path are co-linear, are removed by merging adjacent \emph{pancontigs}.
 
 \subsection{Parallelism}
-\emph{PanGraph} is designed with a message-passing architecture to enable scalable parallelism, as shown in Fig \ref{fig:visualization}A for a cartoon example.
+\emph{PanGraph} guide trees are balanced binary trees that break the task into many independent sub-problems and thereby enable scalable parallelism, as shown in Fig \ref{fig:visualization}A for a cartoon example.
 Each internal node of the guide tree represents a job that performs a single pairwise graph alignment between its two children.
 The process will block until both of its children processes have completed and subsequently pass the result of their pairwise graph alignment up to the parent.
 All jobs run concurrently from the start of the algorithm; the Julia scheduler resolves the order of dependencies naturally \cite{bezanson2017julia}.
@@ -154,7 +170,7 @@ Lastly, we provide functionality to export as a conventional presence/absence pa
 
 PanGraph is published under an MIT license with source code, extensive documentation, examples, and instructions for installation available at \url{github.com/neherlab/pangraph}.
 Additionally, pre-built binaries are available as GitHub releases.
-All data and scripts used to validate PanGraph are available within the same repository.
+All data and scripts used to validate PanGraph are available within the same repository.\footnote{Instructions on how to run the analysis scripts are available at \url{https://github.com/neherlab/pangraph/blob/master/script/README.md}}
 
 \section{Validation and performance}
 
@@ -162,22 +178,21 @@ All data and scripts used to validate PanGraph are available within the same rep
 
 As a first validation step we use generated synthetic data to quantify the performance characteristics of \textit{PanGraph} as a function of input size, and its accuracy as a function of sequence diversity.
 
-\paragraph*{Generation of synthetic data}
+\paragraph*{Generation of synthetic data.}
 
-We simulated populations of size $N=100$ and sequence length $L=50\,000$ utilizing a Wright-Fisher model \cite{hudson2002generating} evolved for $T=50$ generations.
+We simulated populations of size $N=100$ and varying sequence length up to $L=500\,000$ utilizing a Wright-Fisher model \cite{hudson2002generating} evolved for $T=50$ generations.
 In addition to nucleotide mutations that occur at rate $\mu$ per generation, we modelled inversions, deletions (respective rates $0.01$ and $0.05$ per generation), and horizontal sequence transfer that occurs with tunable rate $h$ per generation per genome (see SI Section I for details).
 The ancestral state for each sequence is tracked through each evolutionary event so that the true mosaic relatedness structure can easily be converted to a graph.
 The simulation framework is distributed within the PanGraph command line tools for external use.
 
-\paragraph*{Performances as a function of dataset size}
-
-The algorithmic complexity was measured empirically by simulating populations of increasing size and average sequence length, and generating pangenome graphs for the resulting sequences.
-The mean and standard deviation of results obtained from 50 iterations are shown in Fig. \ref{fig:toy-performance}.
-Importantly, PanGraph's computational complexity grows \emph{linearly} with the number of input genomes.
+\paragraph*{Performances as a function of dataset size.}
+The algorithmic complexity was measured empirically by constructing pangenome graphs from data generated by simulating populations of increasing size and average sequence length.
+The mean and standard deviation of the run-time obtained from 50 iterations are shown in Fig. \ref{fig:toy-performance}.
+Importantly, PanGraph's computational complexity grows \emph{linearly} with the number of input genomes once the number of genomes exceeds a certain threshold and parallelism can be exploited.
 We note that PanGraph scales approximately log-linear with average sequence length, as expected from the underlying algorithmic complexity of \textit{minimap2} \cite{li2018minimap2}.
 Benchmarks of CPU and memory usage are reported in SI Section IIA.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
     \includegraphics[width=.4\textwidth]{figs/benchmark.pdf}
     \caption{{\bf Algorithm performance}.
         PanGraph scales linearly with the number of input genomes.
@@ -189,15 +204,19 @@ Benchmarks of CPU and memory usage are reported in SI Section IIA.
 \end{figure}
 
 \paragraph*{Accuracy as a function of sequence divergence}
+To be useful and informative beyond data compression of microbial genomes, the contigs and break-points of the reconstructed graphs should correspond, at least approximately, to evolutionary events in the history of the sample. 
+We quantified PanGraph's ability to accurately reconstruct the true graph by computing the displacement of the inferred breakpoints relative to their known locus stored from the evolutionary simulation (cf. SI Section IIB for details). We evaluate this displacement by generating datasets with different rates of mutation $\mu$ and horizontal sequence transfer $h$. For each $(h,\mu)$ pair we perform 25 different simulations, and build pangenome graphs using three different options for the alignment kernel: \textit{minimap2} \cite{li2018minimap2} with \textit{asm10} and \textit{asm20} options and \textit{mmseqs2} \cite{steinegger2017mmseqs2}.
+Critically, we found that the accuracy was \emph{independent} of the rate of horizontal transfer $h$ and thus underlying graph complexity. 
+The predominant determinant of accuracy was the sample diversity, controlled by the mutation rate $\mu$ in our simulations (cf. SI Fig.~2). For low-diversity datasets, breakpoints are inferred with accuracy of few basepairs, while for highly diverged isolates most breakpoints are displaced by several hundreds of basepairs (cf. SI Fig.~3). The choice of alignment kernel influences the threshold diversity at which accuracy is lost, suggesting that inability to detect homology between diverged sequences is the reason.\\
+For each alignment kernel and value of average sequence divergence in the population we evaluated the fraction of breakpoints that have displacement greater than the default minimal block size for Pangraph of 100 bp (cf. Fig.~\ref{fig:toy-accuracy}). On the sequences generated by our simulations, \textit{minimap2} with option \textit{asm20} show a loss of accuracy at an average pairwise sequence divergence of around 5\%, while \textit{mmseqs2} is accurate up to around 12\%, at the cost of higher computational time.
+These threshold are lower than the nominal sensitivity of the aligners, which are 10\% and 20\% for minimap2 with settings \textit{asm10} and \textit{asm20}, respectively, and around 30\% for \textit{mmseqs2}. 
+This discrepancy is due to the fact that for accurate graph constructions, the largest divergence, rather than the average divergence, is the relevant quantity.
 
-We quantified the accuracy of PanGraph by computing the displacement of the inferred breakpoints relative to their known locus stored from the evolutionary simulation (cf. SI Section IIB for details). We evaluate this displacement by generating datasets with different rates of mutation $\mu$ and horizontal sequence transfer $h$. For each $(h,\mu)$ pair we perform 25 different simulations, and build pangenome graphs using three different options for the alignment kernel: \textit{minimap2} \cite{li2018minimap2} with \textit{asm10} and \textit{asm20} options and \textit{mmseqs2} \cite{steinegger2017mmseqs2}.
-Critically, we found that the accuracy was \emph{independent} of the rate of horizontal transfer $h$ and thus underlying graph complexity. The predominant determinant of accuracy was the sample diversity, controlled by the mutation rate $\mu$ in our simulations (cf. SI Fig.~2). For low-diversity datasets, breakpoints are inferred with accuracy of few basepairs, while for highly diverged isolates most breakpoints are displaced by several hundreds of basepairs (cf. SI Fig.~3). The choice of alignment kernel influences the threshold diversity at which accuracy is lost.\\
-For each alignment kernel and value of average sequence divergence in the population we evaluated the fraction of breakpoints that have displacement greater than the default precision threshold for Pangraph of 100 bp (cf. Fig.~\ref{fig:toy-accuracy}). On the sequences generated by our simulations, \textit{minimap2} with option \textit{asm20} show a loss of accuracy at an average pairwise sequence divergence of around 5\%, while \textit{mmseqs2} is accurate up to around 12\%, at the cost of higher computational time.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
     \includegraphics[width=.4\textwidth]{figs/misplaced_fraction_vs_divergence.pdf}
     \caption{{\bf Accuracy against synthetic data}.
-        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels :\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of 100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions. \textit{mmseqs2} maintains accuracy at higher divergence, at the cost of higher computational time.
+        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels \textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of 100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions. \textit{mmseqs2} maintains accuracy at higher divergence, at the cost of higher computational time.
     }
     \label{fig:toy-accuracy}
 \end{figure}
@@ -205,10 +224,14 @@ For each alignment kernel and value of average sequence divergence in the popula
 
 \subsection{Validation on real data}
 
-We additionally validated PanGraph on natural populations sampled from RefSeq \cite{o2016reference}, focusing on the properties of the resulting pangenome graphs as a function of dataset size and diversity.
+We additionally validated PanGraph on genomes from natural populations sampled from RefSeq \cite{o2016reference}, focusing on the properties of the resulting pangenome graphs as a function of dataset size and diversity.
 
-\paragraph*{Dataset characterization}
-We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes from 5 different bacterial species: \textit{Escherichia coli} (EC), \textit{Klebsiella pneumoniae} (KP), \textit{Helicobacter pylori} (HP), \textit{Mycobacterium tuberculosis} (MT) and \textit{Prochlorococcus ,arinus} (PM). These data had been previously analyzed using PanX \cite{ding2018panx}, which allowed us to estimate the size of the pangenome and core genome, and the average pairwise divergence on core genes (cf. Table~\ref{table:panx-dataset} and SI Section~IIIA).
+\paragraph*{Dataset characterization.}
+We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes from 5 different bacterial species: \textit{Escherichia coli} (EC), \textit{Klebsiella pneumoniae} (KP), \textit{Helicobacter pylori} (HP), \textit{Mycobacterium tuberculosis} (MT) and \textit{Prochlorococcus marinus} (PM). These data had been previously analyzed using PanX \cite{ding2018panx}, which allowed us to estimate the size of the pangenome and core genome, and the average pairwise divergence on core genes (cf. Table~\ref{table:panx-dataset} and SI Section~IIIA).
+
+Among these 5 data sets, the \textit{E.~coli}, \textit{K.~pneumoniae}, \textit{M.~tuberculosis} genomes have core genome diversity below the thresholds of the minimap2 aligner, while \textit{H.~pylori} is diverse enough that we don't expect minimap2 to find all relevant matches, while mmseq2 should process this set without problems. 
+\textit{P.~marinus}, on the other hand, is very diverse with an average core genome diversity of 26\% and is beyond what we expect PanGraph to handle.
+
 % The \textit{E.~Coli} (EC) dataset is the one with the highest number of isolates (307 chromosomes) and the largest pangenome. The species with the highest core genome divergence are \textit{H.~Pylori} (HP) and \textit{P. Marinus} (PM). For the former, the divergce sits at the limit of what the \textit{minimap2} alignment kernel is able to accurately merge (cf. Fig.~\ref{fig:toy-accuracy}), while for the latter the diversity is beyond even the limits of \textit{mmseqs2}.
 
 
@@ -237,10 +260,22 @@ We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes
     \label{table:panx-dataset}
 \end{table}
 
-\paragraph*{Benchmark on real data}
-Using \textit{PanGraph}, we built multiple pangenome graphs for each species in the dataset (cf. SI Section~IIIB and IIIC). These differ by the alignment kernel used (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}) or by the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}). Different alignment kernels are expected to reach different accuracy on datasets with different diversities (cf. Fig.~\ref{fig:toy-accuracy}). Moreover the use of null energy parameters ($\alpha = \beta = 0$) is expected to remove the threshold divergence of 10\% associated with the standard values of parameters ($\alpha=100$, $\beta=10$) at the cost of more fragmented pangenome graphs.\\
-\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5h for 307 EC isolates with \textit{minimap2} kernel, cf. Fig.~\ref{fig:panx-benchmark}A). Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher accuracy when merging highly diverged sequences. This is the case for the HP dataset, whose core genome divergence sits at the limit of what can be accurately merged with the \textit{minimap2} kernel. In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig.~\ref{fig:panx-benchmark}B-C and SI Fig.~4). The divergence of the PM datasets sits instead beyond the capabilities of \textit{Pangraph}. In this case no alignment kernel can reach satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve a few core pancontigs.\\
-For the other species the sequence compression (i.e. the ratio of the length of the sequence in the final pangenome graph to the total length of all input genomes) is around 1-4\%. Graphs contain thousands to tens of thousands of pancontigs, and 50\% of the pangenome sequence is contained in blocks spanning several kbps.
+\paragraph*{Benchmark on real data.}
+Using \textit{PanGraph}, we built multiple pangenome graphs for each species in the dataset (cf. SI Section~IIIB and IIIC). These differ by the alignment kernel used (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}) or by the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}). 
+Different alignment kernels are expected to reach different accuracy on datasets with different diversities (cf. Fig.~\ref{fig:toy-accuracy}). Moreover the use of null energy parameters ($\alpha = \beta = 0$) is expected to remove the threshold divergence of 10\% associated with the standard values of parameters ($\alpha=100$, $\beta=10$) at the cost of more fragmented pangenome graphs.\\
+\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5h for 307 E.~Coli isolates with \textit{minimap2} kernel, cf. Fig.~\ref{fig:panx-benchmark}A). 
+Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher sensitivity when merging highly diverged sequences. 
+
+Fig.~\ref{fig:panx-benchmark}B-C and SI Fig.~4 quantify the size of the core genome, i.e.~the sum of all pancontigs present once in every genome, identified by PanGraph and the compression of the dataset, i.e.~the ratio for the sum of the lengths of all pancontigs and the sum of the lengths of all input genomes, for different dataset and the different parameters. 
+As expected, the very homogenous \textit{M.~tuberculosis} dataset has a large core genome with and a compression ratio that is almost equal to the inverse number of input genomes, independent of the aligner or parameters used. 
+\textit{E.~coli} and \textit{K.~pneumoniae} compress similarly well, but their core genome is a much smaller fraction of the pangenome. 
+Using the more sensitive aligner mmseqs2 and relaxing the merger parameters leads to some additional compression, presumably due to merging of diverged paralogs. 
+
+The \textit{H.~pylori}  dataset sits at the limit of what can be accurately merged with the \textit{minimap2} kernel. 
+In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig.~\ref{fig:panx-benchmark}B-C and SI Fig.~4). 
+The divergence of the \textit{P.~marinus} dataset sits instead beyond the capabilities of \textit{Pangraph}. In this case no alignment kernel can reach satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve a few core pancontigs.\\
+
+For species other than \textit{P.~marinus}, the pangraphs contain thousands to tens of thousands of pancontigs, and 50\% of the pangenome sequence is contained in blocks spanning several kbps (see SI Fig.~4).
 For these species the use of null energy parameters slightly increases merging and sequence compression, at the cost of slightly more fragmented graphs (cf. SI Section IIIC and SI Fig.~4).
 Overall this benchmark showcases the capabilities and limits of \textit{PanGraph}, and demonstrates the value of adapting the pseudo-energy parameter and choice of alignment kernel to the expected diversity of the dataset considered.
 
@@ -256,9 +291,9 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
     \label{fig:panx-benchmark}
 \end{figure*}
 
-\paragraph*{Scaling with dataset size}
+\paragraph*{Scaling with dataset size.}
 
-We then explore how the properties of the pangenome graph scale with the dataset size. To do so we build pangenome graphs from random sets of isolates of increasing size from the EC dataset. Results are reported in Fig.~\ref{fig:panx-size}.\\
+We then explored how the properties of the pangraph scale with the dataset size. To do so, we build pangenome graphs from randomized subsets of isolates of increasing size from the \textit{E.~coli} dataset. Results are reported in Fig.~\ref{fig:panx-size}.\\
 The number and size of pancontigs scale sub-linearly with the number of isolates, with more than 50\% of the pangenome being included in the 10\% longest pancontigs, and core pancontigs having higher-than-average size. Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added. The size of the core genome does not decrease significantly with the addition of new strains, while the total pangenome size remains orders of magnitude smaller than the total size of all genomes included in the graph.
 
 
@@ -275,10 +310,12 @@ The number and size of pancontigs scale sub-linearly with the number of isolates
 
 \section{Graph marginalization}
 
-The interpretation of a pangenome graph containing hundreds of strains can be challenging. To this end it is often informative to inspect simpler sub-graphs comprising only a small subset of isolates. However building multiple such sub-graphs is computationally intensive. To facilitate this task \textit{PanGraph} provides the \verb|marginalize| command, that can be used to marginalize a large pangenome graph on a small subset of strains, removing all the other paths and merging transitive pancontigs. This operation is computationally much cheaper than building a new graph for the subset of strains considered.\\
-To verify that marginalized graphs are compatible with newly-built graphs, we built a pangenome graph for 50 randomly selected strains from the \textit{K. pneumoniae} dataset. We then picked 50 random pairs of strains from the same set and built two graphs for each pair: the graph obtained by marginalizing the complete graph on the pair (i.e. pairwise graph), and the graph built directly from the pair (i.e. marginalized graph, cf. Fig.~\ref{fig:marginalization}A top).
-We compare these two graphs by considering the partition they generate on the genome of the isolates they include. Each genome is partitioned in pancontigs that are either shared on the pair, or private to one isolate (cf. Fig.~\ref{fig:marginalization}A bottom). We can classify the segments in the intersection of the two partitions in different categories, depending on whether the two partitions agree on whether the segment is shared or private. Moreover segments on which the two partitions agree are further sub-divided depending on whether they are private or shared on both partitions.\\
-Compatibility between the two graphs requires segments on which the two partitions disagree to be few and short. Indeed, we verified that over the pairs we picked, these segments cover a very small fraction of the genome ($<1\%$) and have average size compatible with the default 100 bp precision threshold of \textit{PanGraph} (cf. Fig.~\ref{fig:marginalization}B-C). Conversely, agreement segments have average size of several kbps. The prevalence of agreement segment cannot be explained only by the fact that most of the genome is shared, since segments that are shared on both graphs cover on average only 85\% of the sequence. We confirmed these results using the fraction of shared k-mers, using an approach inspired by PopPUNK \cite{lees2019fast}. Namely, we approximate the fraction of homologous sequence between any two pairs using the fraction of shared k-mers ($k=21$) divided by $(1-d)^{k}$, where $d$ is the average pairwise divergence on core genes for the pair considered. This divisor corrects for k-mers on homologous sequence that are not shared due to mutations. The resulting distribution of shared sequence is indeed in very good agreement with the fraction of segments that are shared on both graphs (cf. Fig.~\ref{fig:marginalization}B), suggesting that homologous sequences are correctly merged on the complete, marginalized and pairwise graphs.\\
+The interpretation of a pangenome graph containing hundreds of strains can be challenging. To this end, it is often informative to inspect simpler sub-graphs comprising only a subset of isolates. However building many such sub-graphs is computationally intensive. To facilitate this task \textit{PanGraph} provides the \verb|marginalize| command, that can be used to project a large pangenome graph on a small subset of strains, removing all the other paths and merging transitive pancontigs. This operation is computationally much cheaper than building a new graph for the subset of strains considered.
+
+In addition to being a useful operation, marginalization allows us to quantify the consistency and robustness of pangraph construction on real data, where the ground truth is unknown.
+To verify that marginalized graphs are compatible with newly-built graphs, we built a pangenome graph for 50 randomly selected strains from the \textit{K.~pneumoniae} dataset. We then picked 50 random pairs of strains from the same set and built two graphs for each pair: the graph obtained by marginalizing the complete graph on the pair ( (i.e. marginalized graph in Fig.~\ref{fig:marginalization}A top), and the graph built directly from the pair (i.e. pairwise graph in Fig.~\ref{fig:marginalization}A top).
+In order to compare both graphs, we compute the partition they generated on the genome of the isolates they include. Each genome is partitioned in pancontigs that are either shared on the pair, or private to one isolate (cf. Fig.~\ref{fig:marginalization}A bottom). We can classify the segments in the intersection of the two partitions in different categories, depending on whether the two partitions agree on whether the segment is shared or private. Moreover segments on which the two partitions agree are further sub-divided depending on whether they are private or shared on both partitions.\\
+The compatibility between the two graphs requires segments on which the two partitions disagree to be few and short. Indeed, we verified that over the pairs we picked, these segments cover a very small fraction of the genome ($<1\%$) and have average size compatible with the default 100 bp precision threshold of \textit{PanGraph} (cf. Fig.~\ref{fig:marginalization}B-C). Conversely, segments on which the partitions agree have average size of several kbps. The fact that the two partitions almost completely agree cannot be explained simply by the fact that most of the genome is shared, since segments that are shared on both graphs cover on average only 85\% of the sequence. We confirmed these results using the fraction of shared k-mers, using an approach inspired by PopPUNK \cite{lees2019fast}. Namely, we approximate the fraction of homologous sequence between any two pairs using the fraction of shared k-mers ($k=21$) divided by $(1-d)^{k}$, where $d$ is the average pairwise divergence on core genes for the pair considered. This divisor corrects for k-mers on homologous sequence that are not shared due to mutations. The resulting distribution of shared sequence is in very good agreement with the fraction of segments that are shared on both graphs (cf. Fig.~\ref{fig:marginalization}B), suggesting that homologous sequences are correctly merged on the complete, marginalized and pairwise graphs.\\
 We performed the same test on species from the other datasets, obtaining similar results on all species whose divergence is compatible with \textit{PanGraph} capabilities (cf. SI Section IV and SI Fig.~5).
 
 
@@ -296,18 +333,24 @@ We performed the same test on species from the other datasets, obtaining similar
 
 \section{Discussion}
 
-While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of complete genomes of a bacterial species is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can adress this need, by being able to capture the structural and nucleotide diversity in both the core and accessory genome in a scalable way.
+While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of complete genomes of a bacterial species is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can address this need, by being able to capture the structural and nucleotide diversity in both the core and accessory genome in a scalable way.
 
-In our analysis we demonstrated the capabilities and limits of this tool, both on synthetic and real sequences. The efficient implementation of \textit{PanGraph} allows it to create pangenome graphs containing hundreds of isolates in a few hours on a 8-core machine. The size of pancontigs and the fraction of core sequece have good scaling properties with the number of isolates in the graph, indicating that \textit{PanGraph} is able to successfully capture pangenome properties.\\
-One of the main limitations is the diversity of the input sequences. The default \textit{minimap2} kernel is able to correctly merge  sequences up to around 5\% divergence. Sequences with higher divergence (up to 10-15\%) can be merged using the \textit{mmseqs2} alignment kernel, and tuning the $\alpha, \beta$ energy parameters (cf. eq.~(\ref{eq:pseudo-energy})), trading off speed for sensitivity.\\
+In our analysis we demonstrated the capabilities and limits of this tool, both on synthetic and real sequences. The efficient implementation of \textit{PanGraph} allows it to create pangenome graphs containing hundreds of isolates in a few hours on a 8-core machine. The size of pancontigs and the fraction of core sequence have good scaling properties with the number of isolates in the graph, indicating that \textit{PanGraph} is able to successfully capture pangenome properties. By construction \textit{PanGraph} operates in a gene-agnostic way, being only based on sequence homology, and is thus robust to gene annotation errors.\\
+One of the main limitations is the diversity of the input sequences. With the default \textit{minimap2} alignment kernel, \textit{PanGraph} is able to correctly merge genomes with up to 5\% average divergence. Sequences with higher divergence (up to 10-15\%) can be merged using the \textit{mmseqs2} alignment kernel, and tuning the $\alpha, \beta$ energy parameters (cf. eq.~(\ref{eq:pseudo-energy})), trading off speed for sensitivity.
+For more diverged data sets, homology detection tools that use protein sequences would likely be necessary.
+
 We also provide the ability to quickly marginalize big graphs on a subset of strains, obtaining simpler graphs that can more easily be explored. Graphs can also be exported in different formats for further analysis and visualization.
 
-We hope that these features will make \textit{PanGraph} a valuable tool, with the potential to spur new insights into microbial diversity and the processes by which bacteria adapt and change.
+The applications of \textit{PanGraph} are not limited to whole bacterial chromosomes. Plasmids and other Mobile Genetic Elements (MGEs) play a fundamental role in microbial evolution \cite{haudiquet2022selfish,frost2005mobile}, including in the spread of antibiotic resistance \cite{van2018spread}. MGEs often display a wide variety of sequence and structural diversity. Being able to capture and represent this diversity is key to understanding their evolution, particularly on epidemiologically relevant timescales where very few SNPs accumulate but large-scale structural changes are frequent \cite{Sheppard2016, Noll2018}.
+In this sense, the pangenome graph is a naturally powerful representation, and \textit{PanGraph} can be used to explore this diversity \cite{liam_preparation}. Some example applications on plasmids are available in \textit{PanGraph}'s documentation\footnote{See the tutorial section in \url{https://neherlab.github.io/pangraph}}.\\
+
+We hope that \textit{PanGraph} will prove a valuable tool, with the potential to spur new insights into microbial diversity and the processes by which bacteria adapt and change.
 
 
 \section*{Acknowledgement}
 We are grateful to Boris Shraiman for stimulating discussions.
 This study was funded by the University of Basel and the NSF.
+\Richard{Liam: do you need to add a funding statement?}
 
 \bibliography{cite}{}
 
