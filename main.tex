@@ -88,7 +88,7 @@ Pancontigs are directed, meaning their orientation in a path can be either 5' to
 
 To construct a pangraph, the algorithm needs to find homologous sequence within and among all input genomes.
 \emph{PanGraph's} overarching strategy is to approximate multiple-genome alignment by iterative pairwise alignment of graphs of subsets of sequences, in the spirit of progressive alignment tools \cite{feng1987progressive,darling2010progressivemauve,armstrong2020progressive}.
-Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} between both graphs and the order of pairwise alignments is determined by a guide tree.
+Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} consensus sequences between both graphs, and the order of pairwise alignments is determined by a guide tree.
 
 \subsection{Guide tree construction}
 The alignment guide tree is constructed subject to three design constraints: (i) similar sequences are aligned first, (ii) the similarity computation scales sub-quadratically with the number of input sequences, and (iii) the resultant tree is balanced to maximize parallelism.
@@ -232,7 +232,7 @@ We downloaded from RefSeq \cite{o2016reference} completely assembled chromosomes
 Among these 5 data sets, the \textit{E.~coli}, \textit{K.~pneumoniae}, \textit{M.~tuberculosis} genomes have core genome diversity below the thresholds of the minimap2 aligner, while \textit{H.~pylori} is diverse enough that we don't expect minimap2 to find all relevant matches, while mmseq2 should process this set without problems.
 \textit{P.~marinus}, on the other hand, is very diverse with an average core genome diversity of 26\% and is beyond what we expect PanGraph to handle.
 
-% The \textit{E.~Coli} (EC) dataset is the one with the highest number of isolates (307 chromosomes) and the largest pangenome. The species with the highest core genome divergence are \textit{H.~Pylori} (HP) and \textit{P. Marinus} (PM). For the former, the divergce sits at the limit of what the \textit{minimap2} alignment kernel is able to accurately merge (cf. Fig.~\ref{fig:toy-accuracy}), while for the latter the diversity is beyond even the limits of \textit{mmseqs2}.
+% The \textit{E.~coli} (EC) dataset is the one with the highest number of isolates (307 chromosomes) and the largest pangenome. The species with the highest core genome divergence are \textit{H.~pylori} (HP) and \textit{P.~marinus} (PM). For the former, the divergce sits at the limit of what the \textit{minimap2} alignment kernel is able to accurately merge (cf. Fig.~\ref{fig:toy-accuracy}), while for the latter the diversity is beyond even the limits of \textit{mmseqs2}.
 
 
 
@@ -263,7 +263,7 @@ Among these 5 data sets, the \textit{E.~coli}, \textit{K.~pneumoniae}, \textit{M
 \paragraph*{Benchmark on real data.}
 Using \textit{PanGraph}, we built multiple pangenome graphs for each species in the dataset (cf. SI Section~IIIB and IIIC). These differ by the alignment kernel used (\textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}) or by the value of the pseudo-energy parameters $\alpha,\beta$ from eq.~(\ref{eq:pseudo-energy}).
 Different alignment kernels are expected to reach different accuracy on datasets with different diversities (cf. Fig.~\ref{fig:toy-accuracy}). Moreover the use of null energy parameters ($\alpha = \beta = 0$) is expected to remove the threshold divergence of 10\% associated with the standard values of parameters ($\alpha=100$, $\beta=10$) at the cost of more fragmented pangenome graphs.\\
-\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5h for 307 E.~Coli isolates with \textit{minimap2} kernel, cf. Fig.~\ref{fig:panx-benchmark}A).
+\textit{PanGraph} can build pangenome graphs comprising hundreds of isolates in a few hours (5h for 307 \textit{E.~coli} isolates with \textit{minimap2} kernel, cf. Fig.~\ref{fig:panx-benchmark}A).
 Use of \textit{mmseqs2} consistently requires longer computational time, but provides higher sensitivity when merging highly diverged sequences.
 
 Fig.~\ref{fig:panx-benchmark}B-C and SI Fig.~4 quantify the size of the core genome, i.e.~the sum of all pancontigs present once in every genome, identified by PanGraph and the compression of the dataset, i.e.~the ratio for the sum of the lengths of all pancontigs and the sum of the lengths of all input genomes, for different dataset and the different parameters.
@@ -300,9 +300,9 @@ The number and size of pancontigs scale sub-linearly with the number of isolates
 \begin{figure*}[htb]
     \includegraphics[width=.9\textwidth]{figs/incr_size.pdf}
     \caption{{\bf Pangenome graph properties vs. dataset size}.
-        We build pangenome graphs with increasing number of isolates from the E.~Coli dataset and measure the scaling of different properties of the graphs. Graphs were built using \textit{minimap2} alignment kernel with \textit{asm20} option. Lines and shaded areas represent mean and standard deviation over 10 different repetitions on random subsets of isolates, except for the final point indicating the full graph (307 isolates).
-        \textbf{A}: n. of pancontigs in the graph. We count the total number of pacontigs (blue), the number of core pancontigs (orange) and the minimum number of pancontigs that contain more than 50\% of the pangenome (L50, black).
-        \textbf{B}: average size of pancontigs (blue), of only core pancontings (orange), and size of the smallest panconting in the minimal set that spans 50\% of the pangenome (N50, black).
+        We build pangenome graphs with increasing number of isolates from the \textit{E.~coli} dataset and measure the scaling of different properties of the graphs. Graphs were built using \textit{minimap2} alignment kernel with \textit{asm20} option. Lines and shaded areas represent mean and standard deviation over 10 different repetitions on random subsets of isolates, except for the final point indicating the full graph (307 isolates).
+        \textbf{A}: n. of pancontigs in the graph. We count the total number of pancontigs (blue), the number of core pancontigs (orange) and the minimum number of pancontigs that contain more than 50\% of the pangenome (L50, black).
+        \textbf{B}: average size of pancontigs (blue), of only core pancontigs (orange), and size of the smallest pancontig in the minimal set that spans 50\% of the pangenome (N50, black).
         \textbf{C}: cumulative size of all genomes in the pangenome graph (gray), total pangenome size (blue) and size of core pangenome (orange).
     }
     \label{fig:panx-size}
@@ -322,7 +322,7 @@ We performed the same test on species from the other datasets, obtaining similar
 \begin{figure*}[htb]
     \includegraphics[width=\textwidth]{figs/marginalize_test.pdf}
     \caption{{\bf Test of graph marginalization}.
-        \textbf{A}: we built a pangenome graph from 50 randomly chosen strains from the \textit{K. pneumoniae} dataset. We then randomly picked 50 pairs of strains. For each pair we compared the pangenome graph obtained by marginalizing the complete graph on the pair of strain, and the one obtained by building a new graph for the pair (top). The comparison is done by considering that each graph partitions a genome in shared and private segments. By combining the partitions generated by the marginalized and pairwise graphs we categorize segments in three categories, depending on whether the two partitions agree or not, and if they agree depending on whether segments are shared or private. All graphs were built using \textit{minimap2} alignment kernel with \textit{asm20} option and default value for the energy parameters.
+        \textbf{A}: we built a pangenome graph from 50 randomly chosen strains from the \textit{K.~pneumoniae} dataset. We then randomly picked 50 pairs of strains. For each pair we compared the pangenome graph obtained by marginalizing the complete graph on the pair of strain, and the one obtained by building a new graph for the pair (top). The comparison is done by considering that each graph partitions a genome in shared and private segments. By combining the partitions generated by the marginalized and pairwise graphs we categorize segments in three categories, depending on whether the two partitions agree or not, and if they agree depending on whether segments are shared or private. All graphs were built using \textit{minimap2} alignment kernel with \textit{asm20} option and default value for the energy parameters.
         \textbf{B}: distribution of the average fraction of the genome covered by segments of each category, over the 50 pairs considered (2 entries per pair). The last line represents the distribution of shared sequence, approximated using the fraction of shared k-mers corrected using sequence divergence as described in the main text.
         \textbf{C}: distribution of average segment lengths for each category over the 50 pairs considered (2 entries per pair).
     }

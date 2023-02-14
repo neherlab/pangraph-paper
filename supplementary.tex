@@ -80,7 +80,7 @@ Thanks to the guide tree architecture of \textit{PanGraph} the run time scales a
 \subsection{Accuracy in reconstructing the pangenome graph}
 
 To test the accuracy of \textit{PanGraph} in reconstructing the pangenome graph of a set of isolates we generated artificial data using the procedure described in Section~\ref{supp:data_generation}. For each simulation we obtain both a set of genome sequences and the underlying real pangenome graph. This was done using standard value of the parameters, but varying the rate of HGT in the interval $h=[0.01,1]$ and the mutation rate $\mu=[0,0.01]$. For each $(h,\mu)$ pair 25 different sets of data were generated.\\
-On each set of data we executed \textit{PanGraph} with values for the energy parameters $\alpha=0$ and $\beta=0$, and with three different alignment kernels: 
+On each set of data we executed \textit{PanGraph} with values for the energy parameters $\alpha=0$ and $\beta=0$, and with three different alignment kernels:
 \begin{itemize}
     \itemsep0pt
     \item \textit{minimap2} with option \textit{asm10},
