@@ -1,0 +1,166 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+
+\newcommand{\review}[1]{\textbf{#1}}
+\newcommand{\response}[1]{\textbf{Response:} \textit{#1}}
+
+\title{Response to Reviewers}
+\begin{document}
+\maketitle
+
+\section*{Reviewer 1}
+
+\review{R1} Bacterial evolution is driven both by local (vertical) mutation and larger scale (horizontal) genome alternations resulting in gain, loss, inversion or reassortment of genetic material. A single linear reference cannot capture this larger scale diversity, and existing graph reference structures either depend on coloured de Bruijn graphs (losing long range homology) or simplify the complex topologies by partitioning the pangenome and considering genes/loci in isolation. PanGraph provides a library and data structure to create a pangenome reference graph for closely related bacteria based on a progressive multiple sequence alignment approach.
+
+It is not easy to handle this sort of diversity efficiently and I was excited to read about the neat tricks employed to allow for a progressive alignment approach within reasonable resources, including parallelisation.
+
+This paper was clearly organised and a real pleasure to read. The niche was clearly described and demonstrated. The tests were well thought through. A lot of care had been taken to demonstrate the effects of different levels of bacterial diversity on the resulting graphs. The deliberate inclusion of P. marinus provided a clear informative demonstration of the limit of the software capabilities.
+
+The software was easy to install and the documentation available online is impressive.
+
+There was no comparison with other tools - would be appropriate if e.g. downstream mapping performance were evaluated but that is outside the scope here.\\
+
+On reading I had a few queries, which could perhaps be clarified further in the text.
+
+\begin{enumerate}
+    \item A pancontig is defined as a multiple sequence (sub)alignment. In line 54 you say "Pairwise graph alignment is performed by an all-to-all alignment of the pancontigs" which I interpreted to mean all sequences in the alignment vs all sequences in another alignment. You do later add that "To align two graphs, the consensus sequences of all pancontigs in both graphs are searched for homologies and aligned". Adding the word consensus in the earlier sentence might avoid confusion.
+
+    \item Figure 4C: The main text talks about how to interpret this, as ~1/N for TB and a bit less compression for E. coli and K. pneumoniae where the core is a smaller fraction, but this is not so easy to interpret from the figure. Would it be possible to rescale this plot to orders of magnitude of N? Or in another way aid this reading?
+
+    \item Figure 5 has 2 typos: pacontigs and panconting.
+
+    \item Throughout the text E. Coli and K. Pneumoniae etc capitalization.
+
+    \item Line 213: Core pancontigs have higher than average size - is this what you would expect given that if they are core genes then they will be present in more/all of the samples so there could be more diversity due to being more sampled?
+
+    \item Figure 6B: could you explore another way to project this data so it is not squished at the ends? I can't read off the fraction agree (shared+private) or disagree which I would like to (although at a glance this is exactly the result you want to see, so happy for it to stand if it is the best projection).
+
+    \item Have you tried running PanGraph on more than 300 references? I'd love to see another order of magnitude (not necessary for the paper, just curiosity)
+
+    \item Discussion: Do you know of/have you tried any mapping approaches which could take this reference as an input. Could you touch on the downstream applications of this graph structure? I would like to see discussion of how the graph can be used downstream - e.g. touching on what software can be used to map/align to such a data structure? Or how it can be used to analysis genome structure.
+
+    \item Supplementary Information: simulation - could you comment on how/if homologous recombination is included in this model e.g. within a gene.
+
+    \item Supplementary Information C: You comment that the use of null energy parameters results on average in "more and shorter pancontigs" but also that they result in more diverged sequences being merged into the same pancontig. Why is a more diverse pancontig more likely to become fragmented?
+\end{enumerate}
+
+
+\section*{Reviewer 2}
+
+\review{R2} In this paper, Noll et al set out to make a novel contribution to the pangenomics field. As it stands prior to this work, pangenomics splits into 3 different approaches
+
+\begin{enumerate}
+    \item People working in human genomics are working to develop a graph human reference. The challenge there is one of scale - large genomes with comparatively small pan-genomes (in the classical/bacterial sense) except for some devilish mess at the centromeres. This is essentially a subfield of its own focussed on the needs of human and clinical genetics.
+
+    \item People working in bacterial genomics who do reference-based SNP calling plus gene-presense/absence, or more recently building gene order graphs (panaroo) and even gene calling /detection on graphs (ggcaller).
+
+    \item People breaking the pan-genome up into a collection of orthologous blocks and then building a collection of pan-genome graphs (pandora), at the cost of losing order information.
+\end{enumerate}
+
+
+Noll et al set out to build a representation which combines a global pan-genome with local MSAs, and to do so in a way which scales well, and which provides easy to use visualisations. It is an ambitious aim, and in my opinion this is great work. They have developed something noone else has (see enumeration above), and the paper does a good job of describing and then evaluating their work - they are to be congratulated. This tool is sure to be extremely useful, and very valuable to the community. I have no serious reservations about the quality or calibre of the work, i admire it greatly.\\
+
+Nevertheless, there are a number of clarifications which need to be addressed before the paper is suitable for publication.\\
+
+\subsection*{Major Issues}
+
+\begin{enumerate}
+    \item Line 46: when you say "PanGraph transforms an arbitrary set of genomes into a graph that simultaneously compresses the collection of sequences and exhaustively summarizes both the structural and nucleotide-level polymorphisms." - I am a bit unclear on how the nucleotide level variation is summarised. The paper is a bit hand-wavey about this. When i dug around on github , i found this helpful page \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2/} Which answers and raises questions. So, my question: for each pancontig (which i think is the same as a block), i think what you do is infer a consensus (what is this? majority base at each position but somehow also choose an allele when there is an indel?), and then you describe the other alleles in the MSA as edits from this? You surely do not do all pairwise descriptions of SNPS, right? On that same webpage you have a section on "block consensus to node alignment" - how do you choose the order of alleles here? This is all valuable information and it would be great to have it in the supplementary or main methods somewhere.
+
+    \item Line 61: I agree and understand how each sequence can be sketched in linear time. I don't follow how you calculate all pairwise intersections through sorting the list of minimizers, nor do i see how this ends up being log-linear. For each genome, you can sort it's minimizers in nlog(n) (ie log linear), where n ~genome length. How do you get all pairwise distances from that without another multiplier of n?
+
+    \item The section on iterative graph alignment (lines 69-77) is in one sense quite clear and intuitive, but there is a lot of detail missing which leaves the reader a bit confused when they try to think about details. I would appreciate some detail being added, perhaps in the supplementary methods. For example:
+          \begin{itemize}
+              \item at the start you just have two genomes, and you scan them for orthologous regions, and you decide which to merge. As i understand it, you merge them in order of pseudoenergy ranking, which makes sense (what do you do for precise duplicates, where a region on genome 1 is a precise match for 2 regions on genome 2? random choice?)
+              \item as you move on, you are aligning graphs, and you really skim over the issue of how you do that. How does minimap or mmseqs allow you to look for homology between two graphs? The only thing i can imagine you are doing is only looking for homology between the genomes in one graph, and the genomes in the second graph. I would really appreciate it if you could clarify this and even ideally add some example figures in the supplement showing with some toy genomes how you align two graphs.
+          \end{itemize}
+
+    \item Line 92-94, same section. You give two statements:
+          "Only mergers whose alignment has negative pseudo-energy are performed"
+          and
+          "no mergers will be performed if the Hamming distance exceeds $1/\beta$."
+          These are separate criteria that prevent mergers, right? So any potential merger with negative pseudoenergy that does not fail these criteria will happen, with the caveat that you perform mergers in order?
+
+          One interesting thing here is that you are effectively merging things in reverse evolutionary order, as you have lower energy for longer more similar things which presumably diverged more recently. Not sure if that tells us anything.
+
+    \item I very much appreciated that you measure the accuracy of pangraph via this displacement idea. I started writing a kindly worded criticism that I thought your method was flawed - surely the displacement depends not only on the order of doing merges, and decisions made about what to do when there are two equally good places to merge with. I guess i was saying that slightly different evolutionary events could give the same genomes, and thereby justify the errors. However i very much like the approach you detail in the methods, numerically solving the assignment problem. So, this started as a major issue, but in the end is a compliment.
+
+    \item Line 183 - I really do not understand what is going on with your alpha,beta being set to zero. Are you saying if you stop penalising merges for having too many SNPs, then you will be able to merge more, and this will stop you from havign a 10\% divergence limit? It will also mean you make more false merges, right?
+
+    \item Why does the L50 peak go up for null-scores for mmseqs for Mtb, Pm, Kpn and Ec (Figure 4E, purple with lines) but down for helicobacter?
+
+    \item Just to make sure i understand - is it possible for sequence to be "left out" in between pancontigs?
+
+    \item About data accessibilityW
+          \begin{enumerate}
+              \item i don't see how to get the list of accessions for section IIB? Saying they were used in the Ding et al paper is not quite enough for me to be sure which ones you used.
+              \item for the graph marginalisation section, could the accessions of the strains used be in a supplementary file as well as on github? Github repos are great, but they can be deleted.
+          \end{enumerate}
+\end{enumerate}
+
+\subsection*{Minor Issues}
+
+\begin{enumerate}
+    \item line 13 - it would be good to give a reference for the statement that evem closelt related genomes can differ widely in gene content.
+          I don't know what the first paper to show this was, the earliest i am aware of is from Eduardo Rocha's team, which annpoyingly i can't locate right now, but Figure 2 here shows it \url{https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1008866} - you can be very close in patristic distance and have very different gene repertoire.
+          Feel free to replace with a better reference, this si just meant to be helpful.
+
+    \item Why on earth is the "get an MSA of a block" option in pangraph called "polish"?
+
+    \item line 48: "Pancontigs are connected by an edge if they are syntenic on at least one input sequence;" - i think this is a bit of an abuse of modern language. The word syntenic is generally used to mean two genes/whatever have order conserved on multiple chromosomes (although some googling tells me that in classical genetics it meant things were on the same chromosome). Anyway, my understanding is pancontigs are connected by an edge if one of the input genomes is spelled out by going from one to the other. So it's about adjacency rather than synteny.
+
+    \item Line 131: was N really=100? on the plot in figure 2, you have n.isolates going up to 1000
+
+    \item Figure 5 legend, lower case C in "coli" of "E. coli". Also italics.
+\end{enumerate}
+
+
+It is a bit depressing and unhelpful to structure a review only around problems and quibbles, so i wanted also to raise a number of
+Things I liked:
+
+\begin{enumerate}
+    \item The paper is concise and well written, i really enjoyed reading it
+    \item I liked the structure of the algorithms section, again i congratulate the authors, this is so much clearer than most papers. eg i was particularly happy to see the Guide Tree section start with your design constraints/aims.
+    \item Fantastic choice of species in your empirical dataset - P. marinus diversity is insane.
+    \item Line 215 - this is a remarkable achievement: "Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added"
+    \item Congratulations
+\end{enumerate}
+
+
+\section*{Reviewer 3}
+
+\review{R3} The article "PanGraph: scalable bacterial pan-genome graph construction" reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose.\textbf{ The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.}\\
+
+For instance the authors state: "Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated "bags of genes", and thus are not suited for this new era.". There are many pan-genome analysis tools which treat the pan-genome as a graph and generate a PGG. There are two primary differences in these existing tools: those which generate a graph at the nucleotide level with nodes representing basepairs (sometimes nonbranching runs of nodes are collapsed) and those where nodes represent larger features such as genes.\\
+PanGraph appears to wed these approaches to some extent in that the alignments are done at the nucleotide level and the features are extracted as a characteristic of the alignments.\\
+
+An obvious lack in PanGraph is an attempt to map existing annotations back onto the generated PGG which is a necessity for usefulness to biologists. The mechanism for this is obvious but providing a useful user interface might be tedious.\\
+
+This statement: "While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging. Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology (Iqbal et al., 2012; Muggli et al., 2017)." appears to be incomplete at best. De Bruijn graph-based assemblers routinely collapse nonbranching portions of the graph into longer sequences than the k-mer size used for construction.\\
+One early approach that does not explicitly generate a pan-genome graph but deals with some of the rearrangement issues cited by the authors is:
+\begin{itemize}
+    \item Angiuoli SV, Dunning Hotopp JC, Salzberg SL, Tettelin H. Improving pan-genome annotation using whole genome multiple alignment. BMC Bioinformatics. 2011 Jun 30;12:272. doi: 10.1186/1471-2105-12-272. PMID: 21718539; PMCID: PMC3142524.
+    \item Angiuoli SV, Salzberg SL. Mugsy: fast multiple alignment of closely related whole genomes. Bioinformatics. 2011 Feb 1;27(3):334-42. doi: 10.1093/bioinformatics/btq665. Epub 2010 Dec 9. PMID: 21148543; PMCID: PMC3031037.
+\end{itemize}
+While the underlying approach is quite different, a very similar PGG to PanGraph is produced by a different method with similar nodes represented by multiple sequence alignments and edges with the same meaning:
+\begin{itemize}
+    \item Sutton G, Fogel GB, Abramson B, Brinkac L, Michael T, Liu ES, Thomas S. A pan-genome method to determine core regions of the Bacillus subtilis and Escherichia coli genomes. F1000Res. 2021 Apr 13;10:286. doi: 10.12688/f1000research.51873.2. PMID: 34113437; PMCID: PMC8156514.
+    \item Chan AP, Sutton G, DePew J, Krishnakumar R, Choi Y, Huang XZ, Beck E, Harkins DM, Kim M, Lesho EP, Nikolich MP, Fouts DE. A novel method of consensus pan-chromosome assembly and large-scale comparative analysis reveal the highly flexible pan-genome of Acinetobacter baumannii. Genome Biol. 2015 Jul 21;16(1):143. doi: 10.1186/s13059-015-0701-6. PMID: 26195261; PMCID: PMC4507327.
+\end{itemize}
+
+I believe this statement: "It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order." is the essential step in the process and perhaps deserves more focus. It captures two important issues: \textbf{aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum}. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.\\
+
+In the pseudo-energy discussion a further parameter is mentioned: "In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.". The value chosen for this parameter should be explicitly stated along with a rationale for the choice. It is also not clear if any of the splitting pancontigs are less than this value if the entire merger is dropped or just massaged to not have the too small new pancontig.\\
+
+How are pancontig consensus sequences determined and updated? I could not find any details about this. This is not a trivial operation. My reading of the article seems to imply that a complete multiple sequence alignment is not done for each merger. Does the consensus sequence degenerate iteratively with mergers? For the simulated data how accurate are the final pancontig consensus sequences?\\
+
+The statement: "Upon completion, transitive 108 edges within the graph, i.e., edges along which all path are co-linear, are removed by merging adjacent pancontigs." needs clarification. Why would these pancontigs have been split in the first place? Is there any necessary special issues with producing the merged multiple sequence alignment?\\
+
+It is not clear to me what Table 1 shows. Is this published data from PanX or data from PanGraph? Either way the value of 0.7 Mbp for the E. coli core genome length seems implausibly low for high quality complete genomes. The authors should justify this. The authors should also include analysis on the calculated core genome length versus actual core genome length for the simulated data. The authors might want to consider some form of post processing of the PGG to collapse what have been called bubbles in the graph if alignment of the pancontigs on different edges of the bubble warrant it.\\
+
+Overall the paper is well written. I like the basic methodology and the attention to using robust efficient existing algorithms and combining them to keep efficiency in mind. I am very concerned about the potential fracturing of the PGG where unfortunately the devil is in the details and am not convinced that the fracturing will not prevent some limit on the number of genomes which can be used for a pangenome.\\
+
+An issue I have struggled with in my own work is how to represent an orthologous gene cluster (node/vertex) within the PGG when the gene sequence in some genomes has an insertion event such as an IS element within the gene. I assume for PanGraph that this would necessitate splitting the node into multiple pancontigs. How is this sustainable for species with large numbers of active IS elements? This could also be investigated for PanGrah using suitable simulated data.
+
+\end{document}
