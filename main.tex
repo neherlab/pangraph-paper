@@ -83,7 +83,7 @@ The underlying graph data structure can be exported into numerous formats for do
 \section{Algorithms and implementation}
 \emph{PanGraph} transforms an arbitrary set of genomes into a \emph{graph} that simultaneously compresses the collection of sequences and exhaustively summarizes both the structural and nucleotide-level polymorphisms.
 The graph is composed of \emph{pancontigs}, which represent linear multiple-sequence alignments of homologous sequence found within one or more input genomes.
-\emph{Pancontigs} are connected by an edge if they are syntenic on at least one input sequence; individual sequences are then recapitulated by contiguous \emph{paths} through the graph.
+\emph{Pancontigs} are connected by an edge if they are adjacent in at least one input sequence; individual sequences are then recapitulated by contiguous \emph{paths} through the graph.
 Pancontigs are directed, meaning their orientation in a path can be either 5' to 3' or vice versa.
 
 To construct a pangraph, the algorithm needs to find homologous sequence within and among all input genomes.

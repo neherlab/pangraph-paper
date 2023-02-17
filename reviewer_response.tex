@@ -7,7 +7,7 @@
 \newcommand{\Marco}[1]{{\color{gray}Marco: #1}}
 \newcommand{\Liam}[1]{{\color{teal}Liam: #1}}
 
-\definecolor{response}{rgb}{0.1, 0.1, 0.1}
+\definecolor{response}{rgb}{0.2, 0.2, 0.2}
 \newcommand{\reviewer}[2]{\textbf{#1:} #2\vskip 5mm}
 \newcommand{\response}[1]{{\it {\color{response}\textbf{Response:} #1}}\vskip 5mm}
 % \newcommand{\responsedraft}[1]{{\it {\color{purple}\textbf{ResponseDraft:} #1}}\vskip 5mm}
@@ -37,10 +37,9 @@
 \Liam{that's clear to me.}
 
 \reviewer{R1.2}{Figure 4C: The main text talks about how to interpret this, as ~1/N for TB and a bit less compression for E. coli and K. pneumoniae where the core is a smaller fraction, but this is not so easy to interpret from the figure. Would it be possible to rescale this plot to orders of magnitude of N? Or in another way aid this reading?}
-\Marco{maybe try visualizing it as deviation from "one strain" compression (1/N)? But the "maximal" compression depends not only on the sample size N but also on the gene frequency distribution. Another possible comparison might be to pangraph's estimation of the pangenome size, but again we might have different effects coming into play.}\\
-\Liam{yes, I think just adding a dashed line for 1/N for each species to the plot would aid that reading and satisfy this point.}
-
-\response{Test}
+\response{we agree with the reviewer that it is important to be able visually compare the compression with the number $N$ of isolates for each species, and we thank him for the suggestion. We modified fig.~4C in the main text and fig.~4I in SI marking the value of $1/N$ for each species with horizontal lines, and updated the captions accordingly.}
+% \Marco{maybe try visualizing it as deviation from "one strain" compression (1/N)? But the "maximal" compression depends not only on the sample size N but also on the gene frequency distribution. Another possible comparison might be to pangraph's estimation of the pangenome size, but again we might have different effects coming into play.}\\
+% \Liam{yes, I think just adding a dashed line for 1/N for each species to the plot would aid that reading and satisfy this point.}
 
 \reviewer{R1.3}{Figure 5 has 2 typos: pacontigs and panconting.}
 \Marco{fixed.}
@@ -113,10 +112,10 @@
       "Only mergers whose alignment has negative pseudo-energy are performed"
       and
       "no mergers will be performed if the Hamming distance exceeds $1/\beta$."
-      These are separate criteria that prevent mergers, right? So any potential merger with negative pseudoenergy that does not fail these criteria will happen, with the caveat that you perform mergers in order?
-      \Marco{the second is actually a consequence of the first, but except for that it is correct.}\\
-      \Liam{maybe say `$\beta$ controls the maximal sequence divergence between the two merger-candidates. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$.'}\\
+      These are separate criteria that prevent mergers, right? So any potential merger with negative pseudoenergy that does not fail these criteria will happen, with the caveat that you perform mergers in order?\\
       One interesting thing here is that you are effectively merging things in reverse evolutionary order, as you have lower energy for longer more similar things which presumably diverged more recently. Not sure if that tells us anything.}
+\Marco{the second is actually a consequence of the first, but except for that it is correct.}\\
+\Liam{maybe say `$\beta$ controls the maximal sequence divergence between the two merger-candidates. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$.'}\\
 \Marco{indeed, the parameter $\beta$ could control how far in the past one wants to accept merges. Should we mention this explicilty in the text?}\\
 \Liam{could be mentioned as an `intuitively, this should correspond to merging of homologous stretches of sequence in roughly reverse evolutionary order'.}
 
@@ -155,14 +154,17 @@
 \Liam{this sounds good. I think they misunderstood that polish is not just `extract the MSA' but actually produces a pangraph with the same structure but redone alignments. I think what is in the documentation there is great and could almost go straight in the paper, something like: `At each stage pancontigs are compared and aligned using their consensus sequences. This shortens considerably the time needed, but might introduce minor inconsistencies and artifacts in the alignments. These can be removed at the end of the process by reconstructing the sequences in the block and performing a multiple sequence alignment (see Polish command in documentation).')}
 
 \reviewer{R2.3}{line 48: "Pancontigs are connected by an edge if they are syntenic on at least one input sequence;" - i think this is a bit of an abuse of modern language. The word syntenic is generally used to mean two genes/whatever have order conserved on multiple chromosomes (although some googling tells me that in classical genetics it meant things were on the same chromosome). Anyway, my understanding is pancontigs are connected by an edge if one of the input genomes is spelled out by going from one to the other. So it's about adjacency rather than synteny.}
-\Marco{I agree, we could use ``if they are ajacent/contiguous on at least one input sequence''?}\\
-\Liam{adjacent sounds good.}
+% \Marco{I agree, we could use ``if they are ajacent/contiguous on at least one input sequence''?}\\
+% \Liam{adjacent sounds good.}
+\response{we agree with the reviewer observation. We modified ``syntenic on'' to ``adjacent in'' in line 48.}
 
 \reviewer{R2.4}{Line 131: was N really=100? on the plot in figure 2, you have n.isolates going up to 1000}
-\Marco{$N=100$ was the standard value for the rest of the simulations (e.g. later for accuracy). I did a tentative correction: removed from the main the specification on population size and mentioned to check the SI for details on standard parameter values.}
+% \Marco{$N=100$ was the standard value for the rest of the simulations (e.g. later for accuracy). I did a tentative correction: removed from the main the specification on population size and mentioned to check the SI for details on standard parameter values.}
+\response{The value $N=100$ is the standard value used in the rest of the simulation, but as the reviewer pointed out this value is varied for the results showed in fig.~2 and the statement was confusing. We modified line 131 removing the value of $N$ and referring to SI section 1 for the standard value of simulation parameters.}
 
 \reviewer{R2.5}{Figure 5 legend, lower case C in "coli" of "E. coli". Also italics.}
-\Marco{fixed.}
+% \Marco{fixed.}
+\response{The legend has been corrected.}
 
 
 \reviewer{R2}{It is a bit depressing and unhelpful to structure a review only around problems and quibbles, so i wanted also to raise a number of
@@ -247,6 +249,7 @@
 % - 6) annotate the figure with numbers
 % - 8) reference: graph alighner, ggCaller? Many take GFA as input.\
 % - 10) this is something that could be explained in the SIAS: one starts with long and shallow blocks and as graphs are merged and propagated down the tree the blocks become shorter and deeper. Removing energy threshold just causes more merging and deeper but shorter blocks. (figure?)
+% - test pangraph with 500 E.coli.
 % Reviewer 2:
 % - 1) do not mention blocks, only pancontigs
 % - specify better the meaning of null energy parameters and why more merging.
