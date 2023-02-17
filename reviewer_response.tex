@@ -4,13 +4,12 @@
 \usepackage{xcolor}
 
 
-\newcommand{\review}[1]{\textbf{#1}}
 \newcommand{\Marco}[1]{{\color{gray}Marco: #1}}
 \newcommand{\Liam}[1]{{\color{teal}Liam: #1}}
 
-% \definecolor{response}{rgb}{0.1, 0.1, 0.1}
-% \newcommand{\reviewer}[2]{\textbf{#1:} #2\vskip 5mm}
-% \newcommand{\response}[1]{{\it {\color{response}\textbf{Response:} #1}}\vskip 5mm}
+\definecolor{response}{rgb}{0.1, 0.1, 0.1}
+\newcommand{\reviewer}[2]{\textbf{#1:} #2\vskip 5mm}
+\newcommand{\response}[1]{{\it {\color{response}\textbf{Response:} #1}}\vskip 5mm}
 % \newcommand{\responsedraft}[1]{{\it {\color{purple}\textbf{ResponseDraft:} #1}}\vskip 5mm}
 
 \title{Response to Reviewers}
@@ -21,7 +20,7 @@
 
 \subsection*{Reviewer 1}
 
-\review{R1} Bacterial evolution is driven both by local (vertical) mutation and larger scale (horizontal) genome alternations resulting in gain, loss, inversion or reassortment of genetic material. A single linear reference cannot capture this larger scale diversity, and existing graph reference structures either depend on coloured de Bruijn graphs (losing long range homology) or simplify the complex topologies by partitioning the pangenome and considering genes/loci in isolation. PanGraph provides a library and data structure to create a pangenome reference graph for closely related bacteria based on a progressive multiple sequence alignment approach.
+\reviewer{R1}{Bacterial evolution is driven both by local (vertical) mutation and larger scale (horizontal) genome alternations resulting in gain, loss, inversion or reassortment of genetic material. A single linear reference cannot capture this larger scale diversity, and existing graph reference structures either depend on coloured de Bruijn graphs (losing long range homology) or simplify the complex topologies by partitioning the pangenome and considering genes/loci in isolation. PanGraph provides a library and data structure to create a pangenome reference graph for closely related bacteria based on a progressive multiple sequence alignment approach.
 
 It is not easy to handle this sort of diversity efficiently and I was excited to read about the neat tricks employed to allow for a progressive alignment approach within reasonable resources, including parallelisation.
 
@@ -31,52 +30,52 @@ The software was easy to install and the documentation available online is impre
 
 There was no comparison with other tools - would be appropriate if e.g. downstream mapping performance were evaluated but that is outside the scope here.\\
 
-On reading I had a few queries, which could perhaps be clarified further in the text.
+On reading I had a few queries, which could perhaps be clarified further in the text.}
 
-\begin{enumerate}
-      \item A pancontig is defined as a multiple sequence (sub)alignment. In line 54 you say "Pairwise graph alignment is performed by an all-to-all alignment of the pancontigs" which I interpreted to mean all sequences in the alignment vs all sequences in another alignment. You do later add that "To align two graphs, the consensus sequences of all pancontigs in both graphs are searched for homologies and aligned". Adding the word consensus in the earlier sentence might avoid confusion.\\
-            \Marco{changed to ``Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} consensus sequences between both graphs, and the order of pairwise alignments is determined by a guide tree." Too compressed? I could also break in two sentences and expand a bit more.}\\
-            \Liam{that's clear to me.}
+\reviewer{R1.1}{A pancontig is defined as a multiple sequence (sub)alignment. In line 54 you say "Pairwise graph alignment is performed by an all-to-all alignment of the pancontigs" which I interpreted to mean all sequences in the alignment vs all sequences in another alignment. You do later add that "To align two graphs, the consensus sequences of all pancontigs in both graphs are searched for homologies and aligned". Adding the word consensus in the earlier sentence might avoid confusion.}
+    \Marco{changed to ``Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} consensus sequences between both graphs, and the order of pairwise alignments is determined by a guide tree." Too compressed? I could also break in two sentences and expand a bit more.}\\
+    \Liam{that's clear to me.}
 
-      \item Figure 4C: The main text talks about how to interpret this, as ~1/N for TB and a bit less compression for E. coli and K. pneumoniae where the core is a smaller fraction, but this is not so easy to interpret from the figure. Would it be possible to rescale this plot to orders of magnitude of N? Or in another way aid this reading?\\
-            \Marco{maybe try visualizing it as deviation from "one strain" compression (1/N)? But the "maximal" compression depends not only on the sample size N but also on the gene frequency distribution. Another possible comparison might be to pangraph's estimation of the pangenome size, but again we might have different effects coming into play.}\\
-            \Liam{yes, I think just adding a dashed line for 1/N for each species to the plot would aid that reading and satisfy this point.}
+\reviewer{R1.2}{Figure 4C: The main text talks about how to interpret this, as ~1/N for TB and a bit less compression for E. coli and K. pneumoniae where the core is a smaller fraction, but this is not so easy to interpret from the figure. Would it be possible to rescale this plot to orders of magnitude of N? Or in another way aid this reading?}
+    \Marco{maybe try visualizing it as deviation from "one strain" compression (1/N)? But the "maximal" compression depends not only on the sample size N but also on the gene frequency distribution. Another possible comparison might be to pangraph's estimation of the pangenome size, but again we might have different effects coming into play.}\\
+    \Liam{yes, I think just adding a dashed line for 1/N for each species to the plot would aid that reading and satisfy this point.}
 
-      \item Figure 5 has 2 typos: pacontigs and panconting.\\
-            \Marco{fixed.}
+\response{Test}
 
-      \item Throughout the text E. Coli and K. Pneumoniae etc capitalization.\\
-            \Marco{fixed.}
+\reviewer{R1.3}{Figure 5 has 2 typos: pacontigs and panconting.}
+    \Marco{fixed.}
 
-      \item Line 213: Core pancontigs have higher than average size - is this what you would expect given that if they are core genes then they will be present in more/all of the samples so there could be more diversity due to being more sampled?\\
-            \Marco{here the pancontig size is the consensus sequence length. I would say that the fact that they have higher-than-average size is mostly due to synteny. Long blocks (several kbps) contain core genes that always appear in the same order, without any accessory sequence ever occurring in these regions. As opposed to accessory regions with a lot of structural diversity, that generates short fragments. But here the main message is that core blocks are well-behaved (close to N50 line in the figure), as opposed to fine-grained structural diversity, part of which contains artifacts generated by the block size limit (many short 100bp blocks). Should we show block frequency distributions in the supplementary?}\\
-            \Liam{I don't understand their point on diversity - maybe they misunderstood the meaning of size. Maybe pancontig `length' is clearer? I agree with you about synteny and think this is a nice point to add here to explain the observation.}
+\reviewer{R1.4}{Throughout the text E. Coli and K. Pneumoniae etc capitalization.}
+    \Marco{fixed.}
 
-      \item Figure 6B: could you explore another way to project this data so it is not squished at the ends? I can't read off the fraction agree (shared+private) or disagree which I would like to (although at a glance this is exactly the result you want to see, so happy for it to stand if it is the best projection).\\
-            \Marco{maybe add mean and standard deviation as numbers on the side?}\\
-            \Liam{that seems ideal.}
+\reviewer{R1.5}{Line 213: Core pancontigs have higher than average size - is this what you would expect given that if they are core genes then they will be present in more/all of the samples so there could be more diversity due to being more sampled?}
+    \Marco{here the pancontig size is the consensus sequence length. I would say that the fact that they have higher-than-average size is mostly due to synteny. Long blocks (several kbps) contain core genes that always appear in the same order, without any accessory sequence ever occurring in these regions. As opposed to accessory regions with a lot of structural diversity, that generates short fragments. But here the main message is that core blocks are well-behaved (close to N50 line in the figure), as opposed to fine-grained structural diversity, part of which contains artifacts generated by the block size limit (many short 100bp blocks). Should we show block frequency distributions in the supplementary?}\\
+    \Liam{I don't understand their point on diversity - maybe they misunderstood the meaning of size. Maybe pancontig `length' is clearer? I agree with you about synteny and think this is a nice point to add here to explain the observation.}
 
-      \item Have you tried running PanGraph on more than 300 references? I'd love to see another order of magnitude (not necessary for the paper, just curiosity)\\
-            \Marco{not really, I never tried on ~500 or ~1000 strains. I could try but would not consider this a priority.}\\
-            \Liam{agree that it's not necessary.}
+\reviewer{R1.6}{Figure 6B: could you explore another way to project this data so it is not squished at the ends? I can't read off the fraction agree (shared+private) or disagree which I would like to (although at a glance this is exactly the result you want to see, so happy for it to stand if it is the best projection).}
+    \Marco{maybe add mean and standard deviation as numbers on the side?}\\
+    \Liam{that seems ideal.}
 
-      \item Discussion: Do you know of/have you tried any mapping approaches which could take this reference as an input. Could you touch on the downstream applications of this graph structure? I would like to see discussion of how the graph can be used downstream - e.g. touching on what software can be used to map/align to such a data structure? Or how it can be used to analysis genome structure.\\
-            \Marco{other than explicitly exporting block sequences and mapping to those, we do not really using the pangenome graph as a reference against which to map new strains... But we could expand the discussion with more ideas on applications to study pangenome organization and evolution. For software for further analysis and exploration I have \href{https://github.com/mmolari/pypangraph}{this package} to explore and interact with graphs in python, but not sure it's worth mentioning.}\\
-            \Liam{Some ideas that could be mentioned. (1) I think one obvious (bad!) use would be to take the core blocks and map reads to those as a `core reference'. (2) I know pandora has \href{https://github.com/iqbal-lab-org/make_prg/}{\texttt{make\_prg}} which will construct a `pangenome reference graph' from a set of aligned sequences - I didn't try it on pangraph output. (3) For genome structure, exploring `hotspots' in the graph as \href{https://www.nature.com/articles/s41467-017-00808-w}{this paper} does could be done using in/out degree of pancontigs.}
+7. Have you tried running PanGraph on more than 300 references? I'd love to see another order of magnitude (not necessary for the paper, just curiosity)\\
+    \Marco{not really, I never tried on ~500 or ~1000 strains. I could try but would not consider this a priority.}\\
+    \Liam{agree that it's not necessary.}
 
-      \item Supplementary Information: simulation - could you comment on how/if homologous recombination is included in this model e.g. within a gene.\\
-            \Marco{homologous recombination is not implemented directly in the model. Only sequence transfer between strains. Genes are not explicitly modeled in the simulation.}\\
-            \Liam{think just adding a comment in the SI saying this is required.}
+8. Discussion: Do you know of/have you tried any mapping approaches which could take this reference as an input. Could you touch on the downstream applications of this graph structure? I would like to see discussion of how the graph can be used downstream - e.g. touching on what software can be used to map/align to such a data structure? Or how it can be used to analysis genome structure.\\
+    \Marco{other than explicitly exporting block sequences and mapping to those, we do not really using the pangenome graph as a reference against which to map new strains... But we could expand the discussion with more ideas on applications to study pangenome organization and evolution. For software for further analysis and exploration I have \href{https://github.com/mmolari/pypangraph}{this package} to explore and interact with graphs in python, but not sure it's worth mentioning.}\\
+    \Liam{Some ideas that could be mentioned. (1) I think one obvious (bad!) use would be to take the core blocks and map reads to those as a `core reference'. (2) I know pandora has \href{https://github.com/iqbal-lab-org/make_prg/}{\texttt{make\_prg}} which will construct a `pangenome reference graph' from a set of aligned sequences - I didn't try it on pangraph output. (3) For genome structure, exploring `hotspots' in the graph as \href{https://www.nature.com/articles/s41467-017-00808-w}{this paper} does could be done using in/out degree of pancontigs.}
 
-      \item Supplementary Information C: You comment that the use of null energy parameters results on average in "more and shorter pancontigs" but also that they result in more diverged sequences being merged into the same pancontig. Why is a more diverse pancontig more likely to become fragmented?\\
-            \Marco{I think that basically the reason is that merging more distant paralogs/orthologs can fragment more the graph. Maybe we could explain this more explicitly in the text.}\\
-            \Liam{makes sense and explaining this reasoning sounds good.}
-\end{enumerate}
+9. Supplementary Information: simulation - could you comment on how/if homologous recombination is included in this model e.g. within a gene.\\
+    \Marco{homologous recombination is not implemented directly in the model. Only sequence transfer between strains. Genes are not explicitly modeled in the simulation.}\\
+    \Liam{think just adding a comment in the SI saying this is required.}
+
+10. Supplementary Information C: You comment that the use of null energy parameters results on average in "more and shorter pancontigs" but also that they result in more diverged sequences being merged into the same pancontig. Why is a more diverse pancontig more likely to become fragmented?\\
+    \Marco{I think that basically the reason is that merging more distant paralogs/orthologs can fragment more the graph. Maybe we could explain this more explicitly in the text.}\\
+    \Liam{makes sense and explaining this reasoning sounds good.}
 
 
 \subsection*{Reviewer 2}
 
-\review{R2} In this paper, Noll et al set out to make a novel contribution to the pangenomics field. As it stands prior to this work, pangenomics splits into 3 different approaches
+In this paper, Noll et al set out to make a novel contribution to the pangenomics field. As it stands prior to this work, pangenomics splits into 3 different approaches
 
 \begin{enumerate}
       \item People working in human genomics are working to develop a graph human reference. The challenge there is one of scale - large genomes with comparatively small pan-genomes (in the classical/bacterial sense) except for some devilish mess at the centromeres. This is essentially a subfield of its own focussed on the needs of human and clinical genetics.
@@ -184,7 +183,7 @@ Things I liked:
 
 \subsection*{Reviewer 3}
 
-\review{R3} The article "PanGraph: scalable bacterial pan-genome graph construction" reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose.\textbf{ The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.}\\
+The article "PanGraph: scalable bacterial pan-genome graph construction" reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose.\textbf{ The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.}\\
 
 For instance the authors state: "Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated "bags of genes", and thus are not suited for this new era.". There are many pan-genome analysis tools which treat the pan-genome as a graph and generate a PGG. There are two primary differences in these existing tools: those which generate a graph at the nucleotide level with nodes representing basepairs (sometimes nonbranching runs of nodes are collapsed) and those where nodes represent larger features such as genes.\\
 PanGraph appears to wed these approaches to some extent in that the alignments are done at the nucleotide level and the features are extracted as a characteristic of the alignments.\\

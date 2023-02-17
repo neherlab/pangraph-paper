@@ -286,7 +286,7 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
         We build pangenome graphs from fully-assembled chromosomes from 5 different bacterial species. For each species we build graphs with three different alignment kernel options (\textit{minimap2} with \textit{asm10} or \textit{asm20} option and \textit{mmseqs2}) and two different settings for the pseudo-energy parameters $\alpha, \beta$ (standard or null values).
         \textbf{A}: \textit{PanGraph} wall-time when run in parallel on 8 cores.
         \textbf{B}: fraction of core pangenome in the pangenome graph.
-        \textbf{C}: sequence compression, defined as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph.
+        \textbf{C}: sequence compression, defined as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph. For reference, the inverse of this number is marked.
     }
     \label{fig:panx-benchmark}
 \end{figure*}
