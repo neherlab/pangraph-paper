@@ -69,20 +69,35 @@ The merging operation is performed in the following steps:
           \begin{enumerate}
               \item We check that no prior merges have been performed on the same two pancontigs. Sometimes multiple matches are found in the same pancontig, and in this case we prioritize the ones with higher pseudo-energy. Any following match will be discarded in this step. The same merge might however be performed later on in the self-map phase of the algorithm (see step 4).
               \item Flanking regions of the consensus sequences that are not part of the matches are cut and not merged and stored in separate pancontigs. One exceptions is when one of the flanking regions is shorted than the threshold length $\Lthr$. In this case instead of creating a very short pancontig this region is stored as a small flanking \textbf{insertion (check)} in the merged pancontig.
-              \item The CIGAR string of the match is then parsed and subdivided in sub-regions. Regions can be either shared or private to query or reference. Shared regions contain Each insertion or deletion longer than $\Lthr$ will cause a split in the merge, and will be stored as a separate panconting. \textbf{(what happens with small matches in longer flanking indels?)}
-              \item
+              \item The remaining homolous region is then a candidate for the merging. However the merging might result in more than a single panconting, depending on the underlying alignment. If the alignment contains insertions or deletions longer thant $\Lthr$, these need to appear as separate matches. To this end the CIGAR string is parsed, and the long match is potentially split in multiple sub-matches, with interposed long insertions or deletions that will be saved as separate pancontigs. \textbf{(what happens with small matches in longer flanking indels?)}
+              \item At this point every matching sub-region is processed to produce a single merged pancontig. This is done by expanding the alignments of the two original sub-contigs, and stitching them together following the instructions contained in the CIGAR string of the sub-match. Once the full alignment is constructed the new consensus sequence is calculated using the frequency of nucleotides at each position. Each sequence in the alignment is then encoded as variations over this consensus. This terminates the creation of a new pancontigs. \textbf{(check)}.
+              \item The merging is repeated for every matching sub-region of the alignment. Each merged pancontig is shorter in size than the startin pancontigs, since it only represents a sub part of the sequence, but its allignment has depth equal to the sum of the depth of the original pancontigs. The original pancontigs are then removed from the pangenome graph, and no new merges can be performed on them at this step of the algorithm. The newly-created pancontigs are added to the graph and the corresponding paths are updated.
           \end{enumerate}
-    \item Once the list of all matches has been exhausted and all merges have been performed, the two graphs have been turned into
+    \item Once the list of all matches has been exhausted the two graphs have been merged into one. However at the previous stage only one merge could be performed per pancontig, which could be insufficient to collapse all of the homology contained in the graph. To this end we repeat the procedure described in step 3, but instead of looking for matches between pancontigs of two different graphs, we search for matches between all pancontigs in the same graph. Merges are performed following the same rules, and this procedure is repeated until no new merges can be performed.
+    \item In the final step of the procedure we perform some final grooming of the graph. This includes for example removing transitive edges, i.e. pairs of pancontigs that are always traversed in the same way by all paths. These pairs are merged in a single pancontig. This can happen for example when dealing with circular sequences such as bacterial chromosomes. These sequences are transformed into a single linear block at the beginning of the algorithm, which introduces an artificial cut. When this elementary graph is propagated and the unique block is split, a transitive edge is generated across the artificial cut. We remove it in this step. \textbf{(check.)}
 \end{enumerate}
 
+% comment: a bit too verbose? The last part has been added to address the reviewer's comments but sounds superfluous even in the SI.
 % post-processing step: transitive edges. Explain.
 
 % blocks become progressively deeper but shorter. The energy parameters and the threshold lengt determine when to stop.
 % implicit assumption of star-like topology.
+% consensus updated but no solving of MSA
 
 \subsection*{PanGraph parameters effect}
+
+We conclude this section with some comments on the effect of PanGraph's parameters on the resulting pangenome graphs.
+
+The value of $\Lthr$ controls the minimal size of blocks. Indels shorter than this size are saved as variation in alignments, rather than as separate blocks. As such this parameter partially controls the fragmentation of the graph. It should be set
+The default value in PanGraph is set to 100 bp.
+A similar role is played by the parameter $\alpha$. This can be interpreted as the cost of...
+% discuss alpha with this?
+
+The value of $\beta$ and
 % scale separation effect. Maybe move somewhere else?
 % also discussion on orthologs and paralogs.
+% a summary of these considerations in the main text, with reference to this paragraph?
+% references to SI in the main text.
 
 
 \section{Generation of synthetic data}
