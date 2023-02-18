@@ -12,6 +12,7 @@
 \newcommand{\Lpang}{L_\text{pang}}
 \newcommand{\Lgen}{L_\text{gen}}
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
+\newcommand{\Lthr}{L_{\min}}
 
 \begin{document}
 \title{PanGraph: scalable bacterial pan-genome graph construction \\ Supplementary Information}
@@ -29,6 +30,60 @@
 \affiliation{Biozentrum, University of Basel, Basel, Switzerland \looseness=-5}
 
 \maketitle
+
+\section{Graph merging algorithm}
+\label{supp:graph_merging}
+
+In this section we explain in more detail the procedure used to merge two pangenome graphs together. This procedure is at the core of PanGraphs's algorithm.
+
+As explained in the main text, the full pangenome graph is built by placing genomes on terminal leaves of a guide tree. These genomes are initially considered as elementary graphs composed of a single \textit{pancontig}. These graphs are then propagated along the tree towards the root, and at each intersection a merge operation is performed. The full pangenome graph is then collected from the root.
+
+\subsection*{pangenome graph representation}
+
+As a preliminary step in the explanation we spend few words on the pangenome graph representation of pangraph. A pangenome graph is essentially composed of two elements: pancontigs, which encode for alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs.
+
+Each \textbf{pancontig} contains the full information on the alignment of homologous sequences it contains. In PanGraph each pancontig is econded with a consensus sequence, and each line of the alignment is saved as variations over the consensus (mutations, insertions and deletions). More information on the precise encoding used can be found in PanGraph documentation.\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2/\#From-block-consensus-to-node-alignment}}
+
+Each \textbf{path} is an oriented collection of pancontigs that represents a genome. For each item in the sequence along with the pacontig id PanGraph also stores the pancontig orientation (whether homology with the consensus is on the forward the reverse strain of the genome) and which variations on the pancontig consesus (i.e. which line in the pancontig alignment) correspond to this precise location in the genome.
+
+From knowledge of all the pancontigs and pahts, every single genome can be exactly reconstructed. Every part of the sequence is always encoded in a pancontig. ``Small-scale'' difference between genomes (i.e. SNPs, small insertions and deletions) are encoded in pancontigs as variations over the consensus. ``Large-scale'' differences, such as presence or absence of long stretch of sequences, are instead encoded in paths as presence or absence of pancontigs. This scale separation can be tuned using PanGraph parameters, as will be explained in the next section.
+
+\subsection*{graph merging}
+
+At each merge operation two pangenome graphs need to be compressed into a single one. Three of pangraph's parameters play a role in the outcome of this procedure:
+\begin{itemize}
+    \item the minimal block length $\Lthr$.
+    \item pseudo-energy parameters $\alpha$ and $\beta$ (cf. eq.~1 in the main text).
+    \item the choice of alignment kernel (minimap2 or mmseqs) and aligner precision (asm5, asm10 or asm20 for minimap2).
+\end{itemize}
+In the merging, these parameters control how much of the diversity between sequence must be stored as large-scare variation (difference in paths) and how much as fine-grained variation (differences in alignments, stored in pancontigs). This is done for example by setting a divergence limit for sequences to be stored in the same alignment.\\
+An implicit assumption of our procedure is that the phylogeny of sequences stored inside the same panconting is roughly star-like, with each sequence containing independent variations from the consensus. In such cases the consensus is a good ``average'' representation for the set of sequences in the alignment.
+In the next section we briefly discussion how PanGraph behaves when this assumption is not satisfied, such as in the case of merging ortholog and paralog sequences in the same pancontig.\\
+% move this paragraph or change?
+
+The merging operation is performed in the following steps:
+\begin{enumerate}
+    \item Using the chosen aligner kernel, we scan for homology between pancontigs of the two different graphs. This is done by using only the consensus sequence of each pancontig.
+    \item The aligner will return a set of matches. Each match is characterized by an alignment length and a measure of diversity. Using this information we rank matches by pseudo energy, so that longer and less diverged matches will be processed first. We refuse all matches with negative pseudo-energu and all matches shorter than the threshold length $\Lthr$.
+    \item For each of the remaining matches we attempt to merge pancontigs following these steps:
+          \begin{enumerate}
+              \item We check that no prior merges have been performed on the same two pancontigs. Sometimes multiple matches are found in the same pancontig, and in this case we prioritize the ones with higher pseudo-energy. Any following match will be discarded in this step. The same merge might however be performed later on in the self-map phase of the algorithm (see step 4).
+              \item Flanking regions of the consensus sequences that are not part of the matches are cut and not merged and stored in separate pancontigs. One exceptions is when one of the flanking regions is shorted than the threshold length $\Lthr$. In this case instead of creating a very short pancontig this region is stored as a small flanking \textbf{insertion (check)} in the merged pancontig.
+              \item The CIGAR string of the match is then parsed and subdivided in sub-regions. Regions can be either shared or private to query or reference. Shared regions contain Each insertion or deletion longer than $\Lthr$ will cause a split in the merge, and will be stored as a separate panconting. \textbf{(what happens with small matches in longer flanking indels?)}
+              \item
+          \end{enumerate}
+    \item Once the list of all matches has been exhausted and all merges have been performed, the two graphs have been turned into
+\end{enumerate}
+
+% post-processing step: transitive edges. Explain.
+
+% blocks become progressively deeper but shorter. The energy parameters and the threshold lengt determine when to stop.
+% implicit assumption of star-like topology.
+
+\subsection*{PanGraph parameters effect}
+% scale separation effect. Maybe move somewhere else?
+% also discussion on orthologs and paralogs.
+
 
 \section{Generation of synthetic data}
 \label{supp:data_generation}
