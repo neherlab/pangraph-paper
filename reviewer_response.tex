@@ -58,19 +58,20 @@
 \Marco{maybe add mean and standard deviation as numbers on the side?}\\
 \Liam{that seems ideal.}
 
-7. Have you tried running PanGraph on more than 300 references? I'd love to see another order of magnitude (not necessary for the paper, just curiosity)\\
-\Marco{not really, I never tried on ~500 or ~1000 strains. I could try but would not consider this a priority.}\\
-\Liam{agree that it's not necessary.}
+\reviewer{R1.7}{Have you tried running PanGraph on more than 300 references? I'd love to see another order of magnitude (not necessary for the paper, just curiosity)}
+% \Marco{not really, I never tried on ~500 or ~1000 strains. I could try but would not consider this a priority.}\\
+% \Liam{agree that it's not necessary.}
+\response{The biggest dataset we tried PanGraph on is a collection of 500 E.coli isolates. We used minimap2 as alignment kernel, asm20 sensitivity and values of $\alpha = 100$, $\beta=20$. This took 18 hours and 12 minutes to complete and had maximum memory usage of 17Gb.}
 
-8. Discussion: Do you know of/have you tried any mapping approaches which could take this reference as an input. Could you touch on the downstream applications of this graph structure? I would like to see discussion of how the graph can be used downstream - e.g. touching on what software can be used to map/align to such a data structure? Or how it can be used to analysis genome structure.\\
+\reviewer{R1.8}{Discussion: Do you know of/have you tried any mapping approaches which could take this reference as an input. Could you touch on the downstream applications of this graph structure? I would like to see discussion of how the graph can be used downstream - e.g. touching on what software can be used to map/align to such a data structure? Or how it can be used to analysis genome structure.}
 \Marco{other than explicitly exporting block sequences and mapping to those, we do not really using the pangenome graph as a reference against which to map new strains... But we could expand the discussion with more ideas on applications to study pangenome organization and evolution. For software for further analysis and exploration I have \href{https://github.com/mmolari/pypangraph}{this package} to explore and interact with graphs in python, but not sure it's worth mentioning.}\\
 \Liam{Some ideas that could be mentioned. (1) I think one obvious (bad!) use would be to take the core blocks and map reads to those as a `core reference'. (2) I know pandora has \href{https://github.com/iqbal-lab-org/make_prg/}{\texttt{make\_prg}} which will construct a `pangenome reference graph' from a set of aligned sequences - I didn't try it on pangraph output. (3) For genome structure, exploring `hotspots' in the graph as \href{https://www.nature.com/articles/s41467-017-00808-w}{this paper} does could be done using in/out degree of pancontigs.}
 
-9. Supplementary Information: simulation - could you comment on how/if homologous recombination is included in this model e.g. within a gene.\\
+\reviewer{R1.9}{Supplementary Information: simulation - could you comment on how/if homologous recombination is included in this model e.g. within a gene.}
 \Marco{homologous recombination is not implemented directly in the model. Only sequence transfer between strains. Genes are not explicitly modeled in the simulation.}\\
 \Liam{think just adding a comment in the SI saying this is required.}
 
-10. Supplementary Information C: You comment that the use of null energy parameters results on average in "more and shorter pancontigs" but also that they result in more diverged sequences being merged into the same pancontig. Why is a more diverse pancontig more likely to become fragmented?\\
+\reviewer{R1.10}{Supplementary Information C: You comment that the use of null energy parameters results on average in "more and shorter pancontigs" but also that they result in more diverged sequences being merged into the same pancontig. Why is a more diverse pancontig more likely to become fragmented?}
 \Marco{I think that basically the reason is that merging more distant paralogs/orthologs can fragment more the graph. Maybe we could explain this more explicitly in the text.}\\
 \Liam{makes sense and explaining this reasoning sounds good.}
 
