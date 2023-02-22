@@ -34,15 +34,15 @@
 \section{Graph merging algorithm}
 \label{supp:graph_merging}
 
-In this section we explain in more detail the procedure used to merge two pangenome graphs together. This procedure is at the core of PanGraphs's algorithm.
+In this section we describe in more detail the procedure used to merge two pangenome graphs together. This procedure is at the core of \textit{PanGraphs}'s algorithm.
 
 As explained in the main text, the full pangenome graph is built by placing genomes on terminal leaves of a guide tree. These genomes are initially considered as elementary graphs composed of a single \textit{pancontig}. These graphs are then propagated along the tree towards the root, and at each intersection a merge operation is performed. The full pangenome graph is then collected from the root.
 
 \subsection*{pangenome graph representation}
 
-As a preliminary step in the explanation we spend few words on the pangenome graph representation of pangraph. A pangenome graph is essentially composed of two elements: pancontigs, which encode for alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs.
+As a preliminary step in the explanation we spend few words on the pangenome graph representation of \textit{PanGraph}. A pangenome graph is essentially composed of two elements: pancontigs, which encode for alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs.
 
-Each \textbf{pancontig} contains the full information on the alignment of homologous sequences it contains. In PanGraph each pancontig is econded with a consensus sequence, and each line of the alignment is saved as variations over the consensus (mutations, insertions and deletions). More information on the precise encoding used can be found in PanGraph documentation.\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2/\#From-block-consensus-to-node-alignment}}
+Each \textbf{pancontig} contains the full information on the alignment of homologous sequences it contains. In PanGraph each pancontig is encoded with a consensus sequence, and each line of the alignment is saved as variations over this consensus (mutations, insertions and deletions). More information on the precise encoding used can be found in PanGraph documentation.\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2/\#From-block-consensus-to-node-alignment}}
 
 Each \textbf{path} is an oriented collection of pancontigs that represents a genome. For each item in the sequence along with the pacontig id PanGraph also stores the pancontig orientation (whether homology with the consensus is on the forward the reverse strain of the genome) and which variations on the pancontig consesus (i.e. which line in the pancontig alignment) correspond to this precise location in the genome.
 
@@ -52,8 +52,8 @@ From knowledge of all the pancontigs and pahts, every single genome can be exact
 
 At each merge operation two pangenome graphs need to be compressed into a single one. Three of pangraph's parameters play a role in the outcome of this procedure:
 \begin{itemize}
-    \item the minimal block length $\Lthr$.
-    \item pseudo-energy parameters $\alpha$ and $\beta$ (cf. eq.~1 in the main text).
+    \item the minimal pancontig length $\Lthr$.
+    \item pseudo-energy parameters $\alpha$ and $\beta$ (cf. eq.~(1)in the main text).
     \item the choice of alignment kernel (minimap2 or mmseqs) and aligner precision (asm5, asm10 or asm20 for minimap2).
 \end{itemize}
 In the merging, these parameters control how much of the diversity between sequence must be stored as large-scare variation (difference in paths) and how much as fine-grained variation (differences in alignments, stored in pancontigs). This is done for example by setting a divergence limit for sequences to be stored in the same alignment.\\
@@ -74,8 +74,11 @@ The merging operation is performed in the following steps:
               \item The original starting pancontigs are then removed from the pangenome graph, and no new merges can be performed on them at this step of the algorithm. The newly-created pancontigs are added to the graph and the corresponding paths are updated.
           \end{enumerate}
     \item Once the list of all matches has been exhausted the two graphs have been merged into one. However at the previous stage only one merge could be performed per pancontig, which could be insufficient to collapse all of the homology contained in the graph. To this end we repeat the procedure described in step 3, but instead of looking for matches between pancontigs of two different graphs, we search for matches between all pancontigs in the same graph. Merges are performed following the same rules, and this procedure is repeated until no new merges can be performed.
-    \item In the final step of the procedure we perform some final grooming of the graph. This includes for example removing transitive edges, i.e. pairs of pancontigs that are always traversed in the same way by all paths. These pairs are merged in a single pancontig. This can happen for example when dealing with circular sequences such as bacterial chromosomes. These sequences are transformed into a single linear block at the beginning of the algorithm, which introduces an artificial cut. When this elementary graph is propagated and the unique block is split, a transitive edge is generated across the artificial cut. We remove it in this step.
+    \item In the final step of the procedure we perform some final grooming of the graph. This includes for example removing transitive edges, i.e. pairs of pancontigs that are always traversed in the same way by all paths. These pairs are merged in a single pancontig. This can happen for example when dealing with circular sequences such as bacterial chromosomes. These sequences are transformed into a single linear pancontig at the beginning of the algorithm, which introduces an artificial cut. When this elementary graph is propagated and the unique pancontig is split, a transitive edge is generated across the artificial cut. We remove it in this step.
 \end{enumerate}
+
+As graphs are propagated along the guide tree more and more merges are performed. This makes pancontigs progressively shorter but their alignments deeper.\\
+We also point out that in our merging procedure only the consensus sequence of any two pancontigs is used in their alignment. This makes this procedure fast and is sufficient to capture the large-scale structural variation of the pangenome, but does not solve the multiple sequence alignment problem for each pancontig alignment. To this end \textit{PanGraph} has the command \verb|polish|\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_3/}.}. This command ``polishes'' alignments by solving on each pancontig the multiple sequence alignment problem using MAFFT \cite{katoh2002mafft}. It has a simple interface: it takes as input a pangenome graph and produces another pangenome graph with the same structure but improved pancontig alignments. This efficiently separates the problem of finding large-scale structural variation, and nucleotide-level variation. When precise knowledge of the latter is needed, a graph can be \textit{polished} restricting the multiple sequence alignment problem only on the homologous sequences contained in each pancontig.
 
 % comment: a bit too verbose? The last part has been added to address the reviewer's comments but sounds superfluous even in the SI.
 % post-processing step: transitive edges. Explain.
@@ -86,27 +89,28 @@ The merging operation is performed in the following steps:
 
 \subsection*{PanGraph parameters effect}
 
-We conclude this section with some comments on the effect of PanGraph's parameters on the resulting pangenome graphs.
+After explaining the procedure we use for merging, we conclude this section with some comments on the effect of PanGraph's parameters on the resulting pangenome graphs.\\
 
-The value of $\Lthr$ controls the minimal size of blocks. Indels shorter than this size are saved as variation in alignments, rather than as separate blocks. As such this parameter partially controls the fragmentation of the graph. It should be set
-The default value in PanGraph is set to 100 bp.
-A similar role is played by the parameter $\alpha$. This can be interpreted as the cost of...
-% discuss alpha with this?
+Parameter $\Lthr$ controls the minimal size of pancontigs. Indels shorter than this size are saved as variation in alignments, rather than as separate pancontigs. As such this parameter partially controls the fragmentation of the graph. The appropriate value depends on the scale at which one wants to study structural variations in genomes. The default value in PanGraph is set to 100 bp.\\
+A similar role is played by the parameter $\alpha$. This can be interpreted as the cost of introducing a cut in a pancontig. The length of homologous sequence to be merged must exceed this cost for a cut to be performed.\\
 
-The value of $\beta$ and
+The choice of alignment kernel and the value of $\beta$ set instead a limit on the divergence of sequences that are merged in the same pancontig. The first intrinsic limit is set by the choice of alignment kernel and its sensitivity: minimap2 is significantly faster than mmseqs2, but it is in general unable to find matches between homologous sequences with more than 20\% divergence (with asm20 sensitivity).\\
+On top of this intrinsic limit of the aligner, a more fine-tuned setting of the acceptable amount of divergence can be achieved by tuning the value of $\beta$. From the definition of the pseudo-energy (cf. eq.~(1) in the main text) it follows that matches between homologous sequence with divergence higher than $1/\beta$ will have negative pseudo-energy and will thus not result in a merge. If the molecular clock hypothesis holds, tuning this parameter is equivalent to setting an effective time limit beyond which sequences are not to be merged in the same alignment. This parameter can be tuned based on the diversity of the sample in study. It can for example be useful in resolving situations in which the hypothesis of a star-like phylogeny in a pancontig alignment is broken, such as to separate loosely related paralogs.
+
 % scale separation effect. Maybe move somewhere else?
 % also discussion on orthologs and paralogs.
 % a summary of these considerations in the main text, with reference to this paragraph?
 % references to SI in the main text.
+% temporal horizon set with beta.
 
 
 \section{Generation of synthetic data}
 \label{supp:data_generation}
 
-As a first test we benchmark the performances and accuracy of \textit{PanGraph} on synthetic data, obtained by simulating the evolution of a population in which individuals accumulate mutations, can loose part of the sequence from deletions, or gain new genetic material via Horizontal Gene Transfer (HGT) from other members of the population.\\
+As a first test we benchmark the performances and accuracy of \textit{PanGraph} on synthetic data, obtained by simulating the evolution of a population in which individuals accumulate mutations, can loose part of the sequence from deletions, or gain new genetic material via Horizontal Sequence Transfer (HST) from other members of the population.\\
 In the simulation a population of size $N$ is evolved for $T$ generations using a Wright-Fisher model \cite{hudson2002generating}. Each individual in the population has a circular genome of initial size $L$. At each generation single-nucleotide mutations occur at a rate $\mu$ per position. Deletions can occur at a rate $d$ per genome per generation. When a deletion is suggested on isolate $n$, having a genome length $L_n$, a new desired length $L'_n$ is extracted from a Gaussian distribution with mean $L$ and variance $\sigma^2$. If $\Delta = L'_n - L_n < 0$ then a random chunk of length $|\Delta|$ is removed from the genome, reducing it to size $L'_n$. If $\Delta > 0$ no deletion is performed. This ensures that the length distribution of genomes in the population remains close to the desired length $L$, with $\sigma^2$ being a proxy for the variance.
-HGT occurs at a rate $h$ per genome per generation. Similarly to deletions, when a HGT event is suggested a new desired length $L'_n$ is extracted from the same Gaussian distribution, and this time the event is performed only if $\Delta = L'_n - L_n > 0$. In this case a random chunk of sequence of length $\Delta$ is extracted from a random individual in the parent population (possibly the parent of isolate $n$ itself) and inserted in a random position of the genome of isolate $n$.
-Finally, inversions occur at a rate $i$ per genome per generation. When an inversion is proposed a random length $\Delta$ is chosen in the same way, and a random chunk of length $|\Delta|$ is inverted.
+HST occurs at a rate $h$ per genome per generation. Similarly to deletions, when a HST event is suggested a new desired length $L'_n$ is extracted from the same Gaussian distribution, and this time the event is performed only if $\Delta = L'_n - L_n > 0$. In this case a random chunk of sequence of length $\Delta$ is extracted from a random individual in the parent population (possibly the parent of isolate $n$ itself) and inserted in a random position of the genome of isolate $n$. All parts of the sequence have equal probability of being transferred, irrespective of homology.
+Finally, inversions occur at a rate $i$ per genome per generation. When an inversion is proposed a random length $\Delta$ is chosen in the same way, and a random chunk of sequence of this length is inverted. In the simulation we do not implement a notion of genes.
 Standard values of the simulation parameters are reported in Table~\ref{table:sim-params}.
 
 \begin{table}[hb]
@@ -122,7 +126,7 @@ Standard values of the simulation parameters are reported in Table~\ref{table:si
         $\mu$     & mutation rate               & 0.005 [1/bp $\cdot$ generation] \\
         $d$       & deletion rate               & 0.05 [1/generation]             \\
         $i$       & inversion rate              & 0.01 [1/generation]             \\
-        $h$       & HGT rate                    & 0.1 [1/generation]              \\
+        $h$       & HST rate                    & 0.1 [1/generation]              \\
         \hline
     \end{tabular}
     \caption{{\bf Simulation parameters}. Description of all simulation parameters used for the generation of synthetic data. Unless otherwise specified, the standard value is used.}
@@ -240,7 +244,7 @@ The resulting graph should be equivalent to the one obtained by directly buildin
 We used genomes from the dataset described in the previous section to verify that marginalized graphs are compatible with graphs built directly from subset of strains. For each species we selected 50 different isolates (10 for PM) and built pangenome graphs using standard parameter values and the \textit{minimap2} kernel with \textit{asm20} option. For each species we then randomly picked 50 different pairs of isolates (all 45 for PM).\footnote{The list of selected accession numbers and selected pairs for each species is available on the repository: \url{https://github.com/neherlab/pangraph/blob/master/script/config/projection_strains.json}} For each pair we then built pairwise graphs using the same parameters, and compared them to the corresponding marginalized graph, obtained by projecting the full pangenome graph for the 50 isolates on the selected pair (cf. Fig.~6A, main text).\\
 The comparison was performed by considering that each graph partitions a genome into pancontigs. Each pancontig can either be shared with the other member of the pair, or can be private to the isolate (cf. Fig.~6A, main text). For each isolate we consider the two partitions defined by the marginalized and pairwise graphs, and generate their intersection. Each block in this intersection can belong to two different categories, depending on whether the two partitions agree or disagree on whether the block is shared. Moreover, we can separate blocks on which we find agreement in two further categories: blocks that are shared and blocks that are private on both graphs.\\
 For each pair of genomes and each type of block we evaluate the fraction of the genome that they cover and their average size. In Fig.~\ref{fig:marginalize-suppl} we display the distribution of these quantities across all pairs for the different species considered and the block types described above.\\
-In all species except HP and PM we find very good agreement between pairwise and marginalized graphs: segments on which the graphs \textit{disagree} represent only a very minor fraction of the genome (much smaller than the fraction of shared or private blocks), and have size compatible with the default block length threshold of \textit{PanGraph} (100 bp).
+In all species except HP and PM we find very good agreement between pairwise and marginalized graphs: segments on which the graphs \textit{disagree} represent only a very minor fraction of the genome (much smaller than the fraction of shared or private blocks), and have size compatible with the default pancontig length threshold of \textit{PanGraph} (100 bp).
 As described in the previous section, the divergence of the HP dataset sits on the limit of what the \textit{minimap2} alignment kernel can successfully handle. In this case the results of merging different graphs together can depend on the order of merging, and pairwise and marginalized graphs can potentially show some disagreement. In this case the disagreement remains minor and only extends to few percents of the genome size, with disagreement blocks having size only slightly bigger than the 100 bp threshold of \textit{PanGraph}.
 PM represents instead an example of a dataset with divergence much beyond the limit of the alignment kernel ($\dcore \sim 27 \%$). As a consequence, highly diverged homologous sequences are not merged, and the great majority of segments are private and have large size. Results also show a strong order-dependence, with some \textit{disagreement} blocks having size of 10s of kbp.
 
