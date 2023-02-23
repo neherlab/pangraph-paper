@@ -1,5 +1,6 @@
 \documentclass[aps,rmp,onecolumn]{revtex4-1}
 \usepackage{geometry}
+\usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{xcolor}
 
@@ -160,11 +161,17 @@
 \reviewer{R2.7}{Why does the L50 peak go up for null-scores for mmseqs for Mtb, Pm, Kpn and Ec (Figure 4E, purple with lines) but down for helicobacter?}
 % \Marco{the effect of merging more blocks on L50 is not trivial. It depends on whether the merging occurs between long or short blocks, and how much fragmentation this causes. HP is a special case in that its diverge is on the threshold of what minimap2 can handle. Using mmseqs2 results in a pangenome that is half the size compared to standard parameters (fig. 4G). This is an impressive amount of additional compression. At the same time the fraction of core pangenome more than doubles (4H). The total number of blocks decreases to roughly half (4D) while N50 increases (4F). For me this points to the fact that in the case of HP merging will split long blocks and create more fragmentation. For the reviewer I could produce the block frequency and lenght distribution for the two cases and comparing them would give an answer. I could do the same for EC or KP for comparison.}\\
 % \Liam{makes sense.}
-\response{L50 measures the minimum number of pancontigs needed to cover at least 50\% of the pangenome graph sequence. This number is closely related to the total number of pancontigs. In general the use of null energy parameters result in more fragmented graphs, with a higher number of pancontigs (cf. fig.~4D in SI). Hp is an exception and has the opposite trend, both for the number of pancontig and for the value of L50. For this species the use of null energy parameters results in less fragmentation of the graph. This is compatible with the observation that the average divergence of this dataset is on the limit of what PanGraph can handle. Unless a highly sensitive aligner is used and the divergence barrier in pseudo-energy is removed, some highly-diverged homologous sequences remain split in different pancontigs. Conversely, the choice of these parameters generates a graph with less pancontigs, a lower L50, a larger fraction of core pangenome, an higher median length of pancontigs (N50).
+\response{L50 measures the minimum number of pancontigs needed to cover at least 50\% of the pangenome graph sequence. This number is closely related to the total number of pancontigs. In general the use of null energy parameters result in more fragmented graphs, with a higher number of pancontigs (cf. fig.~4D in SI). Hp is an exception and has the opposite trend, both for the number of pancontig and for the value of L50. For this species the use of null energy parameters results in less fragmentation of the graph. This is compatible with the observation that the average divergence of this dataset is on the limit of what PanGraph can handle. Unless a highly sensitive aligner is used and the divergence barrier in pseudo-energy is removed, some highly-diverged homologous sequences remain split in different pancontigs. Conversely, the choice of these parameters generates a graph with less pancontigs, a lower L50, a larger fraction of core pangenome, an higher median length of pancontigs (N50).\\
+      For a visual verification of this interpretation we display in fig.~\ref{fig:kp-vs-hp} how the distributions of pancontig lenght and frequency change with the use of different alignment kernels and pseudo-energy parameters. We compare the changes observed on the Hp dataset to the ones in Kp, used as a reference. In the Kp dataset increasing the aligner sensitivity results in shorter pancontigs (lower-right panel) and a small increase in core genome fraction. For Hp instead a more sensitive aligner results in the loss of small and intermediate size pancontigs, but not of long ones. It also results in a loss of low-frequency pancontigs, indicating that these had an homologous counterpart that could not be merged due to high-divergence, and the core pangenome fraction increases considerably.
       % TODO: add mention in SI
-      % TODO: plot change for HP and KP/EC as comparison?
       % QUESTION: this is more or less explicit in SI? Should I expand more?
 }
+
+\begin{figure}[htb]
+      \includegraphics[width=.7\textwidth]{figs_response/hp_vs_kp.pdf}
+      \caption{frequency and length distribution (respectively left and right panels) of pancontigs for the \textit{Helicobacter pylori} and \textit{Klebsiella pneumoniae} datasets (top and bottom). For each panel we report the results for pangenome graphs built using minimap2 aligner with standard parameter value and asm20 sensitivity (blue) and with mmseqs2 and null pseudo-energy parameters (orange). Distributions are weighed by pancontig length, so that the area under the curve represents the total pangenome graph size.}
+      \label{fig:kp-vs-hp}
+\end{figure}
 
 \reviewer{R2.8}{Just to make sure i understand - is it possible for sequence to be ``left out'' in between pancontigs?}
 \Marco{no, every part of the genome must be contained in a pancontig. It can be left out from the consensus if it is considered an insertion.}\\
@@ -175,8 +182,11 @@
             \item i don't see how to get the list of accessions for section IIB? Saying they were used in the Ding et al paper is not quite enough for me to be sure which ones you used.
             \item for the graph marginalisation section, could the accessions of the strains used be in a supplementary file as well as on github? Github repos are great, but they can be deleted.
       \end{enumerate}}
-\Marco{on the repo we have \href{https://github.com/neherlab/pangraph/blob/master/script/config/accnums.json}{this file} for the list of all accession numbers we use, and \href{https://github.com/neherlab/pangraph/blob/master/script/config/projection_strains.json}{this file} for the marginalization pairs. I could create some excel spreadsheet with accession numbers that we could add to the submission?}\\
-\Liam{for sure that's all they want (most biologists don't like json!)}
+% \Marco{on the repo we have \href{https://github.com/neherlab/pangraph/blob/master/script/config/accnums.json}{this file} for the list of all accession numbers we use, and \href{https://github.com/neherlab/pangraph/blob/master/script/config/projection_strains.json}{this file} for the marginalization pairs. I could create some excel spreadsheet with accession numbers that we could add to the submission?}\\
+% \Liam{for sure that's all they want (most biologists don't like json!)}
+\responsedraft{We now included in the submission two excel files. ``accession\_numbers.xlsx'' contains five sheets, one per species considered, each with a list of the accession numbers of isolates used in our datasets. ``marginalize\_pairs.xlsx'' contains instead a list of all the pairs used in the graph marginalization section.
+      % TODO: archive repository state.
+}
 
 \subsubsection*{Minor Issues}
 
