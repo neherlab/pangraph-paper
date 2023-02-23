@@ -57,7 +57,8 @@ During evolution, microbial genomes change by both local mutations and large-sca
 Local mutations only change a few nucleotides by substitution, insertion or deletion.
 Conversely, large-scale alterations reorganize the sequence, and involve either the homologous recombination of large segments, gene loss or gain, inversions, or mobilisation of genetic elements.
 The accumulation of such changes over time complicates comparative genomic analyses of present day isolates.
-Homologous recombination is rapid enough that most genes in many bacterial core genomes have distinct phylogenies \cite{sakoparnig2021whole} and even closely related genomes differ dramatically in gene content.
+Homologous recombination is rapid enough that most genes in many bacterial core genomes have distinct phylogenies \cite{sakoparnig2021whole} and even closely related genomes differ dramatically in gene content \oldnew{}{\cite{touchon2020phylogenetic,touchon2009organised,doolittle2009origin}}.
+% \cite{touchon2020phylogenetic,doolittle2009origin,touchon2009organised}.
 % comment: rewritten to use consistent terminology (I think 'mutation' and 'polymorphism' for most people make them think of local changes only)
 %Scalable inference techniques of this complicated relatedness structure would, in part, spur the advance of critical epidemiological surveillance tools, analogous to NextStrain, for bacterial pathogens.
 
@@ -137,7 +138,7 @@ Importantly, this divergence threshold is applied to the comparison of the conse
 \oldnew{}{The pseudo-energy ranking also effectively results in merges being performed in reverse evolutionary order, with less diverged sequences being merged first.}
 The parameter $\alpha$ controls the fragmentation of the graph and imposes a minimal length on the \oldnew{resulting}{} pan-contigs resulting from the merger.
 The merger is always performed if \oldnew{the merger}{it} doesn't increase the number of contigs, but mergers that introduce 1, 2, 3 or 4 cuts are only performed for sufficiently long homologous stretches as parameterized by $\alpha$.
-\oldnew{In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.}{In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e. short indels) is stored in pancontig alignments, rather than in the graph structure, and no merges are performed if they have length shorter than this threshold. We set a default value of 100 bp for this parameter.}
+\oldnew{In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.}{In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e. short indels) is stored in pancontig alignments, rather than in the graph structure, and no merges are performed if they have length shorter than this threshold. For instance, when a merge would generate flanking contigs shorter than this threshold, the alignment is extended to include these regions. We set a default value of 100 bp for this parameter.}
 
 
 \begin{figure}[htb]

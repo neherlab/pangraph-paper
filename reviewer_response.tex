@@ -4,6 +4,8 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 
+\newcommand{\Lthr}{L_{\min}}
+
 
 \newcommand{\Marco}[1]{{\color{gray}Marco: #1}}
 \newcommand{\Liam}[1]{{\color{teal}Liam: #1}}
@@ -174,8 +176,9 @@
 \end{figure}
 
 \reviewer{R2.8}{Just to make sure i understand - is it possible for sequence to be ``left out'' in between pancontigs?}
-\Marco{no, every part of the genome must be contained in a pancontig. It can be left out from the consensus if it is considered an insertion.}\\
-\Liam{if they possibly misunderstood, suggests that some statement that all sequence ends up in a pancontig should be added to manuscript. I suspect they are thinking of case of short ($<$100bp) stretches `in between' pancontigs, which (if I understand correctly) will be incorporated as insertions at the end of the consensus alignment of the adjacent pancontig.}
+% \Marco{no, every part of the genome must be contained in a pancontig. It can be left out from the consensus if it is considered an insertion.}\\
+% \Liam{if they possibly misunderstood, suggests that some statement that all sequence ends up in a pancontig should be added to manuscript. I suspect they are thinking of case of short ($<$100bp) stretches `in between' pancontigs, which (if I understand correctly) will be incorporated as insertions at the end of the consensus alignment of the adjacent pancontig.}
+\response{No, every part of the sequence of each genome must be included in some pancontig. I might not necessarily appear in the pancontig consensus sequence if it is present in the alignment as a short ($< \Lthr$) insertion, but it will nonetheless be present in the alignment. In the particular case in which merging two pancontigs would leave overhangs shorter than $\Lthr$, these are included in the alignmen as flanking insertions. This is now explained in SI section I, and mentioned in the main text in section IB (line 103).}
 
 \reviewer{R2.9}{About data accessibility
       \begin{enumerate}
@@ -193,8 +196,9 @@
 \reviewer{R2.1}{line 13 - it would be good to give a reference for the statement that even closely related genomes can differ widely in gene content.
       I don't know what the first paper to show this was, the earliest i am aware of is from Eduardo Rocha's team, which annpoyingly i can't locate right now, but Figure 2 here shows it \url{https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1008866} \cite{touchon2020phylogenetic} - you can be very close in patristic distance and have very different gene repertoire.
       Feel free to replace with a better reference, this si just meant to be helpful.}
-\Marco{I think this is a good reference, fig. 2 is familiar to us. And also fig.2 in \cite{doolittle2009origin} which is a bit older. But not sure which other Rocha paper he is referring to.}\\
-\Liam{I think they mean Figure 5 of \cite{touchon2009organised} (\href{https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1000344}{here}). Citing Touchon 2009 and 2020 and the Doolittle paper seems fine to me.}
+% \Marco{I think this is a good reference, fig. 2 is familiar to us. And also fig.2 in \cite{doolittle2009origin} which is a bit older. But not sure which other Rocha paper he is referring to.}\\
+% \Liam{I think they mean Figure 5 of \cite{touchon2009organised} (\href{https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1000344}{here}). Citing Touchon 2009 and 2020 and the Doolittle paper seems fine to me.}
+\response{We thank the reviewer for the suggestion. We now cite the suggested article, along with \cite{touchon2009organised,doolittle2009origin}.}
 
 \reviewer{R2.2}{Why on earth is the "get an MSA of a block" option in pangraph called "polish"?}
 \Marco{i don't think this comes from the paper (I used grep on the tex file and we never mention polish). I think it comes from the documentation but not sure where. We explain polish \href{https://neherlab.github.io/pangraph/tutorials/tutorial_3/\#Polishing-the-alignments}{in this part} of the tutorial and I don't think it's ambiguous. If in the paper we explain how we propagate the consensus sequence and related problems we will also mention the polish command in the same part and make explicit that it can be used to polish alignments, this should solve the ambiguity.}\\
