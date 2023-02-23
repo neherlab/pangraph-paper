@@ -5,6 +5,8 @@
 \usepackage{wrapfig}
 \usepackage{enumerate}
 \usepackage{xr} % reference to other external latex documents
+\usepackage[normalem]{ulem}
+\usepackage{xcolor}
 \usepackage[final]{hyperref}
 
 \newcommand{\avg}[1]{\langle #1 \rangle}
@@ -13,6 +15,8 @@
 \newcommand{\Lgen}{L_\text{gen}}
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
 \newcommand{\Lthr}{L_{\min}}
+\newcommand{\oldnew}[2]{{\color{gray}\sout{#1}}{\color{red}#2}}
+
 
 \begin{document}
 \title{PanGraph: scalable bacterial pan-genome graph construction \\ Supplementary Information}
@@ -64,10 +68,10 @@ In the next section we briefly discussion how PanGraph behaves when this assumpt
 The merging operation is performed in the following steps:
 \begin{enumerate}
     \item Using the chosen aligner kernel, we scan for homology between pancontigs of the two different graphs. This is done by using only the consensus sequence of each pancontig.
-    \item The aligner will return a set of matches. Each match is characterized by an alignment length and a measure of diversity. Using this information we rank matches by pseudo energy, so that longer and less diverged matches will be processed first. We refuse all matches with negative pseudo-energu and all matches shorter than the threshold length $\Lthr$.
+    \item The aligner will return a set of matches. Each match is characterized by an alignment length and a measure of diversity. Using this information we rank matches by pseudo-energy, so that longer and less diverged matches will be processed first. We refuse all matches with positive pseudo-energy and all matches shorter than the threshold length $\Lthr$.
     \item For each of the remaining matches we attempt to merge pancontigs following these steps:
           \begin{enumerate}
-              \item We check that no prior merges have been performed on the same two pancontigs. Sometimes multiple matches are found on the same pancontig, and in this case we prioritize the ones with higher pseudo-energy. Any following match on the same pancontig will be discarded at this step. It will however be performed later on in the self-map phase of the algorithm (see step 4).
+              \item We check that no prior merges have been performed on the same two pancontigs. Sometimes multiple matches are found on the same pancontig, and in this case we prioritize the ones with more negative pseudo-energy. Any following match on the same pancontig will be discarded at this step. It will however be performed later on in the self-map phase of the algorithm (see step 4).
               \item Flanking regions of the consensus sequences that are not part of the matches are cut and not merged and stored in separate pancontigs. One exceptions is when any of these flanking regions is shorter than the threshold length $\Lthr$. In this case instead of creating a very short pancontig the region is stored as an indel in the merged pancontig alignment.
               \item The remaining homolous region is then a candidate for the merging. However the merging might result in more than a single panconting, depending on the underlying alignment. If the alignment contains insertions or deletions longer thant $\Lthr$, these need to appear as separate pancontigs. To this end the CIGAR string is parsed, and the long match is potentially split in multiple sub-matches, with interposed long insertions or deletions that will be saved as separate pancontigs.
               \item At this point every (sub-)match is processed to produce a single merged pancontig. This is done by expanding the alignments of the two original pancontigs, and stitching them together following the instructions contained in the CIGAR string of the match. Once the full alignment is constructed the new consensus sequence is re-evaluated, and each sequence is then encoded as variations over this consensus. This completes the creation of a new pancontig.
@@ -244,7 +248,7 @@ The resulting graph should be equivalent to the one obtained by directly buildin
 We used genomes from the dataset described in the previous section to verify that marginalized graphs are compatible with graphs built directly from subset of strains. For each species we selected 50 different isolates (10 for PM) and built pangenome graphs using standard parameter values and the \textit{minimap2} kernel with \textit{asm20} option. For each species we then randomly picked 50 different pairs of isolates (all 45 for PM).\footnote{The list of selected accession numbers and selected pairs for each species is available on the repository: \url{https://github.com/neherlab/pangraph/blob/master/script/config/projection_strains.json}} For each pair we then built pairwise graphs using the same parameters, and compared them to the corresponding marginalized graph, obtained by projecting the full pangenome graph for the 50 isolates on the selected pair (cf. Fig.~6A, main text).\\
 The comparison was performed by considering that each graph partitions a genome into pancontigs. Each pancontig can either be shared with the other member of the pair, or can be private to the isolate (cf. Fig.~6A, main text). For each isolate we consider the two partitions defined by the marginalized and pairwise graphs, and generate their intersection. Each block in this intersection can belong to two different categories, depending on whether the two partitions agree or disagree on whether the block is shared. Moreover, we can separate blocks on which we find agreement in two further categories: blocks that are shared and blocks that are private on both graphs.\\
 For each pair of genomes and each type of block we evaluate the fraction of the genome that they cover and their average size. In Fig.~\ref{fig:marginalize-suppl} we display the distribution of these quantities across all pairs for the different species considered and the block types described above.\\
-In all species except HP and PM we find very good agreement between pairwise and marginalized graphs: segments on which the graphs \textit{disagree} represent only a very minor fraction of the genome (much smaller than the fraction of shared or private blocks), and have size compatible with the default pancontig length threshold of \textit{PanGraph} (100 bp).
+In all species except HP and PM we find very good agreement between pairwise and marginalized graphs: segments on which the graphs \textit{disagree} represent only a very minor fraction of the genome (much smaller than the fraction of shared or private blocks), and have size compatible with the default pancontig length threshold of \textit{PanGraph} (\oldnew{}{$\Lthr =$}100 bp).
 As described in the previous section, the divergence of the HP dataset sits on the limit of what the \textit{minimap2} alignment kernel can successfully handle. In this case the results of merging different graphs together can depend on the order of merging, and pairwise and marginalized graphs can potentially show some disagreement. In this case the disagreement remains minor and only extends to few percents of the genome size, with disagreement blocks having size only slightly bigger than the 100 bp threshold of \textit{PanGraph}.
 PM represents instead an example of a dataset with divergence much beyond the limit of the alignment kernel ($\dcore \sim 27 \%$). As a consequence, highly diverged homologous sequences are not merged, and the great majority of segments are private and have large size. Results also show a strong order-dependence, with some \textit{disagreement} blocks having size of 10s of kbp.
 
