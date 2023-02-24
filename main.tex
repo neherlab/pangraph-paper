@@ -17,7 +17,7 @@
 \newcommand{\Lthr}{L_{\min}}
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
 \newcommand{\modified}[1]{{\color{red}#1}}
-\newcommand{\oldnew}[2]{{\color{gray}\sout{#1}}{\color{red}#2}}
+% \newcommand{\oldnew}[2]{{\color{gray}\sout{#1}}{\color{red}#2}}
 
 \begin{document}
 %\title{PanGraph: scalable multiple genome alignment for pan-genome analysis}
@@ -57,7 +57,7 @@ During evolution, microbial genomes change by both local mutations and large-sca
 Local mutations only change a few nucleotides by substitution, insertion or deletion.
 Conversely, large-scale alterations reorganize the sequence, and involve either the homologous recombination of large segments, gene loss or gain, inversions, or mobilisation of genetic elements.
 The accumulation of such changes over time complicates comparative genomic analyses of present day isolates.
-Homologous recombination is rapid enough that most genes in many bacterial core genomes have distinct phylogenies \cite{sakoparnig2021whole} and even closely related genomes differ dramatically in gene content \oldnew{}{\cite{touchon2020phylogenetic,touchon2009organised,doolittle2009origin}}.
+Homologous recombination is rapid enough that most genes in many bacterial core genomes have distinct phylogenies \cite{sakoparnig2021whole} and even closely related genomes differ dramatically in gene content \cite{touchon2020phylogenetic,touchon2009organised,doolittle2009origin}.
 % \cite{touchon2020phylogenetic,doolittle2009origin,touchon2009organised}.
 % comment: rewritten to use consistent terminology (I think 'mutation' and 'polymorphism' for most people make them think of local changes only)
 %Scalable inference techniques of this complicated relatedness structure would, in part, spur the advance of critical epidemiological surveillance tools, analogous to NextStrain, for bacterial pathogens.
@@ -88,12 +88,12 @@ The underlying graph data structure can be exported into numerous formats for do
 \section{Algorithms and implementation}
 \emph{PanGraph} transforms an arbitrary set of genomes into a \emph{graph} that simultaneously compresses the collection of sequences and exhaustively summarizes both the structural and nucleotide-level polymorphisms.
 The graph is composed of \emph{pancontigs}, which represent linear multiple-sequence alignments of homologous sequence found within one or more input genomes.
-\emph{Pancontigs} are connected by an edge if they are \oldnew{syntenic on}{adjacent in} at least one input sequence; individual sequences are then recapitulated by contiguous \emph{paths} through the graph.
+\emph{Pancontigs} are connected by an edge if they are adjacent in at least one input sequence; individual sequences are then recapitulated by contiguous \emph{paths} through the graph.
 Pancontigs are directed, meaning their orientation in a path can be either 5' to 3' or vice versa.
 
 To construct a pangraph, the algorithm needs to find homologous sequence within and among all input genomes.
 \emph{PanGraph's} overarching strategy is to approximate multiple-genome alignment by iterative pairwise alignment of graphs of subsets of sequences, in the spirit of progressive alignment tools \cite{feng1987progressive,darling2010progressivemauve,armstrong2020progressive}.
-Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} consensus sequences between both graphs, and the order of pairwise alignments is determined by a guide tree.
+Pairwise graph alignment is performed by an all-to-all alignment of the consensus sequence of all \emph{pancontigs} between both graphs, and the order of pairwise alignments is determined by a guide tree.
 
 \subsection{Guide tree construction}
 The alignment guide tree is constructed subject to three design constraints: (i) similar sequences are aligned first, (ii) the similarity computation scales sub-quadratically with the number of input sequences, and (iii) the resultant tree is balanced to maximize parallelism.
@@ -123,7 +123,7 @@ In particular we decided to include the option to use \emph{mmseqs2} \cite{stein
 % In general, the kernel interface expects two lists of \emph{pancontigs} to align as input and will output a list of putative overlapping alignments between both input lists.
 
 \paragraph*{Merging of homologous sequence.}
-If the above alignment step detected homologous stretches between \oldnew{}{the consensus sequences of} two pancontigs, these pancontigs, or parts of them, can be merged.
+If the above alignment step detected homologous stretches between the consensus sequences of two pancontigs, these pancontigs, or parts of them, can be merged.
 It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order.
 We rank each alignment between two pancontigs according to the pseudo-energy
 \begin{equation}\label{eq:pseudo-energy}
@@ -133,12 +133,12 @@ where $\ell$, $N_c$, and $N_m$ denote the alignment length, number of \emph{panc
 See Fig \ref{fig:visualization}B for a graphical definition for each term.
 Additionally, $\alpha$ and $\beta$ are hyperparameters of the algorithm.
 Only mergers whose alignment has negative pseudo-energy are performed.
-The parameter $\beta$ controls the maximal sequence divergence between the two merger-candidates\oldnew{ and no mergers will be performed if the Hamming distance exceeds $1/\beta$.}{. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$.}
+The parameter $\beta$ controls the maximal sequence divergence between the two merger-candidates. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$.
 Importantly, this divergence threshold is applied to the comparison of the consensus sequences of the merger candidates.
-\oldnew{}{The pseudo-energy ranking also effectively results in merges being performed in reverse evolutionary order, with less diverged sequences being merged first.}
-The parameter $\alpha$ controls the fragmentation of the graph and imposes a minimal length on the \oldnew{resulting}{} pan-contigs resulting from the merger.
-The merger is always performed if \oldnew{the merger}{it} doesn't increase the number of contigs, but mergers that introduce 1, 2, 3 or 4 cuts are only performed for sufficiently long homologous stretches as parameterized by $\alpha$.
-\oldnew{In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.}{In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e. short indels) is stored in pancontig alignments, rather than in the graph structure, and no merges are performed if they have length shorter than this threshold. For instance, when a merge would generate flanking contigs shorter than this threshold, the merging is performed but the alignment is extended to include these regions. We set a default value of 100 bp for this parameter.}
+The pseudo-energy ranking also effectively results in merges being performed in reverse evolutionary order, with less diverged sequences being merged first.
+The parameter $\alpha$ controls the fragmentation of the graph and imposes a minimal length on the pan-contigs resulting from the merger.
+The merger is always performed if it doesn't increase the number of contigs, but mergers that introduce 1, 2, 3 or 4 cuts are only performed for sufficiently long homologous stretches as parameterized by $\alpha$.
+In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e. short indels) is stored in pancontig alignments, rather than in the graph structure, and no merges are performed if they have length shorter than this threshold. For instance, when a merge would generate flanking contigs shorter than this threshold, the merging is performed but the alignment is extended to include these regions. We set a default value of 100 bp for this parameter.
 
 
 \begin{figure}[htb]
@@ -153,12 +153,12 @@ The merger is always performed if \oldnew{the merger}{it} doesn't increase the n
 \end{figure}
 
 At the graph level, the merger of two \emph{pancontigs} defines a new \emph{pancontig}, connected on both sides by edges to the neighboring \emph{pancontigs} of both inputs, and thus locally collapses the two graphs under consideration.
-At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the \oldnew{reference}{consensus} of one onto the other; the merger of two \emph{pancontigs} requires the application of the map onto the underlying multiple-sequence alignment.
+At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the consensus of one onto the other; the merger of two \emph{pancontigs} requires the application of the map onto the underlying multiple-sequence alignment.
 Once both sets of sequences are placed onto a common coordinate system, the resultant consensus sequence, and thus polymorphisms, are recomputed.
-This procedure can be viewed as an approximate multiple sequence alignment algorithm that aligns homologous parts without further investigating insertions in the two sub-alignments. \oldnew{}{This shortens considerably the time needed, but might introduce minor inconsistencies and artifacts in the alignments. After building the graph, these can be removed by performing a multiple sequence alignment on each pancontig  (see ``polish'' command in documentation).}
+This procedure can be viewed as an approximate multiple sequence alignment algorithm that aligns homologous parts without further investigating insertions in the two sub-alignments. This shortens considerably the time needed, but might introduce minor inconsistencies and artifacts in the alignments. After building the graph, these can be removed by performing a multiple sequence alignment on each pancontig  (see ``polish'' command in documentation).
 
 The above procedure is repeated until no alignments with negative energy remain.
-\oldnew{Upon completion, transitive edges within the graph, i.e., edges along which all path are co-linear, are removed by merging adjacent \emph{pancontigs}.}{More details on the merging procedure and the effect of parameters can be found in SI section I.}
+More details on the merging procedure and the effect of parameters can be found in SI section I.
 
 \subsection{Parallelism}
 \emph{PanGraph} guide trees are balanced binary trees that break the task into many independent sub-problems and thereby enable scalable parallelism, as shown in Fig \ref{fig:visualization}A for a cartoon example.
@@ -222,7 +222,7 @@ This discrepancy is due to the fact that for accurate graph constructions, the l
 \begin{figure}[tb]
     \includegraphics[width=.4\textwidth]{figs/misplaced_fraction_vs_divergence.pdf}
     \caption{{\bf Accuracy against synthetic data}.
-        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels \textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of \oldnew{}{$\Lthr=$}100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions. \textit{mmseqs2} maintains accuracy at higher divergence, at the cost of higher computational time.
+        We generate artificial data with varying degree of sequence divergence, and compare the real underlying pangenome graph with the one reconstructed by \textit{PanGraph}, for three different alignment kernels \textit{minimap2} with \textit{asm10} or \textit{asm20} option, and \textit{mmseqs2}. In each comparison we evaluate the misplacement of breakpoints that we can pair on the two graphs within 1kbp. The plot displays the fraction of breakpoints that have misplacement greater than the standard \textit{PanGraph} precision threshold of $\Lthr=$100bp, as a function of average pairwise sequence divergence. Line and shaded area represents mean and standard deviation over 25 repetitions. \textit{mmseqs2} maintains accuracy at higher divergence, at the cost of higher computational time.
     }
     \label{fig:toy-accuracy}
 \end{figure}
@@ -261,7 +261,7 @@ Among these 5 data sets, the \textit{E.~coli}, \textit{K.~pneumoniae}, \textit{M
         average chromosome length ($\avg{\Lgen}$),
         total pangenome length ($\Lpang$),
         total core genome length ($\Lcore$),
-        \oldnew{}{total soft-core genome length ($\Lsoftcore$, corresponding to genes shared by at least 95\% of the isolates),}
+        total soft-core genome length ($\Lsoftcore$, corresponding to genes shared by at least 95\% of the isolates),
         and average pairwise divergence of core genes ($\dcore$).
     }
     \label{table:panx-dataset}
@@ -282,7 +282,7 @@ The \textit{H.~pylori}  dataset sits at the limit of what can be accurately merg
 In this case the use of \textit{mmseqs2} and null energy parameters increases core pangenome fraction, decreases the total pangenome size and and does not compromise the fragmentation of the graph (cf. Fig.~\ref{fig:panx-benchmark}B-C and SI Fig.~4).
 The divergence of the \textit{P.~marinus} dataset sits instead beyond the capabilities of \textit{Pangraph}. In this case no alignment kernel can reach satisfactory sequence compression, and only \textit{mmseqs2} combined with null energy parameters is able to retrieve a few core pancontigs.\\
 
-For species other than \textit{P.~marinus}, the pangraphs contain thousands to tens of thousands of pancontigs, and 50\% of the pangenome sequence is contained in \oldnew{blocks}{pancontigs} spanning several kbps (see SI Fig.~4).
+For species other than \textit{P.~marinus}, the pangraphs contain thousands to tens of thousands of pancontigs, and 50\% of the pangenome sequence is contained in pancontigs spanning several kbps (see SI Fig.~4).
 For these species the use of null energy parameters slightly increases merging and sequence compression, at the cost of slightly more fragmented graphs (cf. SI Section IIIC and SI Fig.~4).
 Overall this benchmark showcases the capabilities and limits of \textit{PanGraph}, and demonstrates the value of adapting the pseudo-energy parameter and choice of alignment kernel to the expected diversity of the dataset considered.
 
@@ -293,7 +293,7 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
         We build pangenome graphs from fully-assembled chromosomes from 5 different bacterial species. For each species we build graphs with three different alignment kernel options (\textit{minimap2} with \textit{asm10} or \textit{asm20} option and \textit{mmseqs2}) and two different settings for the pseudo-energy parameters $\alpha, \beta$ (standard or null values).
         \textbf{A}: \textit{PanGraph} wall-time when run in parallel on 8 cores.
         \textbf{B}: fraction of core pangenome in the pangenome graph.
-        \textbf{C}: sequence compression, defined as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph. \oldnew{}{Since maximal compression depends on the number of isolates $n$ in the pangenome graph, we mark for reference the value of $1/n$ for each dataset.}
+        \textbf{C}: sequence compression, defined as the ratio between the pangenome graph size and the cumulative size of all the sequences contained in the graph. Since maximal compression depends on the number of isolates $n$ in the pangenome graph, we mark for reference the value of $1/n$ for each dataset.
     }
     \label{fig:panx-benchmark}
 \end{figure*}
@@ -301,7 +301,7 @@ Overall this benchmark showcases the capabilities and limits of \textit{PanGraph
 \paragraph*{Scaling with dataset size.}
 
 We then explored how the properties of the pangraph scale with the dataset size. To do so, we build pangenome graphs from randomized subsets of isolates of increasing size from the \textit{E.~coli} dataset. Results are reported in Fig.~\ref{fig:panx-size}.\\
-The number and size of pancontigs scale sub-linearly with the number of isolates, with more than 50\% of the pangenome being included in the 10\% longest pancontigs. \oldnew{, and core pancontigs having higher-than-average size}{Core pancontigs have higher-than-average length. This is expected given their strong synteny and the fact that they present less structural variation across genomes compared to accessory genes.} Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added. The size of the core genome does not decrease significantly with the addition of new strains, while the total pangenome size remains orders of magnitude smaller than the total size of all genomes included in the graph.
+The number and size of pancontigs scale sub-linearly with the number of isolates, with more than 50\% of the pangenome being included in the 10\% longest pancontigs. Core pancontigs having higher-than-average length. This is expected given that core genes tend to stay synteny over large evolutionary distances. Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added. The size of the core genome does not decrease significantly with the addition of new strains, while the total pangenome size remains orders of magnitude smaller than the total size of all genomes included in the graph.
 
 
 \begin{figure*}[htb]
@@ -322,7 +322,7 @@ The interpretation of a pangenome graph containing hundreds of strains can be ch
 In addition to being a useful operation, marginalization allows us to quantify the consistency and robustness of pangraph construction on real data, where the ground truth is unknown.
 To verify that marginalized graphs are compatible with newly-built graphs, we built a pangenome graph for 50 randomly selected strains from the \textit{K.~pneumoniae} dataset. We then picked 50 random pairs of strains from the same set and built two graphs for each pair: the graph obtained by marginalizing the complete graph on the pair (i.e. marginalized graph in Fig.~\ref{fig:marginalization}A top), and the graph built directly from the pair (i.e. pairwise graph in Fig.~\ref{fig:marginalization}A top).
 In order to compare both graphs, we compute the partition they generated on the genome of the isolates they include. Each genome is partitioned in pancontigs that are either shared on the pair, or private to one isolate (cf. Fig.~\ref{fig:marginalization}A bottom). We can classify the segments in the intersection of the two partitions in different categories, depending on whether the two partitions agree on whether the segment is shared or private. Moreover segments on which the two partitions agree are further sub-divided depending on whether they are private or shared on both partitions.\\
-The compatibility between the two graphs requires segments on which the two partitions disagree to be few and short. Indeed, we verified that over the pairs we picked, these segments cover a very small fraction of the genome ($<1\%$) and have average size compatible with the default 100 bp precision threshold of \textit{PanGraph} \oldnew{}{set by the value of $\Lthr$} (cf. Fig.~\ref{fig:marginalization}B-C). Conversely, segments on which the partitions agree have average size of several kbps. The fact that the two partitions almost completely agree cannot be explained simply by the fact that most of the genome is shared, since segments that are shared on both graphs cover on average only 85\% of the sequence. We confirmed these results using the fraction of shared k-mers, using an approach inspired by PopPUNK \cite{lees2019fast}. Namely, we approximate the fraction of homologous sequence between any two pairs using the fraction of shared k-mers ($k=21$) divided by $(1-d)^{k}$, where $d$ is the average pairwise divergence on core genes for the pair considered. This divisor corrects for k-mers on homologous sequence that are not shared due to mutations. The resulting distribution of shared sequence is in very good agreement with the fraction of segments that are shared on both graphs (cf. Fig.~\ref{fig:marginalization}B), suggesting that homologous sequences are correctly merged on the complete, marginalized and pairwise graphs.\\
+The compatibility between the two graphs requires segments on which the two partitions disagree to be few and short. Indeed, we verified that over the pairs we picked, these segments cover a very small fraction of the genome ($<1\%$) and have average size compatible with the default 100 bp precision threshold of \textit{PanGraph} set by the value of $\Lthr$ (cf. Fig.~\ref{fig:marginalization}B-C). Conversely, segments on which the partitions agree have average size of several kbps. The fact that the two partitions almost completely agree cannot be explained simply by the fact that most of the genome is shared, since segments that are shared on both graphs cover on average only 85\% of the sequence. We confirmed these results using the fraction of shared k-mers, using an approach inspired by PopPUNK \cite{lees2019fast}. Namely, we approximate the fraction of homologous sequence between any two pairs using the fraction of shared k-mers ($k=21$) divided by $(1-d)^{k}$, where $d$ is the average pairwise divergence on core genes for the pair considered. This divisor corrects for k-mers on homologous sequence that are not shared due to mutations. The resulting distribution of shared sequence is in very good agreement with the fraction of segments that are shared on both graphs (cf. Fig.~\ref{fig:marginalization}B), suggesting that homologous sequences are correctly merged on the complete, marginalized and pairwise graphs.\\
 We performed the same test on species from the other datasets, obtaining similar results on all species whose divergence is compatible with \textit{PanGraph} capabilities (cf. SI Section IV and SI Fig.~5).
 
 
@@ -330,8 +330,8 @@ We performed the same test on species from the other datasets, obtaining similar
     \includegraphics[width=\textwidth]{figs/marginalize_test.pdf}
     \caption{{\bf Test of graph marginalization}.
         \textbf{A}: we built a pangenome graph from 50 randomly chosen strains from the \textit{K.~pneumoniae} dataset. We then randomly picked 50 pairs of strains. For each pair we compared the pangenome graph obtained by marginalizing the complete graph on the pair of strain, and the one obtained by building a new graph for the pair (top). The comparison is done by considering that each graph partitions a genome in shared and private segments. By combining the partitions generated by the marginalized and pairwise graphs we categorize segments in three categories, depending on whether the two partitions agree or not, and if they agree depending on whether segments are shared or private. All graphs were built using \textit{minimap2} alignment kernel with \textit{asm20} option and default value for the energy parameters.
-        \textbf{B}: distribution of the average fraction of the genome covered by segments of each category, over the 50 pairs considered (2 entries per pair). The last line represents the distribution of shared sequence, approximated using the fraction of shared k-mers corrected using sequence divergence as described in the main text. \oldnew{}{Next to each distribution we report its mean and standard deviation.}
-        \textbf{C}: distribution of average segment lengths for each category over the 50 pairs considered (2 entries per pair). \oldnew{}{Mean and standard deviation are reported.}
+        \textbf{B}: distribution of the average fraction of the genome covered by segments of each category, over the 50 pairs considered (2 entries per pair). The last line represents the distribution of shared sequence, approximated using the fraction of shared k-mers corrected using sequence divergence as described in the main text. Next to each distribution we report its mean and standard deviation.
+        \textbf{C}: distribution of average segment lengths for each category over the 50 pairs considered (2 entries per pair). Mean and standard deviation are reported.
     }
     \label{fig:marginalization}
 \end{figure*}
