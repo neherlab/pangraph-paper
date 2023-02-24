@@ -138,7 +138,7 @@ Importantly, this divergence threshold is applied to the comparison of the conse
 \oldnew{}{The pseudo-energy ranking also effectively results in merges being performed in reverse evolutionary order, with less diverged sequences being merged first.}
 The parameter $\alpha$ controls the fragmentation of the graph and imposes a minimal length on the \oldnew{resulting}{} pan-contigs resulting from the merger.
 The merger is always performed if \oldnew{the merger}{it} doesn't increase the number of contigs, but mergers that introduce 1, 2, 3 or 4 cuts are only performed for sufficiently long homologous stretches as parameterized by $\alpha$.
-\oldnew{In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.}{In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e. short indels) is stored in pancontig alignments, rather than in the graph structure, and no merges are performed if they have length shorter than this threshold. For instance, when a merge would generate flanking contigs shorter than this threshold, the alignment is extended to include these regions. We set a default value of 100 bp for this parameter.}
+\oldnew{In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.}{In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e. short indels) is stored in pancontig alignments, rather than in the graph structure, and no merges are performed if they have length shorter than this threshold. For instance, when a merge would generate flanking contigs shorter than this threshold, the merging is performed but the alignment is extended to include these regions. We set a default value of 100 bp for this parameter.}
 
 
 \begin{figure}[htb]
@@ -153,12 +153,12 @@ The merger is always performed if \oldnew{the merger}{it} doesn't increase the n
 \end{figure}
 
 At the graph level, the merger of two \emph{pancontigs} defines a new \emph{pancontig}, connected on both sides by edges to the neighboring \emph{pancontigs} of both inputs, and thus locally collapses the two graphs under consideration.
-At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the reference of one onto the other; the merger of two \emph{pancontigs} requires the application of the map onto the underlying multiple-sequence alignment.
+At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the \oldnew{reference}{consensus} of one onto the other; the merger of two \emph{pancontigs} requires the application of the map onto the underlying multiple-sequence alignment.
 Once both sets of sequences are placed onto a common coordinate system, the resultant consensus sequence, and thus polymorphisms, are recomputed.
-This procedure can be viewed as an approximate multiple sequence alignment algorithm that aligns homologous parts without further investigating insertions in the two sub-alignments.
+This procedure can be viewed as an approximate multiple sequence alignment algorithm that aligns homologous parts without further investigating insertions in the two sub-alignments. \oldnew{}{This shortens considerably the time needed, but might introduce minor inconsistencies and artifacts in the alignments. After building the graph, these can be removed by performing a multiple sequence alignment on each pancontig  (see ``polish'' command in documentation).}
 
 The above procedure is repeated until no alignments with negative energy remain.
-Upon completion, transitive edges within the graph, i.e., edges along which all path are co-linear, are removed by merging adjacent \emph{pancontigs}. \oldnew{}{More details on the merging procedure and the effect of parameters can be found in SI section I.}
+\oldnew{Upon completion, transitive edges within the graph, i.e., edges along which all path are co-linear, are removed by merging adjacent \emph{pancontigs}.}{More details on the merging procedure and the effect of parameters can be found in SI section I.}
 
 \subsection{Parallelism}
 \emph{PanGraph} guide trees are balanced binary trees that break the task into many independent sub-problems and thereby enable scalable parallelism, as shown in Fig \ref{fig:visualization}A for a cartoon example.
