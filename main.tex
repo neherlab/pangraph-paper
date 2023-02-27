@@ -6,8 +6,11 @@
 \usepackage{wrapfig}
 \usepackage{enumerate}
 \usepackage{xcolor}
+\usepackage{xr} % external references (reference supplementary)
 \usepackage[normalem]{ulem}
 \usepackage[final]{hyperref}
+
+\externaldocument[sp-]{supplementary}
 
 \newcommand{\avg}[1]{\langle #1 \rangle}
 \newcommand{\Lcore}{L_\text{core}}
@@ -96,11 +99,11 @@ To construct a pangraph, the algorithm needs to find homologous sequence within 
 Pairwise graph alignment is performed by an all-to-all alignment of the consensus sequence of all \emph{pancontigs} between both graphs, and the order of pairwise alignments is determined by a guide tree.
 
 \subsection{Guide tree construction}
-The alignment guide tree is constructed subject to three design constraints: (i) similar sequences are aligned first, (ii) the similarity computation scales sub-quadratically with the number of input sequences, and (iii) the resultant tree is balanced to maximize parallelism.
+The alignment guide tree is constructed subject to three design constraints: (i) similar sequences are aligned first, (ii) the similarity computation must have good scaling properties with the length and number of input sequences, and (iii) the resultant tree is balanced to maximize parallelism.
 To this end, we formulate the algorithm as a two step process.
 The initial guide tree is constructed by neighbor-joining \cite{saitou1987neighbor}; the pairwise distance between sequences is approximated by the Jaccard distance between sequence minimizers \cite{roberts2004reducing}.
 Computationally, each sequence can be sketched into its set of minimizers in linear time while the cardinality of all pairwise intersections can be computed by sorting the list of all minimizers to efficiently count overlaps.
-Hence, the pairwise distance matrix is estimated in a time that increases log-linearly in the total length of sequence that is analyzed.
+Hence, the pairwise distance matrix is estimated in a time that increases log-linearly in the length of sequences, and in our implementation can scale sub-quadratically with the number of isolates (see SI sect.\ref{sp-sec:pangraph-algo} for details).
 The final guide tree is constructed as the balanced binary tree constrained to reproduce the topological ordering of leaves found initially.
 This balancing maximizes the number of independent pairwise alignments and thereby allows efficient parallelism.
 See Fig. \ref{fig:visualization}A for a graphical depiction of the guide tree.

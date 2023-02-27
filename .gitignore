@@ -11,3 +11,5 @@ schemes
 makefile
 /*.pdf
 /.vscode
+/main-old.tex
+/supplementary-old.tex

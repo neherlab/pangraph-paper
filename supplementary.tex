@@ -15,6 +15,7 @@
 \newcommand{\Lgen}{L_\text{gen}}
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
 \newcommand{\Lthr}{L_{\min}}
+\newcommand{\red}[1]{{\color{red}#1}}
 % \newcommand{\oldnew}[2]{{\color{gray}\sout{#1}}{\color{red}#2}}
 
 
@@ -35,22 +36,54 @@
 
 \maketitle
 
-\section{Graph merging algorithm}
-\label{supp:graph_merging}
+\section{Pangenome graph representation}
+\label{sec:graph-repr}
 
-In this section we describe in more detail the procedure used to merge two pangenome graphs together. This procedure is at the core of \textit{PanGraphs}'s algorithm.
+This section contains a short explanation of the pangenome graph representation used in \textit{PanGraph}. A pangenome graph is essentially composed of two elements: pancontigs, which encode for alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs (see fig.~\ref{fig:graph-representation}).\\
 
-As explained in the main text, the full pangenome graph is built by placing genomes on terminal leaves of a guide tree. These genomes are initially considered as elementary graphs composed of a single \textit{pancontig}. These graphs are then propagated along the tree towards the root, and at each intersection a merge operation is performed. The full pangenome graph is then collected from the root.
+\begin{figure}[htb]
+    \includegraphics[width=0.5\textwidth]{figs_suppl/graph_representation.pdf}
+    \caption{{\bf Pangenome graph representation}. Given a set of genomes \textit{PanGraph} will construct a pangenome graph by condensing all stretches of homologous sequences in \textit{pancontigs}, containing the alignment of these sequences. Genomes can then be represented as \textit{paths}, i.e. lists of pancontigs.
+        In our representation a pangenome graph is in essence a collection of \textit{pancontigs} and \textit{paths}.
+    }
+    \label{fig:graph-representation}
+\end{figure}
 
-\subsection*{pangenome graph representation}
+Each \textbf{pancontig} carries the full information on the alignment of homologous sequences it contains. It possesses a single consensus sequence, and each sequence in the alignment is encoded as variations over this consensus. These can be either mutations of single nucleotides, gaps, deletions or insertions. The alignment sequence can be reconstructed by performing these changes in order, as displayed in fig.~\ref{fig:alignment-reconstruction}. More information on the precise encoding used can be found in PanGraph documentation.\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2}}\\
 
-As a preliminary step in the explanation we spend few words on the pangenome graph representation of \textit{PanGraph}. A pangenome graph is essentially composed of two elements: pancontigs, which encode for alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs.
+\begin{figure}[htb]
+    \includegraphics[width=0.5\textwidth]{figs_suppl/pancontig_alignment.pdf}
+    \caption{{\bf From pancontig consensus to alignment}. In our pancontig representation, each sequence in the alignment is encoded as variations over the pancontig consensus. In practice in the pangraph output \texttt{json} file each alignment sequence is saved as a list of gaps to be added to the consenus, sites to be mutated, insertions to be performed in gaps, and deletions. By performing these changes in order on the consensus each sequence in the alignment can be retrieved. In this example we display how each of these variations are encoded and performed.
+    }
+    \label{fig:alignment-reconstruction}
+\end{figure}
 
-Each \textbf{pancontig} contains the full information on the alignment of homologous sequences it contains. In PanGraph each pancontig is encoded with a consensus sequence, and each line of the alignment is saved as variations over this consensus (mutations, insertions and deletions). More information on the precise encoding used can be found in PanGraph documentation.\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2/\#From-block-consensus-to-node-alignment}}
+Each \textbf{path} is an oriented collection of pancontigs that represents a genome. For each item in the sequence along with the pacontig id PanGraph also stores the pancontig orientation (whether homology with the consensus is on the forward the reverse strain of the genome) and which variations on the pancontig consesus (i.e. which sequence in the pancontig alignment) correspond to this precise location in the genome.\\
 
-Each \textbf{path} is an oriented collection of pancontigs that represents a genome. For each item in the sequence along with the pacontig id PanGraph also stores the pancontig orientation (whether homology with the consensus is on the forward the reverse strain of the genome) and which variations on the pancontig consesus (i.e. which line in the pancontig alignment) correspond to this precise location in the genome.
+From knowledge of all the pancontigs and pahts, every single genome can be exactly reconstructed. Every part of the sequence is always encoded in a pancontig. ``Small-scale'' difference between genomes (i.e. SNPs, small insertions and deletions) are encoded in pancontigs as variations over the consensus. ``Large-scale'' differences, such as presence or absence of long stretch of sequences, are instead encoded in paths as presence or absence of pancontigs. This scale separation can be tuned using PanGraph parameters, as will be explained in following sections.
 
-From knowledge of all the pancontigs and pahts, every single genome can be exactly reconstructed. Every part of the sequence is always encoded in a pancontig. ``Small-scale'' difference between genomes (i.e. SNPs, small insertions and deletions) are encoded in pancontigs as variations over the consensus. ``Large-scale'' differences, such as presence or absence of long stretch of sequences, are instead encoded in paths as presence or absence of pancontigs. This scale separation can be tuned using PanGraph parameters, as will be explained in the next section.
+
+
+\section{PanGraph algorithm}
+\label{sec:pangraph-algo}
+
+In this section we describe in more detail the algorithmic procedure used to build a pangenome graph. In essence, the full pangenome graph is built by placing genomes on terminal leaves of a guide tree, built from a sequence minimizer distance matrix. These genomes are initially considered as elementary graphs composed of a single \textit{pancontig}. These graphs are then propagated along the tree towards the root, and at each intersection a merge operation is performed. The full pangenome graph is then collected from the root.
+
+We focus on three aspects:
+\begin{itemize}
+    \item The estimation of pairwise distances between genomes, used to build the guide tree.
+    \item The procedure used to merge two pangenome graphs together, which is at the core of \textit{PanGraphs}'s algorithm.
+    \item The effect of the main parameters of the algorithm on the resulting graph structure.
+\end{itemize}
+
+\subsection*{guide tree construction and distance matrix estimation}
+
+As stated in the main text, the guide tree is built by neighbor-joining, with the pairwise distance between sequences being approximated by the Jaccard distance between sequence minimizers. To maximize parallelization, the final tree is a balanced binary tree with the same ordering of leaves as the one found by neighbour-joining. Here we briefly discuss how the complexity of this distance matrix estimation scales with the number $n$ and length $l$ of input sequences.\\
+As a first step of the distance estimation, we sketch all input sequences together and build a unique sorted list of minimizers. This can be done in time $O(L \log L)$, where $L = n \times l$ is the total length of input sequences. With each minimizer in the list we also keep the information of the genome of origin.\\
+As a second step we count the number of minimizers shared by each pair of sequences. This can be done efficiently by scrolling the sorted list of minimizers (having size proportional to $L$) only once. For each chunk of equal minimizers in the list (having size between 1 and $n$, depending on how shared is the original k-mer) we increment by one the corresponding pairs in a minimizer count matrix. Depending on how similar the input sequences are, this operation has complexity between $O(n^2 l) = O(nL)$ (all minimizers shared) and $O(nl) = O(L)$ (no minimizer shared).\\
+In conclusion, depending on the similarity of the input sequences, evaluation of the pairwise distance matrix has complexity between $O(L \log L)$ and $O(L \log L + nL)$.\\
+
+In practice for typical use cases of pangraph ($n \sim 100$ and $L \sim 10^6$) the computationally challenging part is the minimizer sketching, and not the distance matrix computation. This is partly due to some prefactors (e.g. the window size of 100 bp used for sketching makes so that the list of minimizer is significantly shorter than the genome, and the only operation performed $n^2$ times is a single increment of an integer in the minimizer hit matrix). Moreover, the computational time to build the guide tree is usually negligible compared to the time required for the graph merging procedure.\\
 
 \subsection*{graph merging}
 
@@ -95,7 +128,7 @@ We also point out that in our merging procedure only the consensus sequence of a
 
 After explaining the procedure we use for merging, we conclude this section with some comments on the effect of PanGraph's parameters on the resulting pangenome graphs.\\
 
-Parameter $\Lthr$ controls the minimal size of pancontigs. Indels shorter than this size are saved as variation in alignments, rather than as separate pancontigs. As such this parameter partially controls the fragmentation of the graph. The appropriate value depends on the scale at which one wants to study structural variations in genomes. The default value in PanGraph is set to 100 bp.\\
+Parameter $\Lthr$ controls the minimal size of pancontigs. Indels shorter than this size are saved as variation in alignments, rather than as separate pancontigs. As such this parameter partially controls the fragmentation of the graph. The appropriate value depends on the scale at which one wants to study structural variations in genomes. The default value in PanGraph is set to 100 bp. This is done to capture structural variation at the gene scale, while ignoring small indels. The value can hoewever be tuned by the user depending on the specific use-case.\\
 A similar role is played by the parameter $\alpha$. This can be interpreted as the cost of introducing a cut in a pancontig. The length of homologous sequence to be merged must exceed this cost for a cut to be performed.\\
 
 The choice of alignment kernel and the value of $\beta$ set instead a limit on the divergence of sequences that are merged in the same pancontig. The first intrinsic limit is set by the choice of alignment kernel and its sensitivity: minimap2 is significantly faster than mmseqs2, but it is in general unable to find matches between homologous sequences with more than 20\% divergence (with asm20 sensitivity).\\
@@ -109,7 +142,7 @@ On top of this intrinsic limit of the aligner, a more fine-tuned setting of the 
 
 
 \section{Generation of synthetic data}
-\label{supp:data_generation}
+\label{sec:data_generation}
 
 As a first test we benchmark the performances and accuracy of \textit{PanGraph} on synthetic data, obtained by simulating the evolution of a population in which individuals accumulate mutations, can loose part of the sequence from deletions, or gain new genetic material via Horizontal Sequence Transfer (HST) from other members of the population.\\
 In the simulation a population of size $N$ is evolved for $T$ generations using a Wright-Fisher model \cite{hudson2002generating}. Each individual in the population has a circular genome of initial size $L$. At each generation single-nucleotide mutations occur at a rate $\mu$ per position. Deletions can occur at a rate $d$ per genome per generation. When a deletion is suggested on isolate $n$, having a genome length $L_n$, a new desired length $L'_n$ is extracted from a Gaussian distribution with mean $L$ and variance $\sigma^2$. If $\Delta = L'_n - L_n < 0$ then a random chunk of length $|\Delta|$ is removed from the genome, reducing it to size $L'_n$. If $\Delta > 0$ no deletion is performed. This ensures that the length distribution of genomes in the population remains close to the desired length $L$, with $\sigma^2$ being a proxy for the variance.
@@ -157,7 +190,7 @@ Thanks to the guide tree architecture of \textit{PanGraph} the run time scales a
 
 \subsection{Accuracy in reconstructing the pangenome graph}
 
-To test the accuracy of \textit{PanGraph} in reconstructing the pangenome graph of a set of isolates we generated artificial data using the procedure described in Section~\ref{supp:data_generation}. For each simulation we obtain both a set of genome sequences and the underlying real pangenome graph. This was done using standard value of the parameters, but varying the rate of HGT in the interval $h=[0.01,1]$ and the mutation rate $\mu=[0,0.01]$. For each $(h,\mu)$ pair 25 different sets of data were generated.\\
+To test the accuracy of \textit{PanGraph} in reconstructing the pangenome graph of a set of isolates we generated artificial data using the procedure described in Section~\ref{sec:data_generation}. For each simulation we obtain both a set of genome sequences and the underlying real pangenome graph. This was done using standard value of the parameters, but varying the rate of HGT in the interval $h=[0.01,1]$ and the mutation rate $\mu=[0,0.01]$. For each $(h,\mu)$ pair 25 different sets of data were generated.\\
 On each set of data we executed \textit{PanGraph} with values for the energy parameters $\alpha=0$ and $\beta=0$, and with three different alignment kernels:
 \begin{itemize}
     \itemsep0pt
