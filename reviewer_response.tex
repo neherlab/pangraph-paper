@@ -1,8 +1,8 @@
 \documentclass[aps,rmp,onecolumn]{revtex4-1}
 \usepackage{geometry}
 \usepackage{graphicx}
-\usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{hyperref}
 
 \newcommand{\Lthr}{L_{\min}}
 
@@ -14,6 +14,7 @@
 \newcommand{\reviewer}[2]{\textbf{#1:} #2\vskip 5mm}
 \newcommand{\response}[1]{{\it {\color{response}\textbf{Response:} #1}}\vskip 5mm}
 \newcommand{\responsedraft}[1]{{\it {\color{purple}\textbf{ResponseDraft:} #1}}\vskip 5mm}
+\newcommand{\crossref}[1]{{\color{purple}\{check cross-reference\}#1}} % cross-reference, to be later checked
 
 \title{Response to Reviewers}
 \begin{document}
@@ -253,7 +254,7 @@
             \item The paper is concise and well written, i really enjoyed reading it
             \item I liked the structure of the algorithms section, again i congratulate the authors, this is so much clearer than most papers. eg i was particularly happy to see the Guide Tree section start with your design constraints/aims.
             \item Fantastic choice of species in your empirical dataset - P. marinus diversity is insane.
-            \item Line 215 - this is a remarkable achievement: "Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added"
+            \item Line 215 - this is a remarkable achievement: ``Adding more strains does not generate excessive fragmentation of these pancontigs, and their size remains of several kbps even as hundreds of strains are added''
             \item Congratulations
       \end{enumerate}
 }
@@ -261,16 +262,16 @@
 
 \subsection*{Reviewer 3}
 
-\reviewer{R3}{The article "PanGraph: scalable bacterial pan-genome graph construction" reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose.\textbf{ The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.}}
+\reviewer{R3}{The article ``PanGraph: scalable bacterial pan-genome graph construction'' reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose.\textbf{ The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.}}
 
-\reviewer{R3}{For instance the authors state: "Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated "bags of genes", and thus are not suited for this new era.". There are many pan-genome analysis tools which treat the pan-genome as a graph and generate a PGG. There are two primary differences in these existing tools: those which generate a graph at the nucleotide level with nodes representing basepairs (sometimes nonbranching runs of nodes are collapsed) and those where nodes represent larger features such as genes.\\
+\reviewer{R3}{For instance the authors state: ``Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.''. There are many pan-genome analysis tools which treat the pan-genome as a graph and generate a PGG. There are two primary differences in these existing tools: those which generate a graph at the nucleotide level with nodes representing basepairs (sometimes nonbranching runs of nodes are collapsed) and those where nodes represent larger features such as genes.\\
       PanGraph appears to wed these approaches to some extent in that the alignments are done at the nucleotide level and the features are extracted as a characteristic of the alignments.}
 
 \reviewer{R3}{An obvious lack in PanGraph is an attempt to map existing annotations back onto the generated PGG which is a necessity for usefulness to biologists. The mechanism for this is obvious but providing a useful user interface might be tedious.}
 \Liam{I think perhaps producing a helper python script that converts a genbank annotation file for a genome within a pangraph to an output gff/csv with the block locations and coordinates would please this reviewer.}\\
 \Marco{Yeah good idea. Maybe something that just map each annotation into a block, without solving the problem of harmonizing annotations which might be some more work...}\\
 
-\reviewer{R3}{This statement: "While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging. Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology (Iqbal et al., 2012; Muggli et al., 2017)." appears to be incomplete at best. De Bruijn graph-based assemblers routinely collapse nonbranching portions of the graph into longer sequences than the k-mer size used for construction.
+\reviewer{R3}{This statement: ``While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging. Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology (Iqbal et al., 2012; Muggli et al., 2017).'' appears to be incomplete at best. De Bruijn graph-based assemblers routinely collapse nonbranching portions of the graph into longer sequences than the k-mer size used for construction.
       % \Marco{from what I understand the structure in de Bruijn graphs is very fine-grained. Every SNP can generate a branching event. While in our case we have this intermediate corse-graining where homologous parts are collapsed together and the remaining structure of the graph represents large-scale structural variation in the genomes. I don't think this is solved by collapsing nonbranching portions in dB graphs (but I might not know enough about this...)}\\
       One early approach that does not explicitly generate a pan-genome graph but deals with some of the rearrangement issues cited by the authors is:
       \begin{itemize}
@@ -283,22 +284,21 @@
             \item \cite{chan2015novel}
       \end{itemize}}
 
-\reviewer{R3}{I believe this statement: "It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order." is the essential step in the process and perhaps deserves more focus. It captures two important issues: \textbf{aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum}. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as \textbf{distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it}. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.}
+\reviewer{R3}{I believe this statement: ``It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order.'' is the essential step in the process and perhaps deserves more focus. It captures two important issues: \textbf{aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum}. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as \textbf{distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it}. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.}
 \Liam{I am not sure I agree that constructing a pangenome graph means one must distinguish orthologs from paralogs. The structure is still useful even if this isn't done. Maybe there is a way of doing something of what they propose with simulations, but I suspect this isn't necessary for the editor to accept the paper\ldots}\\
 \Marco{I agree, I think it's a different design choice. We could also mention that the marginalize command has an option to project out paralogs, but should be a post-processing step rather than something that we want to do while building the graph. One can a posteriori decide whether one wants to split paralogs using structural information (flanking blocks) or one can even prevent the merging using diversity and the $\beta$ parameter.}\\
 
 \reviewer{R3}{In the pseudo-energy discussion a further parameter is mentioned: "In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.". The value chosen for this parameter should be explicitly stated along with a rationale for the choice. It is also not clear if any of the splitting pancontigs are less than this value if the entire merger is dropped or just massaged to not have the too small new pancontig.}
 % \Liam{this relates to R2's point above about all sequence ending up in pancontigs so I think is just clarification.}\\
 % \Marco{I agree. We set a minimal cutoff of 100bp. This is stated later in line 106. Maybe we could expand the sentence in line 99 and give the value and few more words on the meaning/effect. This controls in some sense the ``corse graining'' of the graph: what is the size of an event that we want to encode as structural variation in the graph, rather than as an indel in the alignment. In the algorithm this minimal cutoff has different effects depending on the context. When aligning, if the match lenght is less than this threshold the merge is refused. For long alignments, if the CIGAR string contains indels that are longer than this threshold, these are saved as separate blocks and not as indels in the block. The same goes for the flanking sequences, if merging two long blocks leaves overhangs that are less than this threshold size then these overhangs are saved as part of the merged block and not as separate small blocks. This might be explained in the SI?}\\
-\responsedraft{
-      The minimal size parameter $\Lthr$ is set to 100 bp in PanGraph. This parameter controls the minimal size of blocks. In general, this parameter sets a scale separation between structural variation that is encoded in the graph structure or in the pancontig alignment. For instance, an insertion could appear either as a separate pancontig, or as an insertion in the pancontig alignment, depending on its size. In practice this parameter is used in three ways:
+\response{The minimal size parameter $\Lthr$ is set to 100 bp in PanGraph. This parameter controls the minimal size of blocks. In general, this parameter sets a scale separation between structural variation that is encoded in the graph structure or in the pancontig alignment. For instance, an insertion could appear either as a separate pancontig, or as an insertion in the pancontig alignment, depending on its size. In practice this parameter is used in three ways:
       \begin{itemize}
             \item In addition to the pseudo-energy costraint, merges are refused if they have alignment length shorter than $\Lthr$.
             \item During merging, if the alignment contains long ($> \Lthr$) indels, these will cause a split in the merged pancontigs and will be treated as separate pancontigs.
             \item If a merger of two pancontigs would produce flanking overhangs shorter than $\Lthr$, these are not saved as separate pancontigs but are included in the alignment as flanking indels.
       \end{itemize}
-      As pointed out by the reviewer this parameter was not properly discussed in the text. We now extended its definition in IB in the main text, and give a more extended discussion in SI section I.\\
-      % TODO: missing: motivation for this choice in the text.
+      We choose a value of 100 bp in our analysis (and as standard value) to be able to detect variations at the gene scale, while encoding variations of up to few tens of bps in the alignments. This value can however be tuned by the user depending on the specific needs.\\
+      We appreciate the need to better explain the role of this parameter in the merging procedure and in the structure of the resulting graph. To this end we extended its definition in section IB in the main text, and give a more extended discussion in SI section~\crossref{II}.\\
       % TODO: Homogenization in the main text with discussion on precision. Extend.
 }
 
