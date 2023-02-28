@@ -19,7 +19,7 @@
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
 \newcommand{\crossref}[1]{{\color{purple}\{check cross-refs\}#1}} % cross-reference, to be later checked
 \newcommand{\modified}[1]{{\color{red}#1}}
-% \newcommand{\oldnew}[2]{{\color{gray}\sout{#1}}{\color{red}#2}}
+% \newcommand{\Marco}[1]{{\color{teal}[Marco: #1]}}
 
 \begin{document}
 %\title{PanGraph: scalable multiple genome alignment for pan-genome analysis}
@@ -342,7 +342,8 @@ We performed the same test on species from the other datasets, obtaining similar
 
 \section{Discussion}
 
-While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of complete genomes of a bacterial species is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can address this need, by being able to capture the structural and nucleotide diversity in both the core and accessory genome in a scalable way.
+While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of complete genomes of a bacterial species is crucial for the investigation of the processes governing microbial evolution. We developed \textit{PanGraph} as a tool that can address this need, by being able to capture the structural and nucleotide diversity in both the core and accessory genome in a scalable way.\\
+Importantly, this diversity is encoded in different ways depending on the scale, with large-scale variation affecting the graph structure, while nucleotide-level variation being included in pancontig alignments.\\
 
 In our analysis we demonstrated the capabilities and limits of this tool, both on synthetic and real sequences. The efficient implementation of \textit{PanGraph} allows it to create pangenome graphs containing hundreds of isolates in a few hours on a 8-core machine. The size of pancontigs and the fraction of core sequence have good scaling properties with the number of isolates in the graph, indicating that \textit{PanGraph} is able to successfully capture pangenome properties. By construction \textit{PanGraph} operates in a gene-agnostic way, being only based on sequence homology, and is thus robust to gene annotation errors.\\
 One of the main limitations is the diversity of the input sequences. With the default \textit{minimap2} alignment kernel, \textit{PanGraph} is able to correctly merge genomes with up to 5\% average divergence. Sequences with higher divergence (up to 10-15\%) can be merged using the \textit{mmseqs2} alignment kernel, and tuning the $\alpha, \beta$ energy parameters (cf. eq.~(\ref{eq:pseudo-energy})), trading off speed for sensitivity.
@@ -352,6 +353,7 @@ We also provide the ability to quickly marginalize big graphs on a subset of str
 
 The applications of \textit{PanGraph} are not limited to whole bacterial chromosomes. Plasmids and other Mobile Genetic Elements (MGEs) play a fundamental role in microbial evolution \cite{haudiquet2022selfish,frost2005mobile}, including in the spread of antibiotic resistance \cite{van2018spread}. MGEs often display a wide variety of sequence and structural diversity. Being able to capture and represent this diversity is key to understanding their evolution, particularly on epidemiologically relevant timescales where very few SNPs accumulate but large-scale structural changes are frequent \cite{Sheppard2016, Noll2018}.
 In this sense, the pangenome graph is a naturally powerful representation, and \textit{PanGraph} can be used to explore this diversity \cite{liam_preparation}. Some example applications on plasmids are available in \textit{PanGraph}'s documentation\footnote{See the tutorial section in \url{https://neherlab.github.io/pangraph}}.\\
+Even if \textit{PanGraph} was not developed with this aim in mind, its outputs can be used as input for other tools that perform variant calling and genotyping using Pangenome Reference Graphs (PRGs), such as \textit{pandora} \cite{colquhoun2021pandora} and \textit{gramtools} \cite{letcher2021gramtools}. To this end the MSA of each block can be produced using the \texttt{export} command (see \textit{PanGraph}'s documentation), and can be transformed in a set of PRGs using \texttt{make\_prg} (see \url{https://github.com/iqbal-lab-org/make_prg}). We however did not directly test or benchmark these approeaches in the current paper.\\
 
 We hope that \textit{PanGraph} will prove a valuable tool, with the potential to spur new insights into microbial diversity and the processes by which bacteria adapt and change.
 
