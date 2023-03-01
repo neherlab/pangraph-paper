@@ -16,7 +16,15 @@
 \newcommand{\responsedraft}[1]{{\it {\color{purple}\textbf{ResponseDraft:} #1}}\vskip 5mm}
 \newcommand{\crossref}[1]{{\color{purple}\{check cross-reference\}#1}} % cross-reference, to be later checked
 
-\newcommand{\SIalgo}{2}
+\newcommand{\SIalgo}{II}
+\newcommand{\SIsynthdata}{III}
+\newcommand{\SIsimBench}{IV}
+\newcommand{\SIdataBenchmark}{V}
+\newcommand{\SImarginalize}{VI}
+\newcommand{\SIfigMutrate}{4}
+\newcommand{\SIfigKernels}{5}
+\newcommand{\SIfigBenchmark}{6}
+\newcommand{\SIfigMarg}{7}
 
 \title{Response to Reviewers}
 \begin{document}
@@ -306,7 +314,7 @@
             \item If a merger of two pancontigs would produce flanking overhangs shorter than $\Lthr$, these are not saved as separate pancontigs but are included in the alignment as flanking indels.
       \end{itemize}
       We choose a value of 100 bp in our analysis (and as standard value) to be able to detect variations at the gene scale, while encoding variations of up to few tens of bps in the alignments. This value can however be tuned by the user depending on the specific needs.\\
-      We appreciate the need to better explain the role of this parameter in the merging procedure and in the structure of the resulting graph. To this end we extended its definition in section IB in the main text, and give a more extended discussion in SI section~\crossref{II}.\\
+      We appreciate the need to better explain the role of this parameter in the merging procedure and in the structure of the resulting graph. To this end we extended its definition in section IB in the main text, and give a more extended discussion in SI section~\SIalgo.\\
       % TODO: Homogenization in the main text with discussion on precision. Extend.
 }
 
@@ -331,23 +339,17 @@
 % \Marco{I checked and soft core (gene in 95\% of strains) is 2Mbp in our dataset. Some of our problems might come from weird strains. E.g. the second strain with the least amount of soft-core genes is \href{https://www.ncbi.nlm.nih.gov/nuccore/NC_020518.1?report=genbank}{NC\_020518}, an artificial genome that was removed from RefSeq. The strain that misses the most of the 1000 most frequent genes \href{https://www.ncbi.nlm.nih.gov/nuccore/NC_017663.1?report=genbank}{NC\_017663} was also removed from RefSeq. The rest might be due to misannotations? At least one of the most common 1000 genes are missed by 87/307 strains. Interestingly in \cite{sutton2021pan} they report $\sim$700 core orthologous gene clusters for an E.coli dataset of $\sim$1000 genomes, if they do not harmonize annotations. Those increase to $\sim$1500 after refining their annotations.
 % The easiest thing to do might be to just add the size of soft-core for all species? Maybe these values might also be added as dashed lines in fig. 4G for comparison with pangraph's estimation?}\\
 \responsedraft{
-      We thank the reviewer for pointing out the inconsistency in the E.~coli dataset and we apologize for not having investigated this further before submission.\\
-      The isolates analyzed in our papers were downloaded from RefSeq. The accession numbers are now explicitly included in the sumbission (file \texttt{accession\_numbers.csv}). These data were previously analyzed in our group with the PanX pipeline \cite{ding2018panx}. We rely on this pipeline for the clustering of homologous genes, and thus also for the detection of core genome. The value of 0.7 Mbp results from this analysis. As noticed by the reviewer, this value is indeed smaller than what usually considered core genome for E.~coli.
-      For instance in a recent preprint \cite{horsfield2023accurate} by using pangenome graphs to improve gene annotations Horsefield and colleagues find around 2500 core genes in a set of 162 E.~coli isolates (see table 1 in their publication).\\
-      This discrepancy in size could have different origins: problematic assemblies in our datasets, misannotations or problems with gene clustering.\\
-      As a first step we checked the size of the soft-core genome, defined as the set of gene clusters that are shared by at least 95\% of the strains. For our E.~coli dataset this has size of 2 Mbp, which is closer to our expectation.\\
-      We then ranked strains by the amount of soft-core genes that they include, and found that indeed some problematic assemblies are present in the dataset. Some of the isolates that have the lowest fraction of soft-core genes in our dataset were subsequently removed from RefSeq, for example \href{https://www.ncbi.nlm.nih.gov/nuccore/NC_020518.1?report=genbank}{NC\_020518}) (an artificial genome) and  \href{https://www.ncbi.nlm.nih.gov/nuccore/NC_017663.1?report=genbank}{NC\_017663}.\\
-      These problematic strains however do not completely explain the small core-genome size that we find, since for example at least one of the most common 1000 genes are missed by 87/307 isolates.\\
-      The remaining discrepancy in size is to be attributed to misannotations.
-      This is a common problem of strictly-core genome in annotation pipelines, if no harmonization strategy is used. For example in \cite{sutton2021pan} the authors report finding $\sim$700 core orthologous gene clusters for an E.~coli dataset of $\sim$1000 genomes, prior to applying their harmonization strategy. Those increase to $\sim$1500 after refining their annotations. 
-      
-      We now mention the problematic size of the core genome in the discussion
+We thank the reviewer for pointing out the inconsistency in the E.~coli dataset and we apologize for not having investigated this further before submission.\\
+The isolates analyzed in our papers were downloaded from RefSeq. The accession numbers are now explicitly included in the sumbission (file \texttt{accession\_numbers.csv}). These data were previously analyzed in our group with the PanX pipeline \cite{ding2018panx}. We rely on this pipeline for the clustering of homologous genes, and the values shown in table~1 results from this analysis. This is now made explicit in the caption. This table is only meant to provide some general characterization of the size and diversity of the various datasets, and PanX analysis results are not used in PanGraph.\\
 
-      Soft Core...
-      Reasons why this is wrong: misannotations + artificial genomes... This is consistent with misannotations before refining...
-      Added soft genome.
-      Added to the main text in a footnote? Or in the SI?
-      % TODO: core genome for simulated data if there is time?
+As noted by the reviewer, the 0.7 Mbp size for E.~coli core genome found by PanX is smaller than what usually reported in the literature. Estimates of E.~coli pangenome size are usually around 2000-2500 genes \cite{park2019large,horsfield2023accurate,sutton2021pan}. However these estimates often either use a soft-core definition for the core genome \cite{park2019large} or use some form of annotation refinement to mitigate misannotations \cite{horsfield2023accurate,sutton2021pan}.\\
+In our case since we are using a strict definition for core genome the discrepancy could have different origins: problematic assemblies in our datasets, misannotations or problems with gene clustering.\\
+As a first step we checked the size of the soft-core genome, defined as the set of gene clusters that are shared by at least 95\% of the strains. For our E.~coli dataset this has size of 2 Mbp, which is closer to our expectation.\\
+We then ranked strains by the amount of soft-core genes that they include, and found some problematic assemblies. Some of the isolates with the lowest fraction of soft-core genes were subsequently removed from RefSeq, for example \href{https://www.ncbi.nlm.nih.gov/nuccore/NC_020518.1?report=genbank}{NC\_020518} (an artificial genome) and  \href{https://www.ncbi.nlm.nih.gov/nuccore/NC_017663.1?report=genbank}{NC\_017663}.\\
+These problematic strains however do not explain the small core-genome size that we find. For instance, over the 307 strains in our dataset, 87 are missing at least one of the most common 1000 genes. This discrepancy is however compatible with misannotations. For instance by using a strict core definition in \cite{sutton2021pan} the authors report finding $\sim$700 core orthologous gene clusters for an E.~coli dataset of $\sim$1000 genomes (see table 2 in their publication). This would be compatible with our estimate of 0.7 Mbp. After refining the annotations using structural infromation from a pangenome graph, the number of strict core gene clusters increases to $\sim$1500. In our PanX analysis we do not perform this harmonization and our esitmate remains biased by annotation errors.\\
+
+To amend this we added the size of soft-core genome for each species in table~1 in the main text, and added part of this discussion in SI sect.~{\SIdataBenchmark}A.
+% TODO: core genome for simulated data if there is time?
 }
 
 
