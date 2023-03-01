@@ -6,8 +6,6 @@
 \usepackage{wrapfig}
 \usepackage{enumerate}
 \usepackage{xcolor}
-\usepackage{xr} % external references (reference supplementary)
-\usepackage[normalem]{ulem}
 \usepackage[final]{hyperref}
 
 \newcommand{\avg}[1]{\langle #1 \rangle}
@@ -20,6 +18,8 @@
 \newcommand{\modified}[1]{{\color{red}#1}}
 % \newcommand{\Marco}[1]{{\color{teal}[Marco: #1]}}
 
+
+\newcommand{\SIgraph}{I}
 \newcommand{\SIalgo}{II}
 \newcommand{\SIsynthdata}{III}
 \newcommand{\SIsimBench}{IV}
@@ -101,6 +101,7 @@ The underlying graph data structure can be exported into numerous formats for do
 The graph is composed of \emph{pancontigs}, which represent linear multiple-sequence alignments of homologous sequence found within one or more input genomes.
 \emph{Pancontigs} are connected by an edge if they are adjacent in at least one input sequence; individual sequences are then recapitulated by contiguous \emph{paths} through the graph.
 Pancontigs are directed, meaning their orientation in a path can be either 5' to 3' or vice versa.
+More details on the structure of our graph representation can be found in SI sect.~\SIgraph{}.
 
 To construct a pangraph, the algorithm needs to find homologous sequence within and among all input genomes.
 \emph{PanGraph's} overarching strategy is to approximate multiple-genome alignment by iterative pairwise alignment of graphs of subsets of sequences, in the spirit of progressive alignment tools \cite{feng1987progressive,darling2010progressivemauve,armstrong2020progressive}.
@@ -111,7 +112,7 @@ The alignment guide tree is constructed subject to three design constraints: (i)
 To this end, we formulate the algorithm as a two step process.
 The initial guide tree is constructed by neighbor-joining \cite{saitou1987neighbor}; the pairwise distance between sequences is approximated by the Jaccard distance between sequence minimizers \cite{roberts2004reducing}.
 Computationally, each sequence can be sketched into its set of minimizers in linear time while the cardinality of all pairwise intersections can be computed by sorting the list of all minimizers to efficiently count overlaps.
-Hence, the pairwise distance matrix is estimated in a time that increases log-linearly in the length of sequences, and in our implementation can scale sub-quadratically with the number of isolates (see SI sect.~\SIalgo for details).
+Hence, the pairwise distance matrix is estimated in a time that increases log-linearly in the length of sequences, and in our implementation can scale sub-quadratically with the number of isolates (see SI sect.~\SIalgo{} for details).
 The final guide tree is constructed as the balanced binary tree constrained to reproduce the topological ordering of leaves found initially.
 This balancing maximizes the number of independent pairwise alignments and thereby allows efficient parallelism.
 See Fig. \ref{fig:visualization}A for a graphical depiction of the guide tree.

@@ -4,8 +4,6 @@
 \usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{enumerate}
-\usepackage{xr} % reference to other external latex documents
-\usepackage[normalem]{ulem}
 \usepackage{xcolor}
 \usepackage[final]{hyperref}
 
@@ -76,7 +74,7 @@ We focus on three aspects:
     \item The effect of the main parameters of the algorithm on the resulting graph structure.
 \end{itemize}
 
-\subsection*{guide tree construction and distance matrix estimation}
+\subsection{guide tree construction and distance matrix estimation}
 
 As stated in the main text, the guide tree is built by neighbor-joining, with the pairwise distance between sequences being approximated by the Jaccard distance between sequence minimizers. To maximize parallelization, the final tree is a balanced binary tree with the same ordering of leaves as the one found by neighbour-joining. Here we briefly discuss how the complexity of this distance matrix estimation scales with the number $n$ and length $l$ of input sequences.\\
 As a first step of the distance estimation, we sketch all input sequences together and build a unique sorted list of minimizers. This can be done in time $O(L \log L)$, where $L = n \times l$ is the total length of input sequences. With each minimizer in the list we also keep the information of the genome of origin.\\
@@ -85,7 +83,7 @@ In conclusion, depending on the similarity of the input sequences, evaluation of
 
 In practice for typical use cases of pangraph ($n \sim 100$ and $L \sim 10^6$) the computationally challenging part is the minimizer sketching, and not the distance matrix computation. This is partly due to some prefactors (e.g. the window size of 100 bp used for sketching makes so that the list of minimizer is significantly shorter than the genome, and the only operation performed $n^2$ times is a single increment of an integer in the minimizer hit matrix). Moreover, the computational time to build the guide tree is usually negligible compared to the time required for the graph merging procedure.\\
 
-\subsection*{graph merging}
+\subsection{graph merging}
 
 At each merge operation two pangenome graphs need to be compressed into a single one. Three of pangraph's parameters play a role in the outcome of this procedure:
 \begin{itemize}
@@ -124,7 +122,7 @@ We also point out that in our merging procedure only the consensus sequence of a
 % implicit assumption of star-like topology.
 % consensus updated but no solving of MSA
 
-\subsection*{PanGraph parameters effect}
+\subsection{PanGraph parameters effect}
 
 After explaining the procedure we use for merging, we conclude this section with some comments on the effect of PanGraph's parameters on the resulting pangenome graphs.\\
 
