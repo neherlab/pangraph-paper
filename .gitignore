@@ -4,6 +4,8 @@
 *.fdb_latexmk
 *.fls
 *.log
+*.cb
+*.cb2
 *.out
 *.synctex.gz
 *Notes.bib
@@ -13,3 +15,5 @@ makefile
 /.vscode
 /main-old.tex
 /supplementary-old.tex
+/main_diff.tex
+/suppl_diff.tex
