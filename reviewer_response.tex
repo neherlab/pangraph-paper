@@ -205,7 +205,7 @@
 
 \begin{figure}[htb]
       \includegraphics[width=.7\textwidth]{figs_response/hp_vs_kp.pdf}
-      \caption{frequency and length distribution (respectively left and right panels) of pancontigs for the \textit{Helicobacter pylori} and \textit{Klebsiella pneumoniae} datasets (top and bottom). For each panel we report the results for pangenome graphs built using minimap2 aligner with standard parameter value and asm20 sensitivity (blue) and with mmseqs2 and null pseudo-energy parameters (orange). Distributions are weighed by pancontig length, so that the area under the curve represents the total pangenome graph size.}
+      \caption{frequency and length distribution (respectively left and right panels) of pancontigs for the \textit{Helicobacter pylori} and \textit{Klebsiella pneumoniae} datasets (top and bottom). For each panel we report the results for pangenome graphs built using minimap2 aligner with standard parameter values and asm20 sensitivity (blue) and with mmseqs2 and null pseudo-energy parameters (orange). Distributions are weighed by pancontig length, so that the area under the curve represents the total pangenome graph size.}
       \label{fig:kp-vs-hp}
 \end{figure}
 
@@ -279,8 +279,8 @@
       In summary...}
 
 \reviewer{R3}{An obvious lack in PanGraph is an attempt to map existing annotations back onto the generated PGG which is a necessity for usefulness to biologists. The mechanism for this is obvious but providing a useful user interface might be tedious.}
-\Liam{I think perhaps producing a helper python script that converts a genbank annotation file for a genome within a pangraph to an output gff/csv with the block locations and coordinates would please this reviewer.}\\
-\Marco{Yeah good idea. Maybe something that just map each annotation into a block, without solving the problem of harmonizing annotations which might be some more work...}\\
+% \Liam{I think perhaps producing a helper python script that converts a genbank annotation file for a genome within a pangraph to an output gff/csv with the block locations and coordinates would please this reviewer.}\\
+% \Marco{Yeah good idea. Maybe something that just map each annotation into a block, without solving the problem of harmonizing annotations which might be some more work...}\\
 \responsedraft{}
 
 \reviewer{R3}{This statement: ``While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging. Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology (Iqbal et al., 2012; Muggli et al., 2017).'' appears to be incomplete at best. De Bruijn graph-based assemblers routinely collapse nonbranching portions of the graph into longer sequences than the k-mer size used for construction.
@@ -295,13 +295,16 @@
             \item \cite{sutton2021pan}
             \item \cite{chan2015novel}
       \end{itemize}}
+\responsedraft{}
 
 \reviewer{R3}{I believe this statement: ``It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order.'' is the essential step in the process and perhaps deserves more focus. It captures two important issues: \textbf{aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum}. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as \textbf{distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it}. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.}
-\Liam{I am not sure I agree that constructing a pangenome graph means one must distinguish orthologs from paralogs. The structure is still useful even if this isn't done. Maybe there is a way of doing something of what they propose with simulations, but I suspect this isn't necessary for the editor to accept the paper\ldots}\\
-\Marco{I agree, I think it's a different design choice. We could also mention that the marginalize command has an option to project out paralogs, but should be a post-processing step rather than something that we want to do while building the graph. One can a posteriori decide whether one wants to split paralogs using structural information (flanking blocks) or one can even prevent the merging using diversity and the $\beta$ parameter.}\\
+% \Liam{I am not sure I agree that constructing a pangenome graph means one must distinguish orthologs from paralogs. The structure is still useful even if this isn't done. Maybe there is a way of doing something of what they propose with simulations, but I suspect this isn't necessary for the editor to accept the paper\ldots}\\
+% \Marco{I agree, I think it's a different design choice. We could also mention that the marginalize command has an option to project out paralogs, but should be a post-processing step rather than something that we want to do while building the graph. One can a posteriori decide whether one wants to split paralogs using structural information (flanking blocks) or one can even prevent the merging using diversity and the $\beta$ parameter.}\\
 \responsedraft{
+      We agree with the reviewer's
       Different design choice.
       Use of beta parameter for partial control.
+      Some form of PanX postprocessing paralog split. Partially done.
 }
 
 \reviewer{R3}{In the pseudo-energy discussion a further parameter is mentioned: "In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.". The value chosen for this parameter should be explicitly stated along with a rationale for the choice. It is also not clear if any of the splitting pancontigs are less than this value if the entire merger is dropped or just massaged to not have the too small new pancontig.}
@@ -354,14 +357,36 @@ To amend this we added the size of soft-core genome for each species in table~1 
 
 
 \reviewer{R3}{The authors might want to consider some form of post processing of the PGG to collapse what have been called bubbles in the graph if alignment of the pancontigs on different edges of the bubble warrant it.}
-\Marco{if I understand correctly this is hinting at some form of post-processing step in which artifactual small blocks - generated at the edges of long block merges - could be absorbed in the flanking block alignments and removed?}\\
+% \Marco{if I understand correctly this is hinting at some form of post-processing step in which artifactual small blocks - generated at the edges of long block merges - could be absorbed in the flanking block alignments and removed?}\\
+\responsedraft{
+      We appreciate the importance of the point raised by the reviewer.
+      In it's current version \textit{PanGraph} does not support a post-processing refinement step in which alignments of adjacent edges of pancontigs are harmonized, potentially also removing very small pancontigs when these could be appropriately absorbed in the alignment of larger ones.
+      We agree with the reviewer that this post-processing smoothing of the graph would be an important improvement, and we consider adding it in subsequent versions of \textit{PanGraph}.
+}
 
 \reviewer{R3}{Overall the paper is well written. I like the basic methodology and the attention to using robust efficient existing algorithms and combining them to keep efficiency in mind. I am very concerned about the potential fracturing of the PGG where unfortunately the devil is in the details and am not convinced that the fracturing will not prevent some limit on the number of genomes which can be used for a pangenome.}
-\Marco{if the fracturing derives from a real structural property of pangenomes (i.e. ISs that really move around and split long blocks) this might be an intrinsic limit that derives from the pangenome, I wouldn't consider it a problem with PanGraph.}\\
+% \Marco{if the fracturing derives from a real structural property of pangenomes (i.e. ISs that really move around and split long blocks) this might be an intrinsic limit that derives from the pangenome, I wouldn't consider it a problem with PanGraph.}\\
+\responsedraft{
+      We thank the reviewer for their appreciation of the paper and of our methodology.\\
+      We agree with their concern that the level of fragmentation of the graph constitutes a limitation in the number and diversity of genomes that can meaningfully be added in the pangenome graph.\\
+      An increase in the number or diversity of isolates included in the graph will cause an increase in structural breakpoints in the graph. If subsequent structural changes occurr at a scale smaller than $\Lthr$, these will not correctly be captured by the graph topology. An excessive number of pancontigs would also increase the amount of computational resources used in the alignment.\\
+      % Other than being introduced by the diversity of the dataset, fragmentation could also be introduced artificially in the merging procedure. We tested for excessive fragmentation in simulated data using partition entropy, comparing the real underlying structural partition to the one reconstructed by pangraph (not shown in the paper). We found that fragmentation was present only when the diversity of the sample was too high for the sensitivity of the aligner.\\
+      Irrespective of its origin, a possible way to detect excessive fragmentation and check for consistency in the graph structure is to visualize the distribution of block size in the graph (see for instance fig.~\ref{fig:kp-vs-hp} lower right panel). Excessive fragmentation in the graph would be detectable as most of the sequence being condensed in blocks having size close to $\Lthr$.\\
+      (As soon as they are done I could put the time and block size distribution for graphs with 500/1000 E.coli.)
+      % TODO: show distributions for pangenome graphs with 500/1k isolates? Mention times?
+      % TODO: add this discussion in the text?
+      % TODO: mention the partition entropy? This could be an argument against artificial fragmentation.
+      % TODO: maybe add in the SI the block frequency distribution for different species/kernels?
+}
 
 \reviewer{R3}{An issue I have struggled with in my own work is how to represent an orthologous gene cluster (node/vertex) within the PGG when the gene sequence in some genomes has an insertion event such as an IS element within the gene. I assume for PanGraph that this would necessitate splitting the node into multiple pancontigs. How is this sustainable for species with large numbers of active IS elements? This could also be investigated for PanGrah using suitable simulated data.}
-\Liam{I think nothing to say here apart from `yes, active IS elements split pancontigs up' (and can themselves be split up due to similarity with other IS\ldots). For the future one might want to have pangenome methods where you can explicitly pass a list of predefined sequences that should not be split. But I think this is a general problem and not something to investigate with simulations or fix here.}\\
-\Marco{agree. I think this is a structural property that we want to capture, the fact that these pancontigs are split.}
+% \Liam{I think nothing to say here apart from `yes, active IS elements split pancontigs up' (and can themselves be split up due to similarity with other IS\ldots). For the future one might want to have pangenome methods where you can explicitly pass a list of predefined sequences that should not be split. But I think this is a general problem and not something to investigate with simulations or fix here.}\\
+% \Marco{agree. I think this is a structural property that we want to capture, the fact that these pancontigs are split.}
+\responsedraft{
+      We agree with the reviewer's observation that events such as the presence of an IS in an orthologous gene cluster would split the cluster in multiple pancontigs. For datasets in which isolates have a high amount of IS (larger than $\Lthr$), this would indeed result in multiple splits in the graph structure.\\
+      This is in part an explicit design choice in \textit{PanGraph}. We plan to use this tool for the study of the evolution of bacterial pangenome, and we wanted this feature of the pangenome - namely the fragmentation due to presence of the same IS in multiple contexts - to be explcitly encoded in the graph. By condensing all occurrences of such an IS in a single pancontig we also condense the information on all of the different contexts in which the said IS appears, at the cost of fragmenting the graph. We are already using this property in a work in preparation \cite{shaw_preparation}, in we compare the similarity between different contexts to obtain insights in the evolution of such sequences. This is especially important given the fact that IS often carry limited phylogenetic information, due to their limited size.
+      % TODO: maybe a bit off the mark? Not necessary to talk about the work in preparation?
+}
 
 
 \bibliography{cite}{}
@@ -395,3 +420,4 @@ To amend this we added the size of soft-core genome for each species in table~1 
 % - [x] add mention of ``polish'' in main text.
 % - [ ] for the future: add sequence reconstruction to pangraph automatic testing.
 % - [ ] check that all SI sections have been mentioned in the main text
+% - [ ] add in SI the frequency-size distribution of blocks for the different species? To discuss fragmentation?

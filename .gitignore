@@ -13,7 +13,5 @@ schemes
 makefile
 /*.pdf
 /.vscode
-/main-old.tex
-/supplementary-old.tex
-/main_diff.tex
-/suppl_diff.tex
+/subm_version
+/diff
