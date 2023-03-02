@@ -305,18 +305,16 @@
 \responsedraft{
       We thank the reviewer for raising an important point that necessitates of more discussion in the paper.
       As stated by the reviewer, we perform merges prioritizing longer and less diverged alignments. However \textit{PanGraph} in its current state does not explicity distinguish between orthologs and paralogs.
+      This is partially a design choice, as better explained in the answer to the last question. In short, the possibility of grouping duplicated sequences in the same pancontig will also group information on their context, and the fragmentation introduced in the graph would reflect some real (potentially ancient) structural change in the genome.\\
 
-      Currently two different ways exist of performing some effective form of paralog splitting. The first one consist in tuning
+      However, as the reviewer points out, in the case of distantly related paralogs, such a grouping might be undesirable as it introduces unneeded complications in the graph. Currently \textit{PanGraph} supports two different ways of partially controlling paralog splitting.\\
+      The first one is based on sequence divergence. By tuning the value of the energy parameter $\beta$ the user can set a divergence limit. This would prevent the merging of paralogs that have sequence divergence higher than $1/\beta$.\\
+      The second method relies instead on context. The \texttt{marginalize} command possesses the optional \texttt{--reduce-paralog} flag. When set, this flag will result in the removal of artificial splits caused by duplicated pancontigs that always occurr in the same non-duplicated context. These duplicated pancontigs are then split and absorbed in their context.\\
 
-      In the future we plan on providing an option to perform a more robust form of paralag splitting. This could be done using both topological information on the neighborhood of a duplicated pancontig, as currently done in the \texttt{marginalize} command, and phylogenetic information, by building a phylogenetic tree from the alignment of each pancontig and splitting diverged branches. This functionality is not however present in the current version of \textit{PanGraph}.
+      In the future we plan on providing a dedicated command to perform a more robust form of paralag splitting, which combines both sequence divergence information and context information. This command would build a phylogenetic tree from the alignment of each duplicated pancontig, to detect exceptionally long branches, and check whether the split correlates with a split in the duplication context. This functionality is not however not yet implemented in the current version of \textit{PanGraph}.
 
-
-
-      We agree with the reviewer's
-      Different design choice.
-      Use of beta parameter for partial control.
-      Some form of PanX postprocessing paralog split. Build trees for every pancontig and define some split criterion.
-      Partially done in marginalize (\texttt{--reduce-paralog} flag)
+      % TODO: if this is sensible add a paragraph in SI about paralog splitting
+      % TODO: confirm with Nick the paralog split algorithm.
 }
 
 \reviewer{R3}{In the pseudo-energy discussion a further parameter is mentioned: "In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.". The value chosen for this parameter should be explicitly stated along with a rationale for the choice. It is also not clear if any of the splitting pancontigs are less than this value if the entire merger is dropped or just massaged to not have the too small new pancontig.}
