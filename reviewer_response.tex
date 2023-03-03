@@ -274,8 +274,17 @@
       For instance the authors state: ``Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.''. There are many pan-genome analysis tools which treat the pan-genome as a graph and generate a PGG. There are two primary differences in these existing tools: those which generate a graph at the nucleotide level with nodes representing basepairs (sometimes nonbranching runs of nodes are collapsed) and those where nodes represent larger features such as genes.\\
       PanGraph appears to wed these approaches to some extent in that the alignments are done at the nucleotide level and the features are extracted as a characteristic of the alignments.}
 
-\responsedraft{We appreciate the reviewer's remarks and apologize fot our summary discussion of the literature. To this end we modified the introduction with a more in-depth analysis of the existing methods, and how pangraph compares to them.\\
-      In summary...}
+\responsedraft{
+      We appreciate the reviewer's remarks and apologize fot our summary discussion of the literature. To this end we modified the introduction with a more in-depth analysis of the existing methods, and how pangraph compares to them.\\
+      We modified the introduction adding citations to more methods that use pangenome graphs for either improvement of annotations...
+      % SURVEY OF THE LITERATURE
+      % PGG have been used to:
+      % - improve annotations [sutton + ggcaller]
+      % MERTIS OF OUR METHOD
+      % - de Bruijn graphs represent SNPs and large scale variation in the same way, as edges in the graph. We instead have this scale separation and encode nucleotide-level variation in alignments, and structural changes in the graph
+      % - PGG based on genes are sensitive to annotation errors. We are based on homology.
+      % - Scalable algorithm.
+}
 
 \reviewer{R3}{An obvious lack in PanGraph is an attempt to map existing annotations back onto the generated PGG which is a necessity for usefulness to biologists. The mechanism for this is obvious but providing a useful user interface might be tedious.}
 % \Liam{I think perhaps producing a helper python script that converts a genbank annotation file for a genome within a pangraph to an output gff/csv with the block locations and coordinates would please this reviewer.}\\
@@ -303,18 +312,20 @@
 % \Liam{I am not sure I agree that constructing a pangenome graph means one must distinguish orthologs from paralogs. The structure is still useful even if this isn't done. Maybe there is a way of doing something of what they propose with simulations, but I suspect this isn't necessary for the editor to accept the paper\ldots}\\
 % \Marco{I agree, I think it's a different design choice. We could also mention that the marginalize command has an option to project out paralogs, but should be a post-processing step rather than something that we want to do while building the graph. One can a posteriori decide whether one wants to split paralogs using structural information (flanking blocks) or one can even prevent the merging using diversity and the $\beta$ parameter.}\\
 \responsedraft{
-      We thank the reviewer for raising an important point that necessitates of more discussion in the paper.
-      As stated by the reviewer, we perform merges prioritizing longer and less diverged alignments. However \textit{PanGraph} in its current state does not explicity distinguish between orthologs and paralogs.
-      This is partially a design choice, as better explained in the answer to the last question. In short, the possibility of grouping duplicated sequences in the same pancontig will also group information on their context, and the fragmentation introduced in the graph would reflect some real (potentially ancient) structural change in the genome.\\
+We thank the reviewer for raising an important point that necessitates of more discussion in the paper.
+As stated by the reviewer, we perform merges prioritizing longer and less diverged alignments. However \textit{PanGraph} in its current state does not explicity distinguish between orthologs and paralogs.
+This is partially a design choice, as better explained in the answer to the last question. In short, the possibility of grouping duplicated sequences in the same pancontig will also group information on their context, and the fragmentation introduced in the graph would reflect some real (potentially ancient) structural change in the genome.\\
 
-      However, as the reviewer points out, in the case of distantly related paralogs, such a grouping might be undesirable as it introduces unneeded complications in the graph. Currently \textit{PanGraph} supports two different ways of partially controlling paralog splitting.\\
-      The first one is based on sequence divergence. By tuning the value of the energy parameter $\beta$ the user can set a divergence limit. This would prevent the merging of paralogs that have sequence divergence higher than $1/\beta$.\\
-      The second method relies instead on context. The \texttt{marginalize} command possesses the optional \texttt{--reduce-paralog} flag. When set, this flag will result in the removal of artificial splits caused by duplicated pancontigs that always occurr in the same non-duplicated context. These duplicated pancontigs are then split and absorbed in their context.\\
+However, as the reviewer points out, in the case of distantly related paralogs, such a grouping might be undesirable as it introduces unneeded complications in the graph. Currently \textit{PanGraph} supports two different ways of partially controlling paralog splitting.\\
+The first one is based on sequence divergence. By tuning the value of the energy parameter $\beta$ the user can set a divergence limit. This would prevent the merging of paralogs that have sequence divergence higher than $1/\beta$.\\
+The second method relies instead on context. The \texttt{marginalize} command possesses the optional \texttt{--reduce-paralog} flag. When set, this flag will result in the removal of artificial splits caused by duplicated pancontigs that always occurr in the same non-duplicated context. These duplicated pancontigs are then split and absorbed in their context.\\
 
-      In the future we plan on providing a dedicated command to perform a more robust form of paralag splitting, which combines both sequence divergence information and context information. This command would build a phylogenetic tree from the alignment of each duplicated pancontig, to detect exceptionally long branches, and check whether the split correlates with a split in the duplication context. This functionality is not however not yet implemented in the current version of \textit{PanGraph}.
+In the future we plan on providing a dedicated command to perform a more robust form of paralag splitting, which combines both sequence divergence information and context information. This command would build a phylogenetic tree from the alignment of each duplicated pancontig, to detect exceptionally long branches, and check whether the split correlates with a split in the duplication context. This functionality is not however not yet implemented in the current version of \textit{PanGraph}.\\
 
-      % TODO: if this is sensible add a paragraph in SI about paralog splitting
-      % TODO: confirm with Nick the paralog split algorithm.
+We now make this explicit in SI sect.~{\SIalgo}D, that now contains these considerations.
+
+% TODO: if this is sensible add a paragraph in SI about paralog splitting
+% TODO: confirm with Nick the paralog split algorithm.
 }
 
 \reviewer{R3}{In the pseudo-energy discussion a further parameter is mentioned: "In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.". The value chosen for this parameter should be explicitly stated along with a rationale for the choice. It is also not clear if any of the splitting pancontigs are less than this value if the entire merger is dropped or just massaged to not have the too small new pancontig.}
@@ -403,25 +414,6 @@ To amend this we added the size of soft-core genome for each species in table~1 
 
 \end{document}
 
-% meeting notes:
-% SIAS -> (new) Supplementary Information Algorithm Section
-% make changes in the text traceable in the reviewer answers.
-% Reviewer 1:
-% - for blocks, mention that consensus is considered as the centroid of a star-shaped phylogeny?
-% - 2) add line to fig. on compression
-% - 5) the effect comes from the fact that core genes are in long syntenic stretches, compared to accessory that are often in messy islands (cite Rocha?). Just add half sentence to the paper.
-% - 6) annotate the figure with numbers
-% - 8) reference: graph alighner, ggCaller? Many take GFA as input.\
-% - 10) this is something that could be explained in the SIAS: one starts with long and shallow blocks and as graphs are merged and propagated down the tree the blocks become shorter and deeper. Removing energy threshold just causes more merging and deeper but shorter blocks. (figure?)
-% - test pangraph with 500 E.coli.
-% Reviewer 2:
-% - 1) do not mention blocks, only pancontigs
-% - specify better the meaning of null energy parameters and why more merging.
-% Reviewer 3:
-% - paralog merging is partially controlled by beta. As future direction one should build trees for every blok and split paralogs in a PanX fashion. 
-% - more nuanced treatment of the literature.
-% - update marginalize figure legend
-
 %  TODO: before submission
 % - [ ] archive repository state and add in the response
 % - [ ] add files with accession numbers and pairs to the submission
@@ -431,4 +423,5 @@ To amend this we added the size of soft-core genome for each species in table~1 
 % - [ ] for the future: add sequence reconstruction to pangraph automatic testing.
 % - [ ] check that all SI sections have been mentioned in the main text
 % - [ ] add in SI the frequency-size distribution of blocks for the different species? To discuss fragmentation?
+% - [ ] make Liam's repo public
 % - [ ] extend the code to map annotations on pancontigs?
