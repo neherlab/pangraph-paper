@@ -60,9 +60,6 @@
 
 \maketitle
 
-% TODO: SI Section IIA: superfluous?
-% TODO: minimap2 asm10 superfluous?
-
 %\section{Introduction}
 During evolution, microbial genomes change by both local mutations and large-scale alterations \cite{arnold2021horizontal}.
 Local mutations only change a few nucleotides by substitution, insertion or deletion.
@@ -86,7 +83,8 @@ In microbial genomics, in contrast, large scale rearrangements and inversions gi
 Here, we focus on pangenome graphs of closely related bacterial genomes.
 
 While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging.
-Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology \cite{iqbal2012novo,muggli2017succinct}.
+Colored and compacted generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets \cite{iqbal2012novo,muggli2017succinct}. Currently tools exist to build graphs containing thousands of isolates \cite{holley2020bifrost}, and have proven useful in problems such as the detection of core pangenome \cite{schulz2022sequence} or the improvement of gene prediction, annotation and clustering \cite{horsfield2023accurate}. However in these methods the graph structure encodes at the same time nucleotide-level variation and large-scale structural rearrangements in the genome.
+
 An orthogonal approach has been to formulate the inference of the pangenome graph as a multiple genome alignment.
 However, current methods either scale poorly to large sets of genomes \cite{darling2010progressivemauve}, focus on comparisons across diverse sets of species across the tree of life at the cost of memory \cite{armstrong2020progressive}, or utilize a reference-guided approach by partitioning genomes first into annotated genes \cite{gautreau2020ppanggolin,colquhoun2021pandora}.
 
