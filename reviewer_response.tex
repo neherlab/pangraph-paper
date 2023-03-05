@@ -45,7 +45,7 @@
 
       On reading I had a few queries, which could perhaps be clarified further in the text.}
 
-\responsedraft{We thank the reviewer for their appreciation of our contribution and for their critical review of our work.}
+\response{We thank the reviewer for their appreciation of our contribution and for their critical review of our work.}
 
 \reviewer{R1.1}{A pancontig is defined as a multiple sequence (sub)alignment. In line 54 you say "Pairwise graph alignment is performed by an all-to-all alignment of the pancontigs" which I interpreted to mean all sequences in the alignment vs all sequences in another alignment. You do later add that "To align two graphs, the consensus sequences of all pancontigs in both graphs are searched for homologies and aligned". Adding the word consensus in the earlier sentence might avoid confusion.}
 % \Marco{changed to ``Pairwise graph alignment is performed by an all-to-all alignment of the \emph{pancontigs} consensus sequences between both graphs, and the order of pairwise alignments is determined by a guide tree." Too compressed? I could also break in two sentences and expand a bit more.}\\
@@ -270,7 +270,7 @@
 
 \subsection*{Reviewer 3}
 
-\reviewer{R3}{The article ``PanGraph: scalable bacterial pan-genome graph construction'' reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose.\textbf{ The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.}\\
+\reviewer{R3}{The article ``PanGraph: scalable bacterial pan-genome graph construction'' reports a new method for constructing a Pan-Genome Graph (PGG) in an efficient manner with an open and extractable grah structure. Unfortunately, the authors appear to either be unaware of or downplay the existence of previous methods for the same purpose. The authors need to survey the existing literature and compare and contrast with their method to show the utility of their approach.\\
       For instance the authors state: ``Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.''. There are many pan-genome analysis tools which treat the pan-genome as a graph and generate a PGG. There are two primary differences in these existing tools: those which generate a graph at the nucleotide level with nodes representing basepairs (sometimes nonbranching runs of nodes are collapsed) and those where nodes represent larger features such as genes.\\
       PanGraph appears to wed these approaches to some extent in that the alignments are done at the nucleotide level and the features are extracted as a characteristic of the alignments.}
 
@@ -278,20 +278,6 @@
       We apologize if our previous discussion of the literature was incomplete, it was not our intention to downplay prior work.
       We thank the reviewer for highlighting additional important work and aspects that we previously didn't discuss.
       We have rewritten the part in the introduction to reflect these the work by these and other authors and added a few sentences to the discussion to further highlight previous and alternative approaches. We hope that these edits address the concerns of the reviewer.
-      % SURVEY OF THE LITERATURE
-      % PGG have been used to:
-      % - improve annotations [sutton 2021] + [ggcaller]
-      % MERTIS OF OUR METHOD
-      % - de Bruijn graphs represent SNPs and large scale variation in the same way, as edges in the graph. We instead have this scale separation and encode nucleotide-level variation in alignments, and structural changes in the graph
-      % - PGG based on genes are sensitive to annotation errors. We are based on homology.
-      % - Scalable algorithm.
-}
-
-\Marco{
-      Finish literature review.
-      Add part on graph-based methods.
-      In the discussion add edge cases.
-      Cite all the ones suggested by the reviewer.
 }
 
 \reviewer{R3}{An obvious lack in PanGraph is an attempt to map existing annotations back onto the generated PGG which is a necessity for usefulness to biologists. The mechanism for this is obvious but providing a useful user interface might be tedious.}
@@ -302,8 +288,8 @@
       % TODO: make the repository public.
 }
 
-\reviewer{R3}{This statement: ``While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging. Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology (Iqbal et al., 2012; Muggli et al., 2017).'' appears to be incomplete at best. De Bruijn graph-based assemblers routinely collapse nonbranching portions of the graph into longer sequences than the k-mer size used for construction.
-      % \Marco{from what I understand the structure in de Bruijn graphs is very fine-grained. Every SNP can generate a branching event. While in our case we have this intermediate corse-graining where homologous parts are collapsed together and the remaining structure of the graph represents large-scale structural variation in the genomes. I don't think this is solved by collapsing nonbranching portions in dB graphs (but I might not know enough about this...)}\\
+\reviewer{R3}{
+      This statement: ``While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging. Colored generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets, although the underlying efficiency derives from a fixed k-mer size which prevents modelling long-range homology (Iqbal et al., 2012; Muggli et al., 2017).'' appears to be incomplete at best. De Bruijn graph-based assemblers routinely collapse nonbranching portions of the graph into longer sequences than the k-mer size used for construction.\\
       One early approach that does not explicitly generate a pan-genome graph but deals with some of the rearrangement issues cited by the authors is:
       \begin{itemize}
             \item \cite{angiuoli2011improving}
@@ -314,10 +300,13 @@
             \item \cite{sutton2021pan}
             \item \cite{chan2015novel}
       \end{itemize}}
-\responsedraft{}
-\Marco{Copy form above and extend the answer}
+\response{
+      We apologize and we modified the sentence in question. We also extendend the discussion of de Bruijn graphs methods in the introduction.\\
+      We thank the reviewer for pointing out these important contributions that were not previously discussed in the paper.
+}
+% \Marco{from what I understand the structure in de Bruijn graphs is very fine-grained. Every SNP can generate a branching event. While in our case we have this intermediate corse-graining where homologous parts are collapsed together and the remaining structure of the graph represents large-scale structural variation in the genomes. I don't think this is solved by collapsing nonbranching portions in dB graphs (but I might not know enough about this...)}\\
 
-\reviewer{R3}{I believe this statement: ``It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order.'' is the essential step in the process and perhaps deserves more focus. It captures two important issues: \textbf{aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum}. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as \textbf{distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it}. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.}
+\reviewer{R3}{I believe this statement: ``It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order.'' is the essential step in the process and perhaps deserves more focus. It captures two important issues: aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.}
 % \Liam{I am not sure I agree that constructing a pangenome graph means one must distinguish orthologs from paralogs. The structure is still useful even if this isn't done. Maybe there is a way of doing something of what they propose with simulations, but I suspect this isn't necessary for the editor to accept the paper\ldots}\\
 % \Marco{I agree, I think it's a different design choice. We could also mention that the marginalize command has an option to project out paralogs, but should be a post-processing step rather than something that we want to do while building the graph. One can a posteriori decide whether one wants to split paralogs using structural information (flanking blocks) or one can even prevent the merging using diversity and the $\beta$ parameter.}\\
 \response{
@@ -330,7 +319,7 @@ The second method relies instead on structural information. The \texttt{marginal
 
 In the future we plan on providing a dedicated command to perform a more robust form of paralag splitting, which combines both sequence divergence information and context information. This command would build a phylogenetic tree from the alignment of each duplicated pancontig, to detect exceptionally long branches, and check whether the split correlates with a split in the duplication context. This functionality is not however not yet implemented in the current version of \textit{PanGraph}.\\
 
-We now make this explicit in SI sect.~{\SIalgo}D, that now contains these considerations.
+We added SI sect.~{\SIalgo}D to include these considerations.
 
 % TODO: confirm with Nick the paralog split algorithm.
 }

@@ -52,6 +52,7 @@
     However, any reference genome contains only a fraction of the microbial \emph{pangenome}, the \textit{total} set of genes observed in a given species.
     Reference-based approaches are thus blind to the dynamics of the accessory genome, as well as variation within gene order and copy number.
     With the wide-spread usage of long-read sequencing, the number of high-quality, complete genome assemblies has increased dramatically.
+    % Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.
     Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.
     Here, we present \emph{PanGraph}, a Julia-based library and command line interface for aligning whole genomes into a graph.
     Each genome is represented as an undirected path along vertices, which in turn, encapsulate homologous multiple sequence alignments.
@@ -83,13 +84,13 @@ In microbial genomics, in contrast, large scale rearrangements and inversions gi
 Here, we focus on pangenome graphs of closely related bacterial genomes.
 
 While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging.
-Colored and compacted generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets \cite{iqbal2012novo,muggli2017succinct}. Currently tools exist to build graphs containing thousands of isolates \cite{holley2020bifrost}, and have proven useful in problems such as the detection of core pangenome \cite{schulz2022sequence} or the improvement of gene prediction, annotation and clustering \cite{horsfield2023accurate}. However in these methods the graph structure encodes at the same time nucleotide-level variation and large-scale structural rearrangements in the genome.
+Colored and compacted generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets \cite{iqbal2012novo,muggli2017succinct}. Currently tools exist to build graphs containing thousands of isolates \cite{holley2020bifrost}, and have proven useful in problems such as the detection of core pangenome \cite{schulz2022sequence} or the improvement of gene prediction, annotation and clustering \cite{horsfield2023accurate}. However in these methods the graph structure encodes at the same time nucleotide-level variation and large-scale structural rearrangements in the genome. Separating these two scales is often difficult, and specific techniques have to be employed to detect large-scale homology in these graphs \cite{angiuoli2011mugsy,minkin2013sibelia}.
 
 An orthogonal approach has been to formulate the inference of the pangenome graph as a multiple genome alignment.
 However, current methods either scale poorly to large sets of genomes \cite{darling2010progressivemauve}, focus on comparisons across diverse sets of species across the tree of life at the cost of memory \cite{armstrong2020progressive}, or utilize a reference-guided approach by partitioning genomes first into annotated genes \cite{gautreau2020ppanggolin,colquhoun2021pandora}.
 
-Here we present \emph{PanGraph}, a Julia \cite{bezanson2017julia} library and command line interface, designed to efficiently align large sets of closely related genomes into a pangenome graph on personal computers.
-The resulting graph both compresses the input sequence set and succinctly captures the population diversity at multiple scales: from nucleotide mutations and indels to structural polymorphisms driven by inversions, rearrangements, and gene gain/loss.
+Here we present \emph{PanGraph}, a Julia \cite{bezanson2017julia} library and command line interface, designed to efficiently align large sets of closely related genomes into a pangenome graph on personal computers. Alignment is performed on the base of sequence homology and does not rely on gene annotations.
+The resulting graph both compresses the input sequence set and succinctly captures the population diversity at multiple scales: from nucleotide mutations and indels to structural polymorphisms driven by inversions, rearrangements, and gene gain/loss. Importantly, these two scales are naturally separated in our representation.
 The underlying graph data structure can be exported into numerous formats for downstream analysis and visualization in software such as Bandage \cite{wick2015bandage}.
 %The algorithm, along with extensive documentation, examples, and instructions for installation, are open source and can be found on GitHub.
 %We anticipate PanGraph to be immediately useful in understanding microbial evolution in natural populations.
