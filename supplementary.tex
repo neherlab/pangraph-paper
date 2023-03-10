@@ -15,7 +15,7 @@
 \newcommand{\dcore}{\langle d_\text{core} \rangle}
 \newcommand{\Lthr}{L_{\min}}
 \newcommand{\red}[1]{{\color{red}#1}}
-
+\renewcommand{\figurename}{Fig.~S}
 
 \begin{document}
 \title{PanGraph: scalable bacterial pan-genome graph construction \\ Supplementary Information}
@@ -37,37 +37,37 @@
 \section{Pangenome graph representation}
 \label{sec:graph-repr}
 
-This section contains a short explanation of the pangenome graph representation used in \textit{PanGraph}. A pangenome graph is essentially composed of two elements: pancontigs, which encode for alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs (see fig.~\ref{fig:graph-representation}).\\
+This section contains a short explanation of the pangenome graph representation used in \textit{PanGraph}. A pangenome graph is essentially composed of two elements: pancontigs, which encode the alignment of homologous sequences, and paths, that correspond to representation for genomes as a sequence of pancontigs (see fig.~S\ref{fig:graph-representation}).\\
 
-\begin{figure}[htb]
-    \includegraphics[width=0.5\textwidth]{figs_suppl/graph_representation.pdf}
-    \caption{{\bf Pangenome graph representation}. Given a set of genomes \textit{PanGraph} will construct a pangenome graph by condensing all homologous sequences in \textit{pancontigs}, containing the alignment of these sequences. Genomes can then be represented as \textit{paths}, i.e. lists of pancontigs.
-        In our representation a pangenome graph is in essence a collection of \textit{pancontigs} and \textit{paths}.
+\begin{figure}[tb]
+    \includegraphics[width=0.7\textwidth]{figs_suppl/graph_representation.pdf}
+    \caption{{\bf Pangenome graph representation}. Given a set of genomes \textit{PanGraph} will construct a pangenome graph by condensing all homologous sequences in \textit{pancontigs}, containing the alignment of these sequences. Genomes can then be represented as \textit{paths} through the graph, i.e.~lists of pancontigs that are traversed when moving along the genome.
+    In our representation a pangenome graph is in essence a collection of \textit{pancontigs} and \textit{paths}.
     }
     \label{fig:graph-representation}
 \end{figure}
 
 Each \textbf{pancontig} carries the full information on the alignment of homologous sequences it contains. It possesses a single consensus sequence, and each sequence in the alignment is encoded as variations over this consensus. These can be either mutations of single nucleotides, gaps, deletions or insertions. The alignment sequence can be reconstructed by performing these changes in order, as displayed in fig.~\ref{fig:alignment-reconstruction}. More information on the precise encoding used can be found in PanGraph documentation.\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2}}\\
 
-\begin{figure}[htb]
-    \includegraphics[width=0.5\textwidth]{figs_suppl/pancontig_alignment.pdf}
+\begin{figure}[tb]
+    \includegraphics[width=0.7\textwidth]{figs_suppl/pancontig_alignment.pdf}
     \caption{{\bf From pancontig consensus to alignment}. In our pancontig representation, each sequence in the alignment is encoded as variations over the pancontig consensus. In practice in the pangraph output \texttt{json} file each alignment sequence is saved as a list of gaps to be added to the consensus, sites to be mutated, insertions to be performed in gaps, and deletions. By performing these changes in order on the consensus each sequence in the alignment can be reconstructed. In this example we display how each of these variations are encoded and performed.
     }
     \label{fig:alignment-reconstruction}
 \end{figure}
 
-Each \textbf{path} is an oriented collection of pancontigs that represents a genome. For each item in the sequence along with the pancontig id, PanGraph also stores the pancontig orientation (whether homology with the consensus is on the forward the reverse strand of the genome) and which variations on the pancontig consensus (i.e. which sequence in the pancontig alignment) are present in this precise location in the genome of the isolate.\\
+Each \textbf{path} is an oriented collection of pancontigs that represents a genome. For each item in the sequence along with the pancontig id, PanGraph also stores the pancontig orientation (whether homology with the consensus is on the forward the reverse strand of the genome). 
+Since a sequence can traverse a particular pancontig multiple times (e.g.~paralogs), an additional index labels possible repeated occurrences in the pancontig. \\
 
-From knowledge of all the pancontigs and paths, every single genome can be exactly reconstructed. Every part of the sequence is always encoded in a pancontig. ``Small-scale'' difference between genomes (i.e. SNPs, small insertions and deletions) are encoded in pancontigs as variations over the consensus. ``Large-scale'' differences, such as presence or absence of long stretch of sequences, are instead encoded in paths as presence or absence of pancontigs. This scale separation can be tuned using PanGraph parameters, as will be explained in following sections.
-
+From knowledge of all the pancontigs and paths, every single genome can be exactly reconstructed. Every part of the sequence is encoded in a pancontig. ``Small-scale'' differences between genomes (i.e. SNPs, small insertions and deletions) are encoded in pancontigs as variations over the consensus. ``Large-scale'' differences, such as presence or absence of long stretch of sequences, are instead encoded in paths as presence or absence of pancontigs. This scale separation can be tuned using PanGraph parameters, as will be explained in following sections.
 
 
 \section{PanGraph algorithm}
 \label{sec:pangraph-algo}
 
-In this section we describe in more detail the algorithmic procedure used to build a pangenome graph. In essence, the full pangenome graph is built by placing genomes on terminal leaves of a guide tree, built from a sequence minimizer distance matrix. These genomes are initially considered as elementary graphs composed of a single \textit{pancontig}. These are then propagated along the tree towards the root, and at each intersection a merge operation is performed. The full pangenome graph is then collected from the root.\\
+In this section we describe in more detail the algorithmic procedure used to build a pangenome graph. In essence, the full pangenome graph is built by placing genomes on terminal leaves of a guide tree built from a sequence minimizer distance matrix. These genomes are initially considered as elementary graphs composed of a single \textit{pancontig}. These are then propagated along the tree towards the root, and at each intersection a merge operation is performed. The full pangenome graph is then collected from the root.\\
 
-We focus on four aspects:
+Below, we discuss the following points in greater detail:
 \begin{itemize}
     \item The estimation of pairwise distances between genomes, used to build the guide tree.
     \item The procedure used to merge two pangenome graphs together, which is at the core of \textit{PanGraphs}'s algorithm.
@@ -75,22 +75,22 @@ We focus on four aspects:
     \item How pangraph processes duplicated regions and possible strategies for paralog splitting.
 \end{itemize}
 
-\subsection{guide tree construction and distance matrix estimation}
+\subsection{Guide tree construction and distance matrix estimation}
 
-As stated in the main text, the guide tree is built by neighbor-joining, with the pairwise distance between sequences being approximated by the Jaccard distance between sequence minimizers. To maximize parallelization, the final tree is a balanced binary tree with the same ordering of leaves as the one found by neighbour-joining. Here we briefly discuss how the complexity of this distance matrix estimation scales with the number $n$ and length $l$ of input sequences.\\
-As a first step of the distance estimation, we sketch all input sequences together and build a unique sorted list of minimizers. This can be done in time $O(L \log L)$, where $L = n \times l$ is the total length of input sequences. With each minimizer in the list we also keep the information of the genome of origin.\\
-As a second step we count the number of minimizers shared by each pair of sequences. This can be done efficiently by scrolling the sorted list of minimizers (having size proportional to $L$) only once. For each chunk of equal minimizers in the list (having size between 1 and $n$, depending on how shared is the original k-mer) we increment by one the corresponding pairs in a minimizer count matrix. Depending on how similar the input sequences are, this operation has complexity between $O(n^2 l) = O(nL)$ (all minimizers shared) and $O(nl) = O(L)$ (no minimizer shared).\\
-In conclusion, depending on the similarity of the input sequences, evaluation of the pairwise distance matrix has complexity between $O(L \log L)$ and $O(L \log L + nL)$.\\
+As stated in the main text, the guide tree is built by neighbor-joining, with the pairwise distance between sequences being approximated by the Jaccard distance between sequence minimizers. To maximize parallelization, the final tree is a balanced binary tree with the same ordering of leaves as the one found by neighbour-joining. Here we briefly discuss how the complexity of this distance matrix estimation scales with the number $n$ and length $L$ of input sequences.\\
+As a first step of the distance estimation, we sketch all input sequences together and build a unique sorted list of minimizers. This can be done in time $O(\mathcal{L} \log \mathcal{L})$, where $\mathcal{L} = n \times L$ is the total length of input sequences. With each minimizer in the list we also keep the information of the genome of origin.\\
+As a second step we count the number of minimizers shared by each pair of sequences. This can be done efficiently by scrolling the sorted list of minimizers (having size at most proportional to $\mathcal{L}$) only once. For each chunk of equal minimizers in the list (having size between 1 and $n$, depending on common the original k-mer is) we increment by one the corresponding pairs in a minimizer count matrix. Depending on how similar the input sequences are, this operation has complexity between $O(n^2 L) = O(n\mathcal{L})$ (all minimizers shared) and $O(nL) = O(\mathcal{L})$ (no minimizer shared).\\
+In conclusion, depending on the similarity of the input sequences, evaluation of the pairwise distance matrix has complexity between $O(\mathcal{L} \log \mathcal{L})$ and $O(\mathcal{L} \log \mathcal{L} + n\mathcal{L})$.\\
 
 In practice for typical use cases of pangraph ($n \sim 100$ and $L \sim 10^6$) the computationally challenging part is the minimizer sketching, and not the distance matrix computation. This is partly due to some prefactors (e.g. the window size of 100 bp used for sketching makes so that the list of minimizer is significantly shorter than the genome, and the only operation performed $n^2$ times is a single increment of an integer in the minimizer hit matrix). Moreover, the computational time to build the guide tree is usually negligible compared to the time required for the graph merging procedure.\\
 
-\subsection{graph merging}
+\subsection{Graph merging}
 
 At each merge operation two pangenome graphs need to be joined into a single one. Three of \textit{PanGraph}'s parameters play a role in the outcome of this procedure:
 \begin{itemize}
     \item the minimal pancontig length $\Lthr$.
     \item pseudo-energy parameters $\alpha$ and $\beta$ (cf. eq.~(1) in the main text).
-    \item the choice of alignment kernel (minimap2 or mmseqs) and aligner precision (asm5, asm10 or asm20 for minimap2).
+    \item the choice of alignment kernel (minimap2 or mmseqs2) and aligner precision (asm5, asm10 or asm20 for minimap2).
 \end{itemize}
 In the merging, these parameters control how much of the diversity between sequences must be stored as ``large-scale'' variation (difference in paths) and how much as ``fine-grained'' variation (differences in alignments, stored in pancontigs). This is done for example by setting a divergence limit for sequences to be stored in the same alignment.\\
 An implicit assumption of our procedure is that the phylogeny of sequences stored inside the same pancontig is roughly star-like, with each sequence containing independent variations from the consensus. In such cases the consensus is a good ``average'' representation for the set of sequences in the alignment.
@@ -114,7 +114,9 @@ The merging operation is performed in the following steps:
 
 As graphs are propagated along the guide tree more and more merges are performed. This makes pancontigs progressively shorter but their alignments deeper.\\
 
-We point out that in our merging procedure only the consensus sequence of any two pancontigs is used in their alignment. This makes this procedure fast and is sufficient to capture the large-scale structural variation of the pangenome, but might introduce minor inconsistencies and artifacts in the alignment. To this end \textit{PanGraph} has the command \verb|polish|\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_3/}.}. This command ``polishes'' alignments by solving on each pancontig the multiple sequence alignment problem using MAFFT \cite{katoh2002mafft}. It has a simple interface: it takes as input a pangenome graph and produces another pangenome graph with the same structure but improved pancontig alignments. This efficiently separates the problem of finding large-scale structural variation, and nucleotide-level variation. When precise knowledge of the latter is needed, a graph can be \textit{polished} restricting the multiple sequence alignment problem only on the homologous sequences contained in each pancontig.
+During the graph merge procedure, only consensus sequences from each graph are used to find homologies between pancontigs, not the individual sequences represented by the pancontig. 
+This makes this procedure fast and is sufficient to capture the large-scale structural variation of the pangenome, but might introduce minor inconsistencies and artifacts in the alignment. To this end \textit{PanGraph} has the command \verb|polish|\footnote{See \url{https://neherlab.github.io/pangraph/tutorials/tutorial_3/}.}. This command ``polishes'' alignments by aligning all sequence represented by the pancontig using MAFFT \cite{katoh2002mafft}. 
+The subcommand has a simple interface: it takes as input a pangenome graph and produces another pangenome graph with the same structure but improved pancontig alignments. This efficiently separates the problem of finding large-scale structural variation, and nucleotide-level variation by using established algoritms for multiple sequence alignment only on parts of the input genomes with established homology.
 
 % comment: a bit too verbose? The last part has been added to address the reviewer's comments but sounds superfluous even in the SI.
 % post-processing step: transitive edges. Explain.
@@ -123,15 +125,16 @@ We point out that in our merging procedure only the consensus sequence of any tw
 % implicit assumption of star-like topology.
 % consensus updated but no solving of MSA
 
-\subsection{PanGraph parameters effect}
+\subsection{PanGraph parameters}
 
 After explaining the procedure we use for merging, we comment briefly on the effect of \textit{PanGraph}'s parameters on the resulting pangenome graphs.\\
 
-Parameter $\Lthr$ controls the minimal size of pancontigs. Indels shorter than this size are saved as variation in alignments, rather than as separate pancontigs. As such this parameter partially controls the fragmentation of the graph. The appropriate value depends on the scale at which one wants to study structural variations in genomes. The default value in PanGraph is set to 100 bp. This is done to capture structural variation at the gene scale, while ignoring small indels. The value can hoewever be tuned by the user depending on the specific use-case.\\
+Parameter $\Lthr$ controls the minimal size of pancontigs. Indels shorter than this size are saved as variation in alignments, rather than as separate pancontigs. As such this parameter partially controls the fragmentation of the graph. The appropriate value depends on the scale at which one wants to study structural variations in genomes. The default value in PanGraph is set to 100 bp. This is done to capture structural variation at the gene scale, while ignoring small indels. The value can, however, be tuned by the user depending on the specific use-case.\\
 A similar role is played by the parameter $\alpha$. This can be interpreted as the cost of introducing a cut in a pancontig. The length of homologous sequence to be merged must exceed this cost for a cut to be performed.\\
 
 The choice of alignment kernel and the value of $\beta$ set instead a limit on the divergence of sequences that are merged in the same pancontig. The first intrinsic limit is set by the choice of alignment kernel and its sensitivity: minimap2 is significantly faster than mmseqs2, but it is in general unable to find matches between homologous sequences with more than 20\% divergence (with asm20 sensitivity).\\
-On top of this intrinsic limit of the aligner, a more fine-tuned setting of the acceptable amount of divergence can be achieved by tuning the value of $\beta$. From the definition of the pseudo-energy (cf. eq.~(1) in the main text) it follows that matches between homologous sequence with divergence higher than $1/\beta$ will have positive pseudo-energy and will thus not result in a merge. If the molecular clock hypothesis holds, tuning this parameter is equivalent to setting an effective time limit beyond which sequences are not to be merged in the same alignment. This parameter can be tuned based on the diversity of the sample in study. It can for example be useful in resolving situations in which the hypothesis of a star-like phylogeny in a pancontig alignment is broken, such as to separate loosely related paralogs, as discussed in the next section.
+On top of this intrinsic limit of the aligner, more explicit control of the acceptable amount of divergence can be achieved by tuning the value of $\beta$. From the definition of the pseudo-energy (cf. eq.~(1) in the main text) it follows that matches between homologous sequence with divergence higher than $1/\beta$ will have positive pseudo-energy and will thus not result in a merge. If the molecular clock hypothesis holds, tuning this parameter is equivalent to setting an effective time limit beyond which contigs are not to be merged. 
+%This parameter can be tuned based on the diversity of the sample in study.
 
 % scale separation effect. Maybe move somewhere else?
 % also discussion on orthologs and paralogs.
@@ -146,7 +149,7 @@ This is however not always desirable. For example in the case of distantly relat
 
 This paralog splitting can be done using two different sources of information: either sequence diversity or local context in which the duplication is inserted. Currently \textit{PanGraph} does not provide a specific command to perform paralog splitting. This is a feature that we plan on implementing in the future. However partial control of paralog split can currently be achieved in two ways.\\
 The first one is based on sequence divergence. By tuning the value of the energy parameter $\beta$ the user can set a divergence limit. This would prevent the merging of paralogs that have sequence divergence higher than $1/\beta$ during graph construction.\\
-The second method relies instead on context. The \texttt{marginalize} command possesses the optional \texttt{--reduce-paralog} flag. When set, this flag will result in the removal of artificial splits caused by duplicated pancontigs that always occurr in the same non-duplicated context. These duplicated pancontigs are then split and absorbed in their context, thus simplifying the graph and loosing trace of the duplication.\\
+The second method relies instead on context. The \texttt{marginalize} command possesses the optional \texttt{--reduce-paralog} flag. When set, this flag will result in the removal of artificial splits caused by duplicated pancontigs that always occur in the same non-duplicated context. These duplicated pancontigs are then split and absorbed in their context, thus simplifying the graph and loosing trace of the duplication.\\
 
 \section{Generation of synthetic data}
 \label{sec:data_generation}
