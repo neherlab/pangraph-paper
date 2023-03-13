@@ -66,7 +66,7 @@
 
 \reviewer{R1.5}{Line 213: Core pancontigs have higher than average size - is this what you would expect given that if they are core genes then they will be present in more/all of the samples so there could be more diversity due to being more sampled?}
 
-\response{It is true that there are multiple factors at play that could influenze the size of core pancontigs in different ways, but the observation that core pancontigs are longer than average is in agreement with our expectations. Multiple core genes are often syntenic even in diverse species, compared to accessory genes that are often found in different contexts. This effect seems to outweigh the possibility of increased fragmentation due to the large number of mergers that common (core) pancontigs undergo.
+\response{It is true that there are multiple factors at play that could influence the size of core pancontigs in different ways, but the observation that core pancontigs are longer than average is in agreement with our expectations. Multiple core genes are often syntenic even in diverse species, compared to accessory genes that are often found in different contexts. This effect seems to outweigh the possibility of increased fragmentation due to the large number of mergers that common (core) pancontigs undergo.
 We modified the line to: ``Core pancontigs having higher-than-average length. This is expected given that core genes tend to stay syntenic over large evolutionary distances.''}
 
 \reviewer{R1.6}{Figure 6B: could you explore another way to project this data so it is not squished at the ends? I can't read off the fraction agree (shared+private) or disagree which I would like to (although at a glance this is exactly the result you want to see, so happy for it to stand if it is the best projection).}
@@ -121,7 +121,7 @@ We also refer to the documentation page mentioned by the reviewer. Moreover, to 
 \reviewer{R2.2}{Line 61: I agree and understand how each sequence can be sketched in linear time. I don't follow how you calculate all pairwise intersections through sorting the list of minimizers, nor do i see how this ends up being log-linear. For each genome, you can sort it's minimizers in $n \log (n)$ (ie log linear), where $n \sim$ genome length. How do you get all pairwise distances from that without another multiplier of $n$?}
 % \Marco{in the text we write that ``the pairwise distance matrix is estimated in a time that increases log-linearly in the \textbf{total length} of sequence that is analyzed.'' This might generate some confusion since the scaling depends both on the number of genomes $N$ and their length $l$. The algorithmic time for all the pairwise distances should scale as $\sim N^2 l \log l$. We should be in a regime where $N$ is not a limiting factor, it's just a multiplicative constant, and thus I think our statement is fundamentally correct. But we can make it more precise. This scaling is at any rate not a limiting factor in pangraph.}\\
 % \Liam{clarifying $N$ and $l$ makes sense.}
-\response{Are sorry that the formulation in the main text was too concise and a bit inaccurate.
+\response{ We are sorry that the formulation in the main text was too concise and a bit inaccurate.
 There are two main variables at play: the length of a genome $L$ and the number of isolates $n$. 
 As the reviewer points out, the set of minimizers for each genome can be created and sorted in $L \log L$. 
 Finding the set of shared minimizers would require comparing $\sim n^2$ pairs of ordered lists of minimizers, which scales as $\sim n^2 L$. This would provide a scaling $O(n L \log L + n^2 L)$.\\
@@ -150,7 +150,7 @@ Each pancontig can be subject to only one merge at this stage.
 For exact ties in this ranking of of matches, the behavior is not explicitly defined but depends on the order in which the matches appear in the output of the homology search tool. 
 
 After all of the matches have been exhausted, the two graphs have undergone a preliminary merging, with some new merged pancontigs being created. 
-At this point we repeat the procedure looking for matches in an all-against-all comparison of consensus sequences of pancontigs of the newlyt generated graph to itself. 
+At this point we repeat the procedure looking for matches in an all-against-all comparison of consensus sequences of pancontigs of the newly generated graph to itself. 
 This self-mapping on the graph will detect any homology that could not have been merged at the previous stage, and will perform the corresponding merging. 
 The self-mapping is repeated iteratively until no new merges can be performed.
 Exact duplicate matches would thus be merged in successive iterations of this merge-process.
@@ -201,7 +201,7 @@ It also results in a loss of low-frequency pancontigs (top-left panel) indicatin
 
 \begin{figure}[tb]
       \includegraphics[width=.7\textwidth]{figs_response/hp_vs_kp.pdf}
-      \caption{frequency and length distribution (respectively left and right panels) of pancontigs for the \textit{Helicobacter pylori} and \textit{Klebsiella pneumoniae} datasets (top and bottom). For each panel we report the results for pangenome graphs built using minimap2 aligner with standard parameter values and asm20 sensitivity (blue) and with mmseqs2 and null pseudo-energy parameters (orange). Distributions are weighed by pancontig length, so that the sum of all bins heights is equal to the total pangenome graph size.}
+      \caption{frequency and length distribution (respectively left and right panels) of pancontigs for the \textit{Helicobacter pylori} and \textit{Klebsiella pneumoniae} datasets (top and bottom). For each panel we report the results for pangenome graphs built using minimap2 aligner with standard parameter values and asm10 sensitivity (blue) and with mmseqs2 and null pseudo-energy parameters (orange). Distributions are weighed by pancontig length, so that the sum of all bin heights is equal to the total pangenome graph size.}
       \label{fig:kp-vs-hp}
 \end{figure}
 
