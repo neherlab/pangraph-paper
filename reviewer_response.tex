@@ -11,9 +11,9 @@
 \newcommand{\Liam}[1]{{\color{teal}Liam: #1}}
 
 \definecolor{response}{rgb}{0.2, 0.2, 0.2}
-\newcommand{\reviewer}[2]{\textbf{#1:} #2\vskip 5mm}
-\newcommand{\response}[1]{{\it {\color{response}\textbf{Response:} #1}}\vskip 5mm}
-\newcommand{\responsedraft}[1]{{\it {\color{purple}\textbf{ResponseDraft:} #1}}\vskip 5mm}
+\newcommand{\reviewer}[2]{{\it \textbf{#1:} #2\vskip 5mm}}
+\newcommand{\response}[1]{{{\color{response}\textbf{Response:} #1}}\vskip 5mm}
+\newcommand{\responsedraft}[1]{{{\color{purple}\textbf{ResponseDraft:} #1}}\vskip 5mm}
 
 \newcommand{\SIgraph}{I}
 \newcommand{\SIalgo}{II}
@@ -34,6 +34,21 @@
 
 \section*{Response to reviewers}
 
+{\bf Dear Dr.~Rasko,}
+
+thank you for handling our manuscript ``PanGraph: scalable bacterial pan-genome graph construction" at {\it Microbial Genomics} and providing us with three expert reviews.
+These reviews have helped us to improve the manuscript and we are grateful for the constructive suggestions, comments, and criticism.
+
+Specifically, we have
+\begin{itemize}
+    \item rewritten parts of the introduction to reflect existing tools and prior work in a more accurate way,
+    \item extended the discussion of the graph merging and consensus sequence generation. In particular, we have greatly extended the SI with a detailed discussion of the methodology,
+    \item made various adjustments to text and figures as suggested by the reviewers,
+    \item archived the github repository via Zenodo \href{https://doi.org/10.5281/zenodo.7740393}{DOI: 10.5281/zenodo.7740393}
+\end{itemize}
+
+We hope that these revisions address the comments by the reviewers.
+
 \subsection*{Reviewer 1}
 
 \reviewer{R1}{Bacterial evolution is driven both by local (vertical) mutation and larger scale (horizontal) genome alternations resulting in gain, loss, inversion or reassortment of genetic material. A single linear reference cannot capture this larger scale diversity, and existing graph reference structures either depend on coloured de Bruijn graphs (losing long range homology) or simplify the complex topologies by partitioning the pangenome and considering genes/loci in isolation. PanGraph provides a library and data structure to create a pangenome reference graph for closely related bacteria based on a progressive multiple sequence alignment approach.
@@ -44,9 +59,7 @@
 
       The software was easy to install and the documentation available online is impressive.
 
-      There was no comparison with other tools - would be appropriate if e.g. downstream mapping performance were evaluated but that is outside the scope here.\\
-
-      On reading I had a few queries, which could perhaps be clarified further in the text.}
+      There was no comparison with other tools - would be appropriate if e.g. downstream mapping performance were evaluated but that is outside the scope here.}
 
 \response{We thank the reviewer for their appreciation of our contribution and for their constructive review of our work.}
 
@@ -73,7 +86,8 @@ We modified the line to: ``Core pancontigs having higher-than-average length. Th
 \response{We considered different projections and in the end decided to maintain the linear projection for ease of interpretation, but we added next to each distribution its mean and standard deviation. In this way both deviations from 0 and 1 in the first two distributions can be quantified.}
 
 \reviewer{R1.7}{Have you tried running PanGraph on more than 300 references? I'd love to see another order of magnitude (not necessary for the paper, just curiosity)}
-\response{The biggest dataset we tried PanGraph on is a collection of 500 E.coli isolates. We used minimap2 as alignment kernel, asm20 sensitivity and values of $\alpha = 100$, $\beta=20$. Running on 8 cores this took 18 hours and 12 minutes to complete and had maximum memory usage of 17Gb.}
+\response{The biggest dataset we tried PanGraph on is a collection of 500 E.coli isolates. We used minimap2 as alignment kernel, asm20 sensitivity and values of $\alpha = 100$, $\beta=20$. Running on 8 cores this took 18 hours and 12 minutes to complete and had maximum memory usage of 17Gb. But we have not explored a full order of  magnitude -- excessive fragmentation of the pangenome might slow down the pangraph construction beyond the expected linear scaling.
+}
 
 \reviewer{R1.8}{Discussion: Do you know of/have you tried any mapping approaches which could take this reference as an input. Could you touch on the downstream applications of this graph structure? I would like to see discussion of how the graph can be used downstream - e.g. touching on what software can be used to map/align to such a data structure? Or how it can be used to analyze genome structure.}
 \response{We have so far not explored the use of pangraph as input for graph based mapping approaches like Pandora or GramTools, but we agree this is an interesting downstream application. We have included a discussion of these approaches, although we feel that testing and implementation of them is beyond the scope of this article.}
@@ -82,7 +96,7 @@ We modified the line to: ``Core pancontigs having higher-than-average length. Th
 \response{Homologous recombination is not directly included in our simulated data generation procedure. We only simulate transfer of sequence between two genomes but this transfer is not based on homology. Moreover we simulate sequence evolution without a notion of genes. This is now specified in SI section \SIsynthdata. To avoid confusion we also changed ``Horizontal Gene Transfer'' to ``Horizontal Sequence Transfer''. Homologous recombination would  ``reshuffle'' fine scale diversity within the contigs. We don't expect this to have a large effect on graph reconstruction, though it will affect how fine-scale diversity within the contigs is represented. }
 
 \reviewer{R1.10}{Supplementary Information C: You comment that the use of null energy parameters results on average in ``more and shorter pancontigs'' but also that they result in more diverged sequences being merged into the same pancontig. Why is a more diverse pancontig more likely to become fragmented?}
-\response{We use the pseudo-energy defined in eq.~(1) as an heuristic to decide whether a homologous match detected by our aligner should result in a merge between two pancontigs, depending on the match length and on sequence divergence. In particular any choice of $\beta$ would prevent merges between sequences with divergence higher than $1/\beta$. Setting $\beta=0$ instead does not impose a divergence limit on merges other than the one implicitly set by the aligner sensitivity. In this sense the choice of null energy parameter results in more diverged sequences being merged into the same pancontig. A consequence of more merging is also more fragmentation of the graph, since the merging of a homologous section of two pancontigs often requires splitting them in chunks. Therefore we expected that the choice of null energy parameters would lead to shorter pancontigs, and alignments containing more diverged sequences.
+\response{We use the pseudo-energy defined in eq.~(1) as an heuristic to decide whether a homologous match detected by the aligner should result in a merger between two pancontigs, depending on the match length and on sequence divergence. In particular any choice of $\beta$ would prevent mergers between sequences with divergence higher than $1/\beta$. Setting $\beta=0$ instead does not impose a divergence limit on mergers other than the one implicitly set by the aligner sensitivity. In this sense the choice of null energy parameter results in more diverged sequences being merged into the same pancontig. A consequence of more merging is also more fragmentation of the graph, since the merging of a homologous section of two pancontigs often requires splitting them in chunks. Therefore we expected that the choice of null energy parameters would lead to shorter pancontigs, and alignments containing more diverged sequences.
 To make this reasoning more explicit we added section {\SIalgo} in the SI to better explain the merging procedure and the effect of tuning the pseudo-energy parameters.}
 
 
@@ -108,9 +122,8 @@ To make this reasoning more explicit we added section {\SIalgo} in the SI to bet
 \subsubsection*{Major Issues}
 
 \reviewer{R2.1}{Line 46: when you say ``PanGraph transforms an arbitrary set of genomes into a graph that simultaneously compresses the collection of sequences and exhaustively summarizes both the structural and nucleotide-level polymorphisms.'' - I am a bit unclear on how the nucleotide level variation is summarised. The paper is a bit hand-wavey about this. When i dug around on github , i found this helpful page \url{https://neherlab.github.io/pangraph/tutorials/tutorial_2/} Which answers and raises questions. So, my question: for each pancontig (which I think is the same as a block), I think what you do is infer a consensus (what is this? majority base at each position but somehow also choose an allele when there is an indel?), and then you describe the other alleles in the MSA as edits from this? You surely do not do all pairwise descriptions of SNPS, right? On that same webpage you have a section on ``block consensus to node alignment'' - how do you choose the order of alleles here? This is all valuable information and it would be great to have it in the supplementary or main methods somewhere.}
-% \Marco{this point was also raised by R3. Mutations are always represented as variation on the consensus. The way consensus is propagated during graph merging might require more explanation. Maybe we could add a section in the supplementary with a somewhat more detailed description of the algorithmic steps we perform when merging two graphs? In the code \href{https://github.com/neherlab/pangraph/blob/e1c11012a3d19975d4b1dc61b1af3eb3949f7cd2/src/block.jl\#L1274}{this part} takes care of merging alignments between two blocks with only small (i.e. below cutoff) insertions and deletions. In short what we do is stitch the two alignments together using the cigar string as a guide, and re-compute the consensus on the newly-obtained alignment. This ensures that the consensus agrees with the majority of sequences in the alignment, but does not solve the full multiple sequence alignment problem. However we also provide the ``polish'' step for this, that can be executed after graph creation. This will take care of refining the block alignments.}\\
-% \Liam{I think a `narrative section' in the supplementary describing this in brief sounds great.}
-\response{This point was also raised by other reviewers and we appreciate the need to make this point clearer.
+
+\response{This point was also raised by other reviewers and we appreciate the need to make the representation of fine scale diversity clearer.
 In our pangenome graph representation each pancontig encodes an alignment using a consensus sequence and list of edits required to obtain each individual sequence from the consensus sequence.
 These edits consist of single nucleotide changes (mutations) as well as short insertions and deletions.
 The consensus sequence is defined using the majority rule on the alignment and is updated after each merger.
@@ -119,8 +132,6 @@ Following the suggestion by the reviewer, we have added section {\SIgraph} in SI
 We also refer to the documentation page mentioned by the reviewer. Moreover, to avoid ambiguity we also avoided referring to pancontigs as ``blocks'' in the main text and use pancontigs throughout.}
 
 \reviewer{R2.2}{Line 61: I agree and understand how each sequence can be sketched in linear time. I don't follow how you calculate all pairwise intersections through sorting the list of minimizers, nor do i see how this ends up being log-linear. For each genome, you can sort it's minimizers in $n \log (n)$ (ie log linear), where $n \sim$ genome length. How do you get all pairwise distances from that without another multiplier of $n$?}
-% \Marco{in the text we write that ``the pairwise distance matrix is estimated in a time that increases log-linearly in the \textbf{total length} of sequence that is analyzed.'' This might generate some confusion since the scaling depends both on the number of genomes $N$ and their length $l$. The algorithmic time for all the pairwise distances should scale as $\sim N^2 l \log l$. We should be in a regime where $N$ is not a limiting factor, it's just a multiplicative constant, and thus I think our statement is fundamentally correct. But we can make it more precise. This scaling is at any rate not a limiting factor in pangraph.}\\
-% \Liam{clarifying $N$ and $l$ makes sense.}
 \response{ We are sorry that the formulation in the main text was too concise and a bit inaccurate.
 There are two main variables at play: the length of a genome $L$ and the number of isolates $n$. 
 As the reviewer points out, the set of minimizers for each genome can be created and sorted in $L \log L$. 
@@ -136,23 +147,21 @@ We slightly elaborated this point in the main text and added a version of the ab
 \reviewer{R2.3}{The section on iterative graph alignment (lines 69-77) is in one sense quite clear and intuitive, but there is a lot of detail missing which leaves the reader a bit confused when they try to think about details. I would appreciate some detail being added, perhaps in the supplementary methods. For example:
       \begin{itemize}
             \item at the start you just have two genomes, and you scan them for orthologous regions, and you decide which to merge. As i understand it, you merge them in order of pseudoenergy ranking, which makes sense (what do you do for precise duplicates, where a region on genome 1 is a precise match for 2 regions on genome 2? random choice?)
-                  % \Marco{the ranking would be the same and we perform only one of the two merges in the first phase, when comparing the two graphs. After this we align the graph on itself and the second merge should be performed at this point. This comment also suggests we could add a section in the supplementary with a more detailed description of the algorithm?}
             \item as you move on, you are aligning graphs, and you really skim over the issue of how you do that. How does minimap or mmseqs allow you to look for homology between two graphs? The only thing i can imagine you are doing is only looking for homology between the genomes in one graph, and the genomes in the second graph. I would really appreciate it if you could clarify this and even ideally add some example figures in the supplement showing with some toy genomes how you align two graphs.
-                  % \Marco{another comment pointing at the fact that we could add a more detailed explanation about graph merging on the supplementary. What we do is using the aligner using as reference and queries the consensus sequences of each block in the two different graphs, and create a first version of the merged graph. We then repeat this procedure in an all-vs-all comparison of the consensus sequences of the blocks, and proceed with further merges. This is necessary because when two alignments overlap only one of the two is performed in the first alignment round, but the second will be performed in further rounds.}\\
-                  % \Liam{agree, sounds like a section in supplementary is a good idea to address these comments.}
+
       \end{itemize}}
-\response{We thank the reviewer for pointing out that we should have provided more explanation (the point was also raised by other reviewers).\\
+\response{We thank the reviewer for pointing out that we should have provided more explanation (the point was also raised by other reviewers).
 We added Section {\SIalgo}B in the SI, in which we expand on the explanation of how we merge two graphs.\\
-In short, we perform the merging procedure in two steps. In the first we use the aligner (minimap2 or mmseqs2) to scan for homologuos matches between the consensus sequences of all pancontigs of one graph and of the other.
+In short, the merging procedure involves two steps. In the first we use the aligner (minimap2 or mmseqs2) to scan for homologous matches between the consensus sequences of all pancontigs of one graph and of the other.
 This is achieved by simply passing all these consensus sequences as a single fasta file into mmseqs2 or via the API into minimap2.
 The resulting matches are ranked by pseudo-energy and mergers performed in order.
-Each pancontig can be subject to only one merge at this stage.
+Each pancontig can be subject to only one merger at this stage.
 For exact ties in this ranking of of matches, the behavior is not explicitly defined but depends on the order in which the matches appear in the output of the homology search tool. 
 
 After all of the matches have been exhausted, the two graphs have undergone a preliminary merging, with some new merged pancontigs being created. 
 At this point we repeat the procedure looking for matches in an all-against-all comparison of consensus sequences of pancontigs of the newly generated graph to itself. 
 This self-mapping on the graph will detect any homology that could not have been merged at the previous stage, and will perform the corresponding merging. 
-The self-mapping is repeated iteratively until no new merges can be performed.
+The self-mapping is repeated iteratively until no new mergers can be performed.
 Exact duplicate matches would thus be merged in successive iterations of this merge-process.
 }
 
@@ -164,9 +173,9 @@ Exact duplicate matches would thus be merged in successive iterations of this me
       One interesting thing here is that you are effectively merging things in reverse evolutionary order, as you have lower energy for longer more similar things which presumably diverged more recently. Not sure if that tells us anything.}
 \response{
       Apologies for these confusing statements.\\
-      In this case the second criterion is a consequence of the first. From the definition of the pseudo-energy (cf. eq.~(1) in the main text) it follows that for an alignment of pancontig consensus sequences to have negative pseudo-energy must be that the number of SNPs divided by the alignment length $N_m/l$ must be less than $1/\beta$. Moreover, as the reviewer pointed out, the pseudo-energy ranking of merges effectively results in merges being performed in order of similarity, effectively in reverse evolutionary order. \\
+      In this case the second criterion is a consequence of the first. From the definition of the pseudo-energy (cf. eq.~(1) in the main text) it follows that for an alignment of pancontig consensus sequences to have negative pseudo-energy must be that the number of SNPs divided by the alignment length $N_m/l$ must be less than $1/\beta$. Moreover, as the reviewer pointed out, the pseudo-energy ranking of mergers effectively results in mergers being performed in order of similarity, effectively in reverse evolutionary order. \\
 
-      To make this more explicit we modified the previous formulation into: ``$\beta$ controls the maximal sequence divergence between the two merger-candidates. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$... The pseudo-energy ranking also effectively results in merges being performed in reverse evolutionary order, with less diverged sequences being merged first.''
+      To make this more explicit we modified the previous formulation into: ``$\beta$ controls the maximal sequence divergence between the two merger-candidates. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$... The pseudo-energy ranking also effectively results in mergers being performed in reverse evolutionary order, with less diverged sequences being merged first.''
 }
 
 \reviewer{R2.5}{I very much appreciated that you measure the accuracy of pangraph via this displacement idea. I started writing a kindly worded criticism that I thought your method was flawed - surely the displacement depends not only on the order of doing merges, and decisions made about what to do when there are two equally good places to merge with. I guess i was saying that slightly different evolutionary events could give the same genomes, and thereby justify the errors. However i very much like the approach you detail in the methods, numerically solving the assignment problem. So, this started as a major issue, but in the end is a compliment.}
@@ -178,7 +187,7 @@ Exact duplicate matches would thus be merged in successive iterations of this me
 On top of this, only matches with negative pseudo-energy are accepted as mergers.
 The parameter $\beta$ thus allows to explicitly set a maximal divergence ($1/\beta$) allowed in mergers, rather than relying on the implicit cut-off that comes from the sensitivity of the aligner. \\
 This is now made more explicit in SI sect.~{\SIalgo}C.\\
-When setting $\beta = 0$ the maximal divergence is determined by the aligner sensitivity. In this sense more merges are allowed, but all merges will have some implicit maximal divergence threshold (20\% or 30\%, depending on the aligner).}
+When setting $\beta = 0$ the maximal divergence is determined by the aligner sensitivity. In this sense more mergers are allowed, but all mergers will have some implicit maximal divergence threshold (20\% or 30\%, depending on the aligner).}
 
 \reviewer{R2.7}{Why does the L50 peak go up for null-scores for mmseqs for Mtb, Pm, Kpn and Ec (Figure 4E, purple with lines) but down for helicobacter?}
 % \Marco{the effect of merging more blocks on L50 is not trivial. It depends on whether the merging occurs between long or short blocks, and how much fragmentation this causes. HP is a special case in that its diverge is on the threshold of what minimap2 can handle. Using mmseqs2 results in a pangenome that is half the size compared to standard parameters (fig. 4G). This is an impressive amount of additional compression. At the same time the fraction of core pangenome more than doubles (4H). The total number of blocks decreases to roughly half (4D) while N50 increases (4F). For me this points to the fact that in the case of HP merging will split long blocks and create more fragmentation. For the reviewer I could produce the block frequency and lenght distribution for the two cases and comparing them would give an answer. I could do the same for EC or KP for comparison.}\\
@@ -194,9 +203,6 @@ For a visual verification of this interpretation we display in fig.~\ref{fig:kp-
 In the Kp dataset the null pseudo-energies result in shorter pancontigs (lower-right panel) and a small increase in core genome fraction (lower-left panel). 
 For Hp, the effect on pancontigs is quite different. More sensitive alignment with null pseudo-energies means small and intermediate pancontigs are lost, but there are slightly more long ones (top-right panel). 
 It also results in a loss of low-frequency pancontigs (top-left panel) indicating that these had an homologous counterpart that with default parameters and minimap could not be merged due to high-divergence. Using a more sensitive aligner with null pseudo-energies means the core pangenome fraction increases considerably.  
-      % TODO: add mention in SI
-      % QUESTION: this is more or less explicit in SI? Should I expand more?
-      % Liam: I think there are slightly more long pancontigs with mmseqs/null in Hp from looking at figure so seems worth saying
 }
 
 \begin{figure}[tb]
@@ -217,10 +223,7 @@ In fact, we used the fact that genomes can be reconstructed exactly from the pan
             \item i don't see how to get the list of accessions for section IIB? Saying they were used in the Ding et al paper is not quite enough for me to be sure which ones you used.
             \item for the graph marginalisation section, could the accessions of the strains used be in a supplementary file as well as on github? Github repos are great, but they can be deleted.
       \end{enumerate}}
-% \Marco{on the repo we have \href{https://github.com/neherlab/pangraph/blob/master/script/config/accnums.json}{this file} for the list of all accession numbers we use, and \href{https://github.com/neherlab/pangraph/blob/master/script/config/projection_strains.json}{this file} for the marginalization pairs. I could create some excel spreadsheet with accession numbers that we could add to the submission?}\\
-% \Liam{for sure that's all they want (most biologists don't like json!)}
-\response{We now included in the submission two csv files. \texttt{accession\_numbers.csv} contains the list of accession numbers of all isolates in our dataset for all species considered. \texttt{marginalize\_pairs.csv} contains instead a list of all the pairs used in the graph marginalization section.
-      % TODO: archive repository state.
+\response{We now included in the submission two csv files. \texttt{accession\_numbers.csv} contains the list of accession numbers of all isolates in our dataset for all species considered. \texttt{marginalize\_pairs.csv} contains instead a list of all the pairs used in the graph marginalization section. Additionally, to guarantee persistence we archived the repository via Zenodo (\href{https://doi.org/10.5281/zenodo.7740393}{DOI: 10.5281/zenodo.7740393})
 }
 
 \subsubsection*{Minor Issues}
@@ -231,7 +234,7 @@ Feel free to replace with a better reference, this si just meant to be helpful.}
 \response{We thank the reviewer for the suggestion. We now cite the suggested article, along with \cite{touchon2009organised,doolittle2009origin}.}
 
 \reviewer{R2.2}{Why on earth is the ``get an MSA of a block'' option in pangraph called ``polish''?}
-\response{In our method pancontig merges are performed using only the consensus sequence as a guide. This makes the merging procedure very fast, but can introduce minor inconsistencies and artifacts with insertions in the alignment as insertions are not aligned to each other in the procedure.
+\response{In our method pancontig mergers are performed using only the consensus sequence as a guide. This makes the merging procedure very fast, but can introduce minor inconsistencies and artifacts with insertions in the alignment as insertions are not aligned to each other in the procedure.
 To remove these inconsistencies, after building the graph the user can optionally decide to ``polish'' pancontig alignments with the \texttt{polish} command. This command takes a graph as input and produces a graph with the same topology, but with improved alignments. In practice for each block it collects all of the sequences and uses MAFFT \cite{katoh2002mafft} to perform a multiple sequence alignment, obtaining an improved consensus and more consistent insertion pattern.\\
 This command was not mentioned in the paper. This has now been amended, and we briefly described in in section IB in the main text and in SI sect.~{\SIalgo}B.}
 
@@ -265,34 +268,19 @@ This command was not mentioned in the paper. This has now been amended, and we b
       PanGraph appears to wed these approaches to some extent in that the alignments are done at the nucleotide level and the features are extracted as a characteristic of the alignments.}
 
 \response{
-      We apologize if our previous discussion of the literature was incomplete. It was not our intention to downplay prior work.
-      We thank the reviewer for highlighting additional important work and aspects that we have now added to better contextualise our work.
+      We apologize if our previous discussion of the literature was inaccurate and incomplete. It was not our intention to downplay prior work.
+      We thank the reviewer for highlighting additional important papers and aspects that we have now added to better contextualise our work.
       We have rewritten the introduction to reflect previous work in this field and added to the discussion to further highlight previous and alternative approaches. We hope that these edits address the concerns of the reviewer.
       % Liam: I think good to say in more detail what has been added here. 
-      Specifically, we have
+      Specifically, 
 \begin{itemize}
-    \item The sentence in the abstract mentioned by the reviewer has been replaced by a general summary of the need to and challenges in understanding evolution of genome structure.
+    \item We replaced the sentence in the abstract mentioned by the reviewer by a general summary of the need to and challenges in understanding evolution of genome structure.
     \item We extended the discussion of other methods in the introduction.
-    In particular we extended the paragraph on methods based on de Bruijn graphs, mentioning also compacted generalization and the fact that tools exist that are able to build graphs containing thousands of isolates. We now cite more tools and put more emphasis on their applications, restricting it to tools specific for microbial genomics (e.g. we did not include PGGB). We removed the previous claim that homology detection was limited by the k-mer size, and cite tools that can be used to extend homology detection through small sequence modifications.
+    In particular we extended the paragraph on methods based on de Bruijn graphs, mentioning also compacted generalization and the fact that tools exist that are able to build graphs containing thousands of isolates. We now cite more tools and put more emphasis on their applications, focusing on tools specific for microbial genomics. 
     \item We expanded in the same way the paragraph on homology-based and gene-based approaches, in which we now discuss more tools putting emphasis on their applications.
-    \item We added a paragraph in the discussion in which we tried to emphasize how \textit{PanGraph}, as the reviewer remarks, treats nucleotide-level variation and large-scale structural variation in different ways, thereby facilitating separate analyses of these aspects. 
+    \item We now discuss how \textit{PanGraph} treats nucleotide-level variation and large-scale structural variation in different ways, thereby facilitating separate analyses of these aspects. 
 \end{itemize}
 }
-% \Marco{Tentative extension - to be updated depending on how we modify the intro/discussion:\\
-
-% To amend this we performed the following changes:
-% \begin{itemize}
-%     \item The sentence in the abstract mentioned by the reviewer has been removed and modified.
-    
-%     \item We extended the discussion of other methods in the introduction.\\
-%     In particular we extended the paragraph on methods based on de Bruijn graphs, mentioning also compacted generalization and the fact that tools exist that are able to build graphs containing thousands of isolates. We now cite more tools and put more emphasis on their applications, restricting it to tools specific for microbial genomics (e.g. we did not include PGGB). We removed the previous claim that homology detection was limited by the k-mer size, and cite tools that can be used to extend homology detection through small sequence modifications.\\
-%     We expanded in the same way the paragraph on homology-based and gene-based approaches, in which we now discuss more tools putting emphasis on their applications.
-    
-%     \item We added a paragraph in the discussion in which we tried to emphasize how \textit{PanGraph} compares to gene-based and k-mer based PGG methods.\\
-%     In essence, methods based on de Bruijn graph have the advantage of being fast since they do not require alignments. They also do not necessarily require fully assembled genomes. However in these models the graph encodes in the same way nucleotide-level variation and large-scale structural variation, and specific post-processing of the graph is needed to distinguish the two. Conversely, PanGraph requires fully-assembled genomes and is potentially slower, but its pangenome graph representation provides a natural separation between small sequence differences (mutations or small indels) and big structural changes (gene gain/loss, inversions, rearrangements).\\
-%     Gene-based pangenome graphs have instead the advantage of being smaller in size (a node corresponds to a gene) and they can include more divergent sequences, since homology detection can be performed on protein sequences. Differently from homology-based methods like PanGraph however, they are often sensitive to annotation errors.
-% \end{itemize}
-% }
 
 \reviewer{R3}{An obvious lack in PanGraph is an attempt to map existing annotations back onto the generated PGG which is a necessity for usefulness to biologists. The mechanism for this is obvious but providing a useful user interface might be tedious.}
 \response{We thank the reviewer for this important suggestion and appreciate the need to include a way to map annotations back onto the pangenome graph. 
@@ -316,33 +304,26 @@ Integrating a fully featured annotation into pangraph was not feasible during th
             \item \cite{chan2015novel}
       \end{itemize}}
 \response{
-We apologize and we modified the sentence in question. We also extended the discussion of de Bruijn graphs methods in the introduction (see answer above).\\
 We thank the reviewer for pointing out these important contributions that were not previously discussed in the paper.
+We agree that these are important context for our work and we modified the sentence in question. We also extended the discussion of de Bruijn graphs methods in the introduction (see answer above).\\
 }
 
 \reviewer{R3}{I believe this statement: ``It is not uncommon that one pancontig has homology with multiple other pancontigs and the iterative algorithm has to make choice which potential mergers are performed and in which order.'' is the essential step in the process and perhaps deserves more focus. It captures two important issues: aligning orthologs not paralogs and keeping the fracturing of the PGG nodes to a minimum. The pseudo-energy captures the alignment length (longer is better for orthologs versus paralogs) but does not appear to capture the surrounding context of the iterative PGGs. For initial alignments of single genomes to single genomes this doesn't matter for the most part because there is a single pancontig for each each genome and PGG context is mostly captured in the alignment. I am not so sure this is true as the PGG nodes fracture and become much smaller. When choosing between competing mergers of paralogs/orthologs the context of the PGG and other possible mergers is important if the pancontigs have been reduced so that they contain only repetitive sequence without unique flaning sequence. I think this is a very important point as distinguishing orthologs from paralogs is essential for correct PGG construction and the authors need to explicitly address it. This could be measured as part of the simulated data where identical paralog sequences of various lengths and copy number could be modeled.}
-% \Liam{I am not sure I agree that constructing a pangenome graph means one must distinguish orthologs from paralogs. The structure is still useful even if this isn't done. Maybe there is a way of doing something of what they propose with simulations, but I suspect this isn't necessary for the editor to accept the paper\ldots}\\
-% \Marco{I agree, I think it's a different design choice. We could also mention that the marginalize command has an option to project out paralogs, but should be a post-processing step rather than something that we want to do while building the graph. One can a posteriori decide whether one wants to split paralogs using structural information (flanking blocks) or one can even prevent the merging using diversity and the $\beta$ parameter.}\\
 \response{
 This is an important point that needed more discussion in the paper than we originally provided. 
 \textit{PanGraph} in its current state does not explicitly distinguish between orthologs and paralogs when constructing the graph. 
 This is a deliberate design choice: PanGraph is intended to facilitate the investigation of genome evolution and two very similar paralogs represent a recent duplication or acquisition that we want to capture in the graph structure. 
 Whether paralogs are merged depends on their similarity and the parameters of pangraph allow tuning this thresholds.
 
-But we agree from experience that these can sometimes complicate the interpretion of the pangenome graph, in particular in presence of high copy-number mobile elements.  
+But we agree from experience that these can sometimes complicate the interpretation of the pangenome graph, in particular in presence of high copy-number mobile elements.  
 Currently \textit{PanGraph} supports two different ways of controlling paralog splits.
 The first one is based on sequence divergence as mentioned above.
-By tuning the value of the energy parameter $\beta$ the user can set a divergence limit. This would prevent the merging of paralogs that have sequence divergence higher than $1/\beta$.\\
-The second method relies instead on information on genomic context. The \texttt{marginalize} command possesses the optional \texttt{--reduce-paralog} flag. 
-When set, this flag will result in the removal of artificial splits caused by duplicated pancontigs that always occurr in the same non-duplicated context. 
-These duplicated pancontigs are then split and absorbed in their context.
-In addition, pangraph can export a graph omiting all duplicated blocks, which is a simplified version of the graph often useful for visualization.
+By tuning the value of the energy parameter $\beta$ the user can set a divergence limit. This would prevent the merging of paralogs that have sequence divergence higher than $1/\beta$.
+In addition, pangraph can export a graph omitting all duplicated blocks, which is a simplified version of the graph often useful for visualization.
 
 In the future we plan on providing a dedicated command to perform a more robust form of paralog splitting, which combines both sequence divergence information and context information. This command would build a phylogenetic tree from the alignment of each duplicated pancontig to detect exceptionally long branches, and check whether the split correlates with a split in the duplication context. This functionality is not however not yet implemented in the current version of \textit{PanGraph} and we see it as substantial extra work.\\
 
 We appreciate the reviewer's perspective and have added SI sect.~{\SIalgo}D to include discussion of these considerations.
-
-% TODO: confirm with Nick the paralog split algorithm.
 }
 
 \reviewer{R3}{In the pseudo-energy discussion a further parameter is mentioned: ``In addition, there is parameter that controls the minimal size of contigs produced by the algorithm.''. The value chosen for this parameter should be explicitly stated along with a rationale for the choice. It is also not clear if any of the splitting pancontigs are less than this value if the entire merger is dropped or just massaged to not have the too small new pancontig.}
@@ -350,7 +331,7 @@ We appreciate the reviewer's perspective and have added SI sect.~{\SIalgo}D to i
 For instance, an insertion could appear either as a separate pancontig, or as an insertion in the pancontig alignment, depending on its size. 
 In practice this parameter is used in three ways:
       \begin{itemize}
-            \item In addition to the pseudo-energy constraint, merges are refused if they have alignment length shorter than $\Lthr$.
+            \item In addition to the pseudo-energy constraint, mergers are refused if they have alignment length shorter than $\Lthr$.
             \item During merging, if the alignment contains long ($> \Lthr$) indels, these will cause a split in the merged pancontigs and will be treated as separate pancontigs.
             \item If a merger of two pancontigs would produce flanking overhangs shorter than $\Lthr$, these are not saved as separate pancontigs but are included in the alignment as flanking indels.
       \end{itemize}
@@ -365,7 +346,7 @@ In practice this parameter is used in three ways:
 To this end we added section {\SIalgo}B in the SI, with a detailed explanation of how the merging procedure works.\\
 In essence, during graph merging alignment is only performed between the consensus sequences of the merged pancontigs. 
 We avoid performing a multiple sequence alignment during merging to keep the algorithm scalable. 
-However we do update the consensus of the pancontig at each merge using the majority rule on the merged alignment.\\
+However we do update the consensus of the pancontig at each merger using the majority rule on the merged alignment.\\
 The idea behind this approach is that the consensus sequence is needed to find large-scale homology, and resolving the fine-grained structure of the alignment is not needed at this step and would require an excessive amount of resources. 
 This separates efficiently the problem of resolving the large-scale and nucleotide-level diversity between sequences.\\
 However after the graph has been built, alignments can be refined with \textit{PanGraph}'s \texttt{polish} command. 
@@ -436,7 +417,7 @@ To make this more clear we updated part of the text in section IIB, the caption 
 \end{document}
 
 %  TODO: before submission
-% - [ ] archive repository state and add in the response
+% - [x] archive repository state and add in the response
 % - [ ] add files with accession numbers and pairs to the submission
 % - [x] add mention of ``polish'' in main text.
 % - [ ] for the future: add sequence reconstruction to pangraph automatic testing.

@@ -52,9 +52,8 @@
     However, any reference genome contains only a fraction of the microbial \emph{pangenome}, the \textit{total} set of genes observed in a given species.
     Reference-based approaches are thus blind to the dynamics of the accessory genome, as well as variation within gene order and copy number.
     With the wide-spread usage of long-read sequencing, the number of high-quality, complete genome assemblies has increased dramatically.
-    % Traditional computational approaches towards whole-genome analysis either scale poorly with the number of genomes, or treat genomes as dissociated ``bags of genes'', and thus are not suited for this new era.
     In addition to pangenomic approaches that focus on the variation in the sets of genes present in different genomes, complete assemblies allow investigations of the evolution of genome structure and gene order.
-    This latter problem, however, is computationally demanding and conceptually challenging with few tools available that allow to shed light on these dynamics. 
+    This latter problem, however, is computationally demanding with few tools available that allow to shed light on these dynamics. 
     Here, we present \emph{PanGraph}, a Julia-based library and command line interface for aligning whole genomes into a graph.
     Each genome is represented as an undirected path along vertices, which in turn, encapsulate homologous multiple sequence alignments.
     The resultant data structure succinctly summarizes population-level nucleotide and structural polymorphisms and can be exported into a several common formats for either downstream analysis or immediate visualization.
@@ -83,22 +82,20 @@ In microbial genomics, in contrast, large scale rearrangements and inversions gi
 Here, we focus on pangenome graphs of closely related bacterial genomes.
 
 While easy to conceptualize, the construction of pangenome graphs has proven computationally challenging.
-Colored and compacted generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets \cite{iqbal2012novo,muggli2017succinct}, with tools existing to build graphs containing thousands of isolates \cite{holley2020bifrost}. These graphs have been shown to be useful in problems such as the detection of the core genome \cite{schulz2022sequence} or the improvement of gene prediction, annotation and clustering \cite{horsfield2023accurate}. However, in these methods the graph structure encodes at the same time nucleotide-level variation and large-scale structural rearrangements. 
+Colored and compacted generalizations of the de Bruijn graph-based assemblers have been successively used to build graphs from large sequence sets \cite{iqbal2012novo,muggli2017succinct}, with tools existing to build graphs containing thousands of isolates \cite{holley2020bifrost}. These graphs have been shown to be useful in problems such as the detection of the core genome \cite{schulz2022sequence} or the improvement of gene prediction, annotation and clustering \cite{horsfield2023accurate}. 
+However, in these methods the graph structure encodes at the same time nucleotide-level variation and large-scale structural rearrangements. 
 For investigations of the evolutionary dynamics of these genomes, separating these two scales is often of interest. 
-%Separating these two scales is often difficult, and specific techniques have to be employed to detect large-scale homology in these graphs \cite{angiuoli2011mugsy,minkin2013sibelia}.
 
 An orthogonal approach has been to formulate the inference of the pangenome graph as a multiple genome alignment.
 Some early methods relied on homology searches to locate syntenic regions, termed \textit{locally colinear blocks} \cite{angiuoli2011mugsy,darling2010progressivemauve}, and proved useful in various problems such as improving gene annotations \cite{angiuoli2011improving}. These early methods however usually scale poorly to large sets of genomes.
-%More recently techniques based on homology have been used to compare genomes across diverse sets of species across the tree of life, at the cost of memory \cite{armstrong2020progressive}.
 Other methods rely on first grouping genes into orthologous clusters. These clusters are then treated as nodes in the graph, with edges linking clusters that are adjacent on at least one of the genomes.
 These graphs are usually characterized by a syntenic backbone of core gene clusters, with interspersed regions of structural diversity \cite{chan2015novel,oliveira2017chromosomal}.
 The structural information contained in these graphs has been used to categorize core/accessory regions \cite{sutton2021pan,gautreau2020ppanggolin}, and to improve variant detection \cite{colquhoun2021pandora} or gene annotations \cite{tonkin2020producing,zhou2020accurate}. By using genes as nodes, these graphs are much smaller in size. However, relying on gene annotations means that these methods are often sensitive to any errors in this initial annotation.
 
-Here we present \emph{PanGraph}, a Julia \cite{bezanson2017julia} library and command line interface, designed to efficiently align large sets of closely related genomes into a pangenome graph on personal computers. The \emph{PanGraph} algorithm creates nodes of homologous sequences through nucleotide alignments alone, without requiring gene annotation.
+Here we present \emph{PanGraph}, a Julia \cite{bezanson2017julia} library and command line interface, designed to efficiently align large sets of closely related microbial genomes into a pangenome graph on personal computers. 
+The \emph{PanGraph} algorithm groups homologous sequences through nucleotide alignments alone, without relying on gene annotation.
 The resulting graph both compresses the input sequence set and succinctly captures the population diversity at multiple scales: from nucleotide mutations and indels to structural polymorphisms driven by inversions, rearrangements, and gene gain/loss. Importantly, these two scales are naturally separated in our representation.
 The underlying graph data structure can be exported into numerous formats for downstream analysis and visualization in software such as Bandage \cite{wick2015bandage}.
-%The algorithm, along with extensive documentation, examples, and instructions for installation, are open source and can be found on GitHub.
-%We anticipate PanGraph to be immediately useful in understanding microbial evolution in natural populations.
 
 \section{Algorithms and implementation}
 \emph{PanGraph} transforms an arbitrary set of genomes into a \emph{graph} that simultaneously compresses the collection of sequences and exhaustively summarizes both the structural and nucleotide-level polymorphisms.
@@ -145,18 +142,18 @@ We rank each alignment between two pancontigs according to the pseudo-energy
 \begin{equation}\label{eq:pseudo-energy}
     E = -\ell + \alpha N_c + \beta N_m
 \end{equation}
-where $\ell$, $N_c$, and $N_m$ denote the alignment length, number of \emph{pancontigs} created by the merger, and number of polymorphisms per genome in the newly created {pancontig} respectively.
+where $\ell$, $N_c$, and $N_m$ denote the alignment length, number of additional \emph{pancontigs} created by the merger, and number of polymorphisms in the alignment of the consensus sequences, respectively.
 See Fig \ref{fig:visualization}B for a graphical definition for each term.
 $E$ thus compares the compactification of the graph by the length of the match $\ell$ with the increase in complexity of encoding the graph in terms of the number of additional blocks $N_c$ and the diversity within the block $N_m$. 
 The smaller $E$, the more favorable the match and only mergers whose alignment has negative pseudo-energy are performed.
 
 The parameter $\beta$ controls the maximal sequence divergence between the two merger-candidates. The negative pseudo-energy requirement means that no merger will be performed if the Hamming distance exceeds $1/\beta$.
 Importantly, this divergence threshold is applied to the comparison of the consensus sequences of the merger candidates.
-The pseudo-energy ranking also effectively results in merges being performed in reverse evolutionary order, with less diverged sequences with long-range synteny being merged first.
+The pseudo-energy ranking also effectively results in mergers being performed in reverse evolutionary order, with less diverged sequences with long-range synteny being merged first.
 
 The parameter $\alpha$ controls the fragmentation of the graph and imposes a minimal length on the pan-contigs resulting from the merger.
 This parameter has not effect if merging does not increase the number of contigs, but mergers that introduce 1, 2, 3 or 4 cuts are only performed for sufficiently long homologous stretches as parameterized by $\alpha$.
-In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that explicitly controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e.~short indels) is stored in pancontig alignments, rather than in the graph structure, and no mergers are performed if they have length shorter than this threshold. For instance, when a merge would generate flanking contigs shorter than this threshold, the merging is performed but the alignment is extended to include these regions. 
+In addition to the fragmentation parameter $\alpha$, there is a further parameter $\Lthr$ that explicitly controls the minimal length of pancontigs. Structural variation at a scale smaller than this threshold (i.e.~short indels) is stored in pancontig alignments, rather than in the graph structure, and no mergers are performed if they have length shorter than this threshold. For instance, when a merger would generate flanking contigs shorter than this threshold, the merging is performed but the alignment is extended to include these regions. 
 The default value for this parameter is 100bp.
 
 
@@ -171,8 +168,8 @@ The default value for this parameter is 100bp.
     \label{fig:visualization}
 \end{figure}
 
-At the graph level, the merge of two \emph{pancontigs} defines a new \emph{pancontig}, connected on both sides by edges to the neighboring \emph{pancontigs} of both inputs, and thus locally collapses the two graphs under consideration.
-At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the consensus of one onto the other; the merge of two \emph{pancontigs} requires the application of the map onto the nucleotide level diversity of the underlying multiple-sequence alignment.
+At the graph level, the merger of two \emph{pancontigs} defines a new \emph{pancontig}, connected on both sides by edges to the neighboring \emph{pancontigs} of both inputs, and thus locally collapses the two graphs under consideration.
+At the nucleotide level, the pairwise alignment of two \emph{pancontigs} maps the consensus of one onto the other; merging two \emph{pancontigs} requires the application of the map onto the nucleotide level diversity of the underlying multiple-sequence alignment.
 Once both sets of sequences are placed onto a common coordinate system, the resultant consensus sequence, and thus polymorphisms, are recomputed.
 This procedure can be viewed as an approximate multiple sequence alignment algorithm that aligns homologous parts without further investigating insertions in the two sub-alignments. This shortens considerably the time needed, but might introduce minor inconsistencies and artifacts in the alignments. 
 After building the graph, these can be removed by performing a standard multiple alignment of sequences within each pancontig (see ``polish'' command in documentation and SI sect.{\SIalgo}B).
@@ -358,12 +355,7 @@ We performed the same test on species from the other datasets, obtaining similar
 \section{Discussion}
 
 While single nucleotide differences in the core genome are straightforward to analyze with existing tools, these analyses miss the great majority of genetic diversity. The ability to rapidly align large sets of complete genomes of a bacterial species is crucial for the investigation of the processes governing microbial genome evolution and structure. \textit{PanGraph}, the tool presented here, is able to capture the structural and nucleotide diversity in both the core and accessory genome in a scalable way.
-The resulting data structure captures large-scale structural variation in the connectivity of the graph, while nucleotide-level variation being included in pancontig alignments.
-
-We believe that this feature, i.e. the fact that our representation naturally separates nucleotide level diversity from larger structural variation, is one of the main merits of our tool.\\
-De Bruijn graphs types of representation can be built quickly since they do not necessitate alignment, and even directly from reads without the need of high-quality assemblies. However they do not posses this scale separation, with every mutation generating a structural split in the graph. Some methods however exist to detect longer-range homology. These involve some form of smoothing of the graph to extend homology matches over small-scale variation, and have been used for the detection of core regions with applications to genetic engineering \cite{schulz2022sequence} or to find synteny blocks \cite{minkin2013sibelia}. These are particularly effective on very similar sequences with very low divergence.\\
-A second widespread type of representation uses orthologous gene clusters as node in the graphs, and introduces links between clusters that are adjacent on some of the isolates. These have proven useful in many different tasks including the categorization of core/accessory regions \cite{gautreau2020ppanggolin,sutton2021pan}, reducing reference-bias in variant detection \cite{colquhoun2021pandora} and the improvement of gene annotations \cite{tonkin2020producing}. In these representation the graph usually has a smaller number of nodes, and can include more diverged sequences by detecting homology on protein sequences. However this representation is naturally sensitive to gene annotation errors. 
-\textit{PanGraph} instead operates by construction in a gene-agnostic way, being only based on sequence homology, and is thus robust to this type of errors.\\
+The resulting data structure captures large-scale structural variation in the connectivity of the graph, while nucleotide-level variation is included in pancontig alignments.
 
 In our analysis we demonstrated the capabilities and limits of this tool, both on synthetic and real sequences. The efficient implementation of \textit{PanGraph} allows it to create pangenome graphs containing hundreds of isolates in a few hours on a 8-core machine. The size of pancontigs and the fraction of core sequence have good scaling properties with the number of isolates in the graph, indicating that \textit{PanGraph} is able to successfully capture pangenome properties.\\
 One of the main limitations is the diversity of the input sequences. With the default \textit{minimap2} alignment kernel, \textit{PanGraph} is able to correctly merge genomes with up to 5\% average divergence. Sequences with higher divergence (up to 10-15\%) can be merged using the \textit{mmseqs2} alignment kernel, and tuning the $\alpha, \beta$ energy parameters (cf. eq.~(\ref{eq:pseudo-energy})), trading off speed for sensitivity.
@@ -381,7 +373,7 @@ We hope that \textit{PanGraph} will prove a valuable tool, with the potential to
 \section*{Acknowledgement}
 We are grateful to Boris Shraiman for stimulating discussions.
 This study was funded by the University of Basel and the NSF.
-L.P.S. is a Sir Henry Wellcome Postdoctoral Fellow funded by Wellcome (Grant 220422/Z/20/Z).
+L.P.S.~is a Sir Henry Wellcome Postdoctoral Fellow funded by Wellcome (Grant 220422/Z/20/Z).
 
 \section*{Conflict of Interest}
 The authors declare that they are not aware of relevant conflicts of interests.
