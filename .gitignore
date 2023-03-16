@@ -7,6 +7,8 @@
 *.cb
 *.cb2
 *.out
+*.bcf
+*.run.xml
 *.synctex.gz
 *Notes.bib
 schemes
